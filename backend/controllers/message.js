@@ -1,60 +1,55 @@
-
 const { validationResult } = require("express-validator");
 const UserSchema = require("../models/user");
 const MessageSchema = require("../models/message");
 const mongoose = require("mongoose");
 
-const fetchChatlist=async(req,res)=>{
-    const userId = req.user.id; // Extract user ID from the token
-    console.log("i am enterd in fetching chats backend");
-    try {
-      // Find the user making the request
-      const userexist = await UserSchema.findById(userId)
-        .populate("ChatList.userId")
-        .populate("Contacts.userId");
+const fetchChatlist = async (req, res) => {
+  const userId = req.user.id; // Extract user ID from the token
+  console.log("i am enterd in fetching chats backend");
+  try {
+    // Find the user making the request
+    const userexist = await UserSchema.findById(userId)
+      .populate("ChatList.userId")
+      .populate("Contacts.userId");
 
-      if (!userexist) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
-      }
-
-      // Fetch ChatList users sorted by lastMessageTime (latest first)
-      let chatUsers = userexist.ChatList.filter((chat) => chat.userId) // Ensure userId exists
-        .sort(
-          (a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime)
-        ) // Sort by timestamp
-        .map((chat) => {
-          const contactEntry = userexist.Contacts.find(
-            (contact) => contact.contactmobile === chat.userId.Mobile
-          );
-
-          return {
-            _id: chat.userId._id,
-            Name: contactEntry ? contactEntry.contactname : chat.userId.Name,
-            Photo: chat.userId.Photo,
-            Bio: chat.userId.Bio,
-            Email: chat.userId.Email,
-            Mobile: chat.userId.Mobile,
-            lastMessageTime: chat.lastMessageTime,
-          };
-        });
-
-      return res.status(200).json({
-        success: true,
-        users: chatUsers,
-      });
-    } catch (error) {
-      console.error("Error in /search-user:", error.message);
-      return res.status(500).json({
-        success: false,
-        message: "Internal server error",
-        error: error.message,
-      });
+    if (!userexist) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
-}
 
+    // Fetch ChatList users sorted by lastMessageTime (latest first)
+    let chatUsers = userexist.ChatList.filter((chat) => chat.userId) // Ensure userId exists
+      .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime)) // Sort by timestamp
+      .map((chat) => {
+        const contactEntry = userexist.Contacts.find(
+          (contact) => contact.contactmobile === chat.userId.Mobile
+        );
 
+        return {
+          _id: chat.userId._id,
+          Name: contactEntry ? contactEntry.contactname : chat.userId.Name,
+          Photo: chat.userId.Photo,
+          Bio: chat.userId.Bio,
+          Email: chat.userId.Email,
+          Mobile: chat.userId.Mobile,
+          lastMessageTime: chat.lastMessageTime,
+        };
+      });
+
+    return res.status(200).json({
+      success: true,
+      users: chatUsers,
+    });
+  } catch (error) {
+    console.error("Error in /search-user:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 
 const fetchMessage = async (req, res) => {
   const errors = validationResult(req);
@@ -129,45 +124,43 @@ const fetchMessage = async (req, res) => {
   }
 };
 
-const chattingRoom=async(req,res)=>{
-    try {
-      const { userId } = req.body;
+const chattingRoom = async (req, res) => {
+  try {
+    const { userId } = req.body;
 
-      if (!mongoose.Types.ObjectId.isValid(userId)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid user ID",
-        });
-      }
-
-      const user = await UserSchema.findById(userId).select("ChatList");
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        chatList: user.ChatList.map((chat) => ({
-          userId: chat.userId.toString(),
-          lastMessageTime: chat.lastMessageTime,
-        })),
-      });
-    } catch (error) {
-      console.error("Error fetching chat list:", error.message);
-      return res.status(500).json({
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
         success: false,
-        message: "Failed to fetch chat list",
-        error: error.message,
+        message: "Invalid user ID",
       });
     }
-}
 
+    const user = await UserSchema.findById(userId).select("ChatList");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
+    return res.status(200).json({
+      success: true,
+      chatList: user.ChatList.map((chat) => ({
+        userId: chat.userId.toString(),
+        lastMessageTime: chat.lastMessageTime,
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching chat list:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch chat list",
+      error: error.message,
+    });
+  }
+};
 
-const message=async(req,res)=>{
+const message = async (req, res) => {
   const { senderid, receiverid, message } = req.body;
   const io = req.io; // Use io from req
   const errors = validationResult(req);
@@ -206,7 +199,6 @@ const message=async(req,res)=>{
       error: error.message,
     });
   }
-}
+};
 
-
-module.exports={fetchChatlist,fetchMessage,chattingRoom,message};
+module.exports = { fetchChatlist, fetchMessage, chattingRoom, message };

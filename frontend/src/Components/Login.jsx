@@ -83,7 +83,6 @@ const Login = () => {
       );
 
       const data = response.data;
-      console.log(data);
 
       if (data.Token) {
         const tokenPayload = JSON.parse(atob(data.Token.split(".")[1]));

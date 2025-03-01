@@ -67,19 +67,19 @@ const Fetchchatlist = ({ socket }) => {
     async (keyword) => {
       try {
         const token = localStorage.getItem("token"); // Get the token from localStorage
-        const response = await fetch(
+        const response = await axios.post(
           `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
+          { keyword }, // Request body
           {
-            method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`, // Include the token in the headers
             },
-            body: JSON.stringify({ keyword }), // Remove Username
           }
         );
 
-        const data = await response.json();
+        const data = response.data;
+
         if (data.success) {
           setContacts(data.contacts);
         }
