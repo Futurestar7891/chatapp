@@ -18,7 +18,7 @@ import PreviewPopup from "./PreviewPopup";
 import EmojisPicker from "./EmojiPicker";
 import RecordeAudio from "./RecordAudio";
 import { StateContext } from "../main";
-import Blockedpopup from "./Blockedpopup";
+import Blockedpopup from "./BlockedPopup";
 
 const FetchMessages = ({ socket }) => {
   const popupRef = useRef(null);
