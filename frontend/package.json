@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "proxy": "https://chatapp-tolv.onrender.com",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -16,6 +15,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "axios": "^1.8.1",
     "emoji-picker-react": "^4.12.0",
     "lodash": "^4.17.21",
     "react": "^19.0.0",

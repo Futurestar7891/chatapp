@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { StateContext } from "../main";
+import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -71,18 +72,17 @@ const Login = () => {
         requestBody.Mobile = formData.email;
       }
 
-      const response = await fetch(
+      const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/login`,
+        requestBody,
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(requestBody),
         }
       );
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.Token) {
         const tokenPayload = JSON.parse(atob(data.Token.split(".")[1]));
@@ -127,21 +127,18 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(
+      const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/send-otp`,
+        requestBody,
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            emailOrMobile: emailOrMobile,
-          }),
         }
       );
 
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (data) {
         setForgotEmailOrMobile(emailOrMobile);
         localStorage.setItem("showOtpPopup", "true");
         localStorage.setItem("starttime", Math.floor(Date.now() / 1000)); // Store start time in seconds
@@ -176,21 +173,18 @@ const Login = () => {
 
   const handleOtpSubmit = async () => {
     try {
-      const response = await fetch(
+      const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/validate-otp`,
+        requestBody,
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            otp: otp,
-          }),
         }
       );
 
-      const data = await response.json();
-      if (response.ok) {
+      const data = response.data;
+      if (data) {
         localStorage.removeItem("emailOrMobile");
         localStorage.removeItem("showOtpPopup");
         localStorage.removeItem("timer");
