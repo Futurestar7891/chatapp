@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faImage,
@@ -11,13 +11,8 @@ import {
 import { StateContext } from "../main";
 
 const AttachmentPopup = () => {
-  const {
-    setSelectedFiles,
-    setShowAttachmentPopup,
-    showPreviewPopup,
-    setShowPreviewPopup,
-    showAttachmentPopup,
-  } = useContext(StateContext);
+  const { setSelectedFiles, setShowAttachmentPopup, setShowPreviewPopup } =
+    useContext(StateContext);
 
   const handleFileSelect = (type) => {
     if (type === "camera") {

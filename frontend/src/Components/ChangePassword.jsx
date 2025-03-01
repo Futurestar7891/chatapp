@@ -39,8 +39,8 @@ const ChangePassword = () => {
       }
 
       const endpoint = token
-        ? "http://localhost:3000/api/change-password" // Change password endpoint
-        : "http://localhost:3000/api/reset-password"; // Forgot password endpoint
+        ? `${import.meta.env.VITE_PUBLIC_API_URL}/api/change-password` // Change password endpoint
+        : `${import.meta.env.VITE_PUBLIC_API_URL}/api/reset-password`; // Forgot password endpoint
 
       const response = await fetch(endpoint, {
         method: "POST",

@@ -24,7 +24,7 @@ const Options = ({ socket }) => {
   const handleLogout = async () => {
     try {
       // Notify the server to invalidate the token (or destroy the session)
-      const response = await fetch("http://localhost:3000/api/logout", {
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API_URL}/api/logout`, {
         method: "POST",
         credentials: "include", // Ensures cookies are included in the request
         headers: {

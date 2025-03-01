@@ -71,13 +71,16 @@ const Login = () => {
         requestBody.Mobile = formData.email;
       }
 
-      const response = await fetch("http://localhost:3000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const data = await response.json();
 
@@ -124,15 +127,18 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/send-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          emailOrMobile: emailOrMobile,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/send-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            emailOrMobile: emailOrMobile,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (response.ok) {
@@ -170,15 +176,18 @@ const Login = () => {
 
   const handleOtpSubmit = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/validate-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          otp: otp,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/validate-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            otp: otp,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (response.ok) {

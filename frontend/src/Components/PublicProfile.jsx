@@ -36,7 +36,7 @@ const PublicProfile = () => {
       const token = localStorage.getItem("token");
       try {
         const response = await fetch(
-          "http://localhost:3000/api/fetch-messages",
+          `${import.meta.env.VITE_PUBLIC_API_URL}/api/fetch-messages`,
           {
             method: "POST",
             headers: {
@@ -103,14 +103,17 @@ const PublicProfile = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:3000/api/update-profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formDataToSend),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/update-profile`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formDataToSend),
+        }
+      );
 
       const data = await response.json();
       console.log("Server Response:", data);
@@ -142,7 +145,7 @@ const PublicProfile = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        "http://localhost:3000/api/validateprofileotp",
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/validateprofileotp`,
         {
           method: "POST",
           headers: {
@@ -192,7 +195,7 @@ const PublicProfile = () => {
         console.log("the state after change", data.isBlocked);
         // Refresh messages to reflect block status
         const fetchResponse = await fetch(
-          "http://localhost:3000/api/fetch-messages",
+          `${import.meta.env.VITE_PUBLIC_API_URL}/api/fetch-messages`,
           {
             method: "POST",
             headers: {

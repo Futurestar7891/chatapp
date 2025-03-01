@@ -20,7 +20,7 @@ const Fetchchatlist = ({ socket }) => {
     try {
       const token = localStorage.getItem("token"); // Get the token from localStorage
       const response = await fetch(
-        "http://localhost:3000/api/search-chatlist",
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-chatlist`,
         {
           method: "POST",
           headers: {
@@ -68,7 +68,7 @@ const Fetchchatlist = ({ socket }) => {
       try {
         const token = localStorage.getItem("token"); // Get the token from localStorage
         const response = await fetch(
-          "http://localhost:3000/api/search-contact",
+          `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
           {
             method: "POST",
             headers: {

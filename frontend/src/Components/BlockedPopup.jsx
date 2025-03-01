@@ -9,14 +9,17 @@ function Blockedpopup() {
     const blockedUserId = selectedUser._id;
 
     try {
-      const response = await fetch("http://localhost:3000/api/unblock-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ blockedUserId }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/unblock-user`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ blockedUserId }),
+        }
+      );
       const data = await response.json();
       if (response.ok) {
         setIsBlocked(false);

@@ -18,7 +18,7 @@ export const StateProvider = ({ children }) => {
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false); // Global block state
-  
+
   const [showuserpublicprofiledata, setShowUserPublicProfileData] = useState(
     {}
   );
@@ -49,7 +49,6 @@ export const StateProvider = ({ children }) => {
       setMessages,
       isBlocked,
       setIsBlocked,
-     
     }),
     [
       showpublicprofile,
@@ -64,7 +63,6 @@ export const StateProvider = ({ children }) => {
       messages,
       selectedUser,
       isBlocked,
-      
     ]
   );
 

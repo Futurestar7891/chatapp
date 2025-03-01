@@ -58,14 +58,17 @@ const FetchMessages = ({ socket }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token"); // Add token for authenticated request
-      const response = await fetch("http://localhost:3000/api/fetch-messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ senderid: senderId, receiverid: receiverId }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/fetch-messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ senderid: senderId, receiverid: receiverId }),
+        }
+      );
 
       const data = await response.json();
       if (data.success) {
@@ -87,14 +90,17 @@ const FetchMessages = ({ socket }) => {
   const fetchChatListAndJoinRooms = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:3000/api/chat-list", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ userId: senderId }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/chat-list`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ userId: senderId }),
+        }
+      );
       const data = await response.json();
       if (data.success) {
         data.chatList.forEach((chat) => {
@@ -261,24 +267,27 @@ const FetchMessages = ({ socket }) => {
 
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:3000/api/send-receive", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Add token
-          },
-          body: JSON.stringify({
-            senderid: senderId,
-            receiverid: receiverId,
-            message: {
-              senderId,
-              receiverId,
-              text: messageInput,
-              files: filesWithData,
-              sentTime,
+        const response = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/api/send-receive`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // Add token
             },
-          }),
-        });
+            body: JSON.stringify({
+              senderid: senderId,
+              receiverid: receiverId,
+              message: {
+                senderId,
+                receiverId,
+                text: messageInput,
+                files: filesWithData,
+                sentTime,
+              },
+            }),
+          }
+        );
 
         const data = await response.json();
         if (!data.success) {

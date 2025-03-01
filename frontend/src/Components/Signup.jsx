@@ -41,19 +41,22 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:3000/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          Name: formData.name,
-          Email: formData.email,
-          Mobile: formData.mobile,
-          Password: formData.password,
-          Photo: formData.photo,
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            Name: formData.name,
+            Email: formData.email,
+            Mobile: formData.mobile,
+            Password: formData.password,
+            Photo: formData.photo,
+          }),
+        }
+      );
 
       const data = await response.json();
 

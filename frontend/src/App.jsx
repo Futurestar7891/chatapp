@@ -13,7 +13,7 @@ const App = () => {
   const navigate = useNavigate(); // For manual navigation
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3000", {
+    const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
       withCredentials: true,
       transports: ["websocket", "polling"],
     });
