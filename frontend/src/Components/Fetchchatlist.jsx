@@ -19,10 +19,10 @@ const Fetchchatlist = ({ socket }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token"); // Get the token from localStorage
-      const response = await fetch(
+      const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-chatlist`,
+        {}, // Empty body since no data is being sent
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`, // Include the token in the headers
@@ -30,7 +30,7 @@ const Fetchchatlist = ({ socket }) => {
         }
       );
 
-      const data = await response.json();
+      const data = response.data;
       if (data.success) {
         setChatUsers(data.users);
         setFilteredUsers(data.users); // Initialize filteredUsers with all users
