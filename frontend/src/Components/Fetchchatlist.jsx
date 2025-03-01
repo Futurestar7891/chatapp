@@ -5,6 +5,7 @@ import _ from "lodash";
 import FilteredUsers from "./FilteredUsers";
 import Options from "./Options";
 import { StateContext } from "../main";
+import axios from "axios";
 
 const Fetchchatlist = ({ socket }) => {
   const [search, setSearch] = useState("");
