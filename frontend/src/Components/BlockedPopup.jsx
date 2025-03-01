@@ -1,7 +1,7 @@
 import { StateContext } from "../main";
 import { useContext } from "react";
 
-function Blockedpopup() {
+const Blockedpopup = () => {
   const { selectedUser, setIsBlocked } = useContext(StateContext);
 
   const handleUnblockClick = async () => {
@@ -46,6 +46,6 @@ function Blockedpopup() {
       </p>
     </div>
   );
-}
+};
 
 export default Blockedpopup;
