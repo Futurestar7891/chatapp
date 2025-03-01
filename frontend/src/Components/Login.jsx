@@ -72,7 +72,7 @@ const Login = () => {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/api/login`,
+        `https://chatapp-tolv.onrender.com/api/login`,
         {
           method: "POST",
           headers: {
