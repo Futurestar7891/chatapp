@@ -1,6 +1,6 @@
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
 import { useContext } from "react";
-
+import "../../Css/BlockedPopup.css";
 const Blockedpopup = () => {
   const { selectedUser, setIsBlocked } = useContext(StateContext);
 

@@ -1,6 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
+import { StateContext } from "../../main";
+import "../../Css/RecordAudio.css";
 
-const RecordeAudio = ({ onRecordingComplete, setShowAudioRecorder }) => {
+const RecordeAudio = ({ onRecordingComplete }) => {
+  const { setShowAudioRecorder } = useContext(StateContext);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -39,7 +42,7 @@ const RecordeAudio = ({ onRecordingComplete, setShowAudioRecorder }) => {
         });
         setAudioBlob(audioBlob);
         setIsRecording(false);
-        onRecordingComplete(audioBlob);
+        handleRecordingComplete(audioBlob);
         audioChunksRef.current = [];
         mediaRecorderRef.current.stream
           .getTracks()
@@ -65,10 +68,31 @@ const RecordeAudio = ({ onRecordingComplete, setShowAudioRecorder }) => {
     }
   };
 
+  const handleRecordingComplete = (audioBlob) => {
+    if (audioBlob) {
+      const audioFile = new File([audioBlob], "recording.wav", {
+        type: "audio/wav",
+      });
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Data = reader.result.split(",")[1];
+        const audioMessage = {
+          name: "recording.wav",
+          type: "audio/wav",
+          data: base64Data,
+        };
+        onRecordingComplete(audioMessage);
+      };
+      reader.readAsDataURL(audioFile);
+    } else {
+      onRecordingComplete(null);
+    }
+    setShowAudioRecorder(false);
+  };
+
   const handleRemove = () => {
     setAudioBlob(null);
-    setShowAudioRecorder(false);
-    onRecordingComplete(null);
+    handleRecordingComplete(null);
   };
 
   const formatTime = (seconds) => {

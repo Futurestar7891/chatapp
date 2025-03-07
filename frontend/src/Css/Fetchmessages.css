@@ -1,0 +1,133 @@
+.Chatapprightdiv {
+  width: 73%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.Chatapprightdivtopdiv {
+  height: 7%;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.Chatapprightdivtopdiv > img {
+  width: 3%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  margin-left: 2%;
+  margin-right: 2%;
+  cursor: pointer;
+}
+
+.Chatapprightdivdowndiv {
+  width: 100%;
+  height: 82%;
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 1vh 1vw;
+}
+
+
+.Chatapprightdivmessagediv {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgb(45, 44, 44);
+  padding: 0 10px;
+}
+
+.Attachfile {
+  width: 5%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.Chatapprightdivmessagediv input {
+  width: 70%;
+  height: 50%;
+  border-radius: 10px;
+  border: none;
+  padding: 0 10px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #000;
+}
+
+.sendmessage {
+  width: 5%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.loader-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Styling for no-receiverId case */
+.no-receiver-message {
+  background-color: rgb(70, 69, 69);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: black;
+  font-size: 2vw;
+  height: 100%;
+}
+
+/* Styling for error or no-login case */
+.error-message {
+  padding: 20px;
+  color: red;
+}
+
+/* Styling for empty message div when no receiverId or socket */
+.empty-message-div {
+  background-color: rgb(70, 69, 69);
+  width: 100%;
+  height: 100%;
+}

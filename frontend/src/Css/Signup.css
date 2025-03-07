@@ -1,0 +1,146 @@
+.Loginmaindiv {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  padding: 0 10px;
+  background-position: center;
+  background-size: fill;
+}
+
+.Loginmaindiv form {
+  width: 25%;
+  border-radius: 8px;
+  padding: 30px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.Loginmaindiv form h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.Loginmaindiv .Logininput,
+.Loginmaindiv .logininput {
+  position: relative;
+  border-bottom: 2px solid #ccc;
+  margin: 15px 0;
+}
+
+.Loginmaindiv .Logininput label,
+.Loginmaindiv .logininput label {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  color: #fff;
+  font-size: 16px;
+  pointer-events: none;
+  transition: 0.15s ease;
+}
+
+.Loginmaindiv .Logininput input,
+.Loginmaindiv .logininput input {
+  width: 100%;
+  height: 40px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #fff;
+}
+
+.Loginmaindiv .Logininput input:focus ~ label,
+.Loginmaindiv .Logininput input:valid ~ label,
+.Loginmaindiv .logininput input:focus ~ label,
+.Loginmaindiv .logininput input:valid ~ label {
+  font-size: 0.8rem;
+  top: 10px;
+  transform: translateY(-120%);
+}
+
+.Loginmaindiv form button {
+  background: #fff;
+  color: #000;
+  font-weight: 600;
+  border: none;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 16px;
+  border: 2px solid transparent;
+  transition: 0.3s ease;
+}
+
+.Loginmaindiv form button:hover {
+  color: #fff;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.Loginmaindiv .register {
+  text-align: center;
+  margin-top: 30px;
+  color: #fff;
+}
+
+.Loginmaindiv .register a {
+  color: #efefef;
+  text-decoration: none;
+}
+
+.Loginmaindiv .register a:hover {
+  text-decoration: underline;
+}
+
+.image-picker {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 20px auto;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.default-icon {
+  font-size: 60px;
+  color: #fff;
+}
+
+.camera-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 5px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.camera-icon svg {
+  color: #000;
+  font-size: 18px;
+}

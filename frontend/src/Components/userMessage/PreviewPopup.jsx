@@ -6,7 +6,8 @@ import {
   faFileWord,
   faFileAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
+import "../../Css/PreviewPopup.css";
 
 const PreviewPopup = () => {
   const {

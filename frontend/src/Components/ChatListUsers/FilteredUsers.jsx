@@ -1,5 +1,6 @@
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
 import { useContext } from "react";
+import "../../Css/FilteredUsers.css";
 
 const FilteredUsers = ({ user }) => {
   const { setShowPublicProfile, setSelectedUser } = useContext(StateContext);
@@ -11,6 +12,7 @@ const FilteredUsers = ({ user }) => {
     user.Name.length > 15 ? user.Name.substring(0, 15) + "..." : user.Name;
 
   const handleClick = () => {
+    setSelectedUser({});
     setSelectedUser(user);
     setShowPublicProfile(false);
   };

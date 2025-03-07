@@ -1,0 +1,23 @@
+.emoji-picker-container {
+  position: relative;
+  z-index: 2; /* Ensure it appears above other elements */
+}
+
+.emoji-picker-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem; /* Large emoji button for visibility */
+  cursor: pointer;
+  padding: 5px;
+  color: #fff; /* White color assuming a dark chat background */
+}
+
+.emoji-picker-button:hover {
+  opacity: 0.8; /* Slight fade on hover for interactivity */
+}
+
+.emoji-picker-wrapper {
+  position: absolute;
+  bottom: 40px; /* Positioned above the button */
+  left: 0;
+}

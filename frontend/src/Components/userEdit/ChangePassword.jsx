@@ -1,6 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
+import "../../Css/ChangePassword.css";
 const ChangePassword = () => {
   const navigate = useNavigate();
   const location = useLocation();

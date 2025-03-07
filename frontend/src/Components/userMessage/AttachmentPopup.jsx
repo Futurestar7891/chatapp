@@ -8,7 +8,8 @@ import {
   faFile,
   faMicrophone,
 } from "@fortawesome/free-solid-svg-icons";
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
+import "../../Css/AttachmentPopup.css";
 
 const AttachmentPopup = () => {
   const { setSelectedFiles, setShowAttachmentPopup, setShowPreviewPopup } =

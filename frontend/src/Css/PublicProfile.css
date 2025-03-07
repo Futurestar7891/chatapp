@@ -1,0 +1,184 @@
+.PublicProilemaindiv {
+  position: absolute;
+  right: 0%;
+  width: 25%;
+  height: 100%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: rgb(45, 44, 44);
+}
+
+.PublicProfiletopdiv {
+  width: 100%;
+  height: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.PublicProfiletopdiv > img {
+  width: 20%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.PublicProfilemiddiv {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 10%;
+  border: 2px solid red;
+}
+
+.PublicProfilemiddiv > button {
+  background-color: transparent;
+  width: 12%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.PublicProfilebiodiv {
+  margin-top: 1%;
+  width: 95%;
+  height: fit-content;
+  text-align: left;
+  text-wrap: break-word;
+}
+
+.PublicProfiledowndiv {
+  margin-top: 2%;
+  width: 95%;
+  min-height: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  border: 2px solid green;
+}
+
+.PublicProfiledowndiv > p {
+  width: 100%;
+  min-height: 2vh;
+  text-wrap: break-word;
+  text-align: left;
+  margin: 2% 0%;
+}
+
+.otp-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.otp-popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.otp-popup-content h3 {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.otp-popup-content p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.otp-popup-content input {
+  width: 80%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.otp-popup-content button {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  background: #007bff;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.otp-popup-content button:hover {
+  background: #0056b3;
+}
+
+.otp-popup-content button:last-child {
+  background: #dc3545;
+}
+
+.otp-popup-content button:last-child:hover {
+  background: #a71d2a;
+}
+
+.editpublicprofilename {
+  width: 50%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 5%;
+  text-align: center;
+  font-size: 100%;
+}
+
+.editpublicprofileemail,
+.editpublicprofilemobile {
+  width: 100%;
+  background: transparent;
+  padding: 2%;
+  outline: white;
+  margin-bottom: 1%;
+  align-content: center;
+}
+
+.editpublicprofilebio {
+  width: 100%;
+  background: transparent;
+  padding: 5%;
+  outline: white;
+}
+
+.editprofilesavebutton {
+  width: 100%;
+  padding: 3%;
+  background-color: #28a745;
+  align-self: center;
+  font-size: large;
+  cursor: pointer;
+}
+
+.editprofileeditbutton,
+.blockuserbutton {
+  width: 100%;
+  padding: 3%;
+  background-color: #de622e;
+  align-self: center;
+  font-size: large;
+  cursor: pointer;
+}

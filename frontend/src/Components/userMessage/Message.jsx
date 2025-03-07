@@ -4,6 +4,7 @@ import {
   faFileWord,
   faFileAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import "../../Css/Message.css";
 
 const Message = ({ message, isSent, userphoto }) => {
   const getFileIcon = (fileType) => {

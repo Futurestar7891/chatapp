@@ -1,8 +1,9 @@
 import { useContext, useRef } from "react";
-import Fetchchatlist from "./Fetchchatlist";
-import Fetchmessages from "./Fetchmessages";
-import PublicProfile from "./PublicProfile";
+import Fetchchatlist from "./ChatListUsers/Fetchchatlist";
+import Fetchmessages from "./userMessage/Fetchmessages";
+import PublicProfile from "./userEdit/PublicProfile";
 import { StateContext } from "../main";
+import "../Css/Chatapp.css";
 
 function ChatApp({ socket }) {
   const { showpublicprofile, setShowPublicProfile } = useContext(StateContext);

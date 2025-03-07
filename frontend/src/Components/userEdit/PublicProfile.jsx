@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faMessage,
@@ -7,6 +7,7 @@ import {
   faVideo,
   faFile,
 } from "@fortawesome/free-solid-svg-icons";
+import "../../Css/PublicProfile.css";
 
 const PublicProfile = () => {
   const {

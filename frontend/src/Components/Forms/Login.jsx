@@ -1,7 +1,8 @@
 import { useState, useEffect, useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
 import axios from "axios";
+import "../../Css/Login.css";
 
 const Login = () => {
   const navigate = useNavigate();

@@ -4,55 +4,95 @@ import { useState, useEffect, useCallback, useContext, useMemo } from "react";
 import _ from "lodash";
 import FilteredUsers from "./FilteredUsers";
 import Options from "./Options";
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
 import axios from "axios";
+import "../../Css/Fetchchatlist.css";
 
-const Fetchchatlist = ({ socket }) => {
+const Fetchchatlist = ({socket}) => {
   const [search, setSearch] = useState("");
   const [chatusers, setChatUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { showbar, setShowbar, setSelectedUser } = useContext(StateContext);
+  const [loading, setLoading] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
+  const { showbar, setShowbar, setSelectedUser } =
+    useContext(StateContext);
 
-  // Function to fetch chat list
-  const fetchChatList = useCallback(async () => {
-    setLoading(true);
+  const senderId = localStorage.getItem("id");
+
+  const getCacheKey = useCallback(() => {
+    return `chatList_${senderId}`;
+  }, [senderId]);
+
+  const fetchChatListFromApi = useCallback(async () => {
+    if (!senderId || !socket) return null;
+
     try {
-      const token = localStorage.getItem("token"); // Get the token from localStorage
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-chatlist`,
-        {}, // Empty body since no data is being sent
+        {},
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the token in the headers
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       const data = response.data;
       if (data.success) {
-        setChatUsers(data.users);
-        setFilteredUsers(data.users); // Initialize filteredUsers with all users
+        return data.users || [];
       }
+      throw new Error(data.message || "Failed to fetch chat list");
     } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching chat list:", error);
+      return null;
     }
-  }, []); // Remove Mobile dependency
+  }, [senderId, socket]);
 
-  // Fetch chat list on component mount
+  const loadChatList = useCallback(async () => {
+    if (!senderId || !socket) return;
+
+    const cacheKey = getCacheKey();
+    const cachedChatList = sessionStorage.getItem(cacheKey);
+
+    if (cachedChatList) {
+      const parsedChatList = JSON.parse(cachedChatList);
+      setChatUsers(parsedChatList);
+      setFilteredUsers(parsedChatList);
+    }
+
+    setLoading(true);
+    const freshUsers = await fetchChatListFromApi();
+    setLoading(false);
+    setHasFetched(true);
+
+    if (freshUsers) {
+      setChatUsers(freshUsers);
+      setFilteredUsers(freshUsers);
+      sessionStorage.setItem(cacheKey, JSON.stringify(freshUsers));
+
+      freshUsers.forEach((user) => {
+        const roomId = [senderId, user._id].sort().join("-");
+        socket.emit("joinRoom", roomId);
+        console.log(`Proactively joined room: ${roomId}`);
+      });
+    }
+  }, [senderId, socket, getCacheKey, fetchChatListFromApi]);
+
   useEffect(() => {
-    fetchChatList();
-  }, [fetchChatList]);
+    loadChatList();
+  }, [loadChatList]);
 
-  // Listen for new messages and refresh chat list
+  // Add socket listener for new messages
   useEffect(() => {
     if (socket) {
-      const handleReceiveMessage = () => {
-        fetchChatList(); // Re-fetch the chat list whenever a new message is received
+      console.log("message is here");
+      const handleReceiveMessage = (newMessage) => {
+        console.log("Chatlist received message:", newMessage);
+        // Refresh chat list when a message is sent or received
+        loadChatList();
       };
 
       socket.on("receiveMessage", handleReceiveMessage);
@@ -61,60 +101,52 @@ const Fetchchatlist = ({ socket }) => {
         socket.off("receiveMessage", handleReceiveMessage);
       };
     }
-  }, [socket, fetchChatList]);
+  }, [socket, loadChatList]);
 
-  // Function to fetch contacts
-  const fetchContacts = useCallback(
-    async (keyword) => {
-      try {
-        const token = localStorage.getItem("token"); // Get the token from localStorage
-        const response = await axios.post(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
-          { keyword }, // Request body
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, // Include the token in the headers
-            },
-          }
-        );
-
-        const data = response.data;
-
-        if (data.success) {
-          setContacts(data.contacts);
+  const fetchContacts = useCallback(async (keyword) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
+        { keyword },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-      } catch (error) {
-        console.error("Error fetching contacts:", error);
-      }
-    },
-    [] // Remove Mobile dependency
-  );
+      );
 
-  // Debounced search handler
+      const data = response.data;
+      if (data.success) {
+        setContacts(data.contacts);
+      }
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+    }
+  }, []);
+
   const handleSearch = useCallback(
     _.debounce((keyword) => {
       if (keyword.trim() === "") {
-        setFilteredUsers(chatusers); // Reset to all users if search is empty
-        setContacts([]); // Clear contacts
+        setFilteredUsers(chatusers);
+        setContacts([]);
       } else {
         const filtered = chatusers.filter((user) =>
           user.Name.toLowerCase().includes(keyword.toLowerCase())
         );
         setFilteredUsers(filtered);
 
-        // Fetch contacts only if filtered users are 5 or fewer
         if (filtered.length <= 5) {
           fetchContacts(keyword);
         } else {
-          setContacts([]); // Clear contacts if filtered users are more than 5
+          setContacts([]);
         }
       }
     }, 300),
     [chatusers, fetchContacts]
   );
 
-  // Handle input change
   const handleInputChange = useCallback(
     (e) => {
       const keyword = e.target.value;
@@ -124,7 +156,6 @@ const Fetchchatlist = ({ socket }) => {
     [handleSearch]
   );
 
-  // Memoize the rendered chat list to avoid unnecessary re-renders
   const renderedChatList = useMemo(() => {
     return filteredUsers.map((user, index) => (
       <div
@@ -137,7 +168,6 @@ const Fetchchatlist = ({ socket }) => {
     ));
   }, [filteredUsers, setSelectedUser]);
 
-  // Memoize the rendered contacts list
   const renderedContacts = useMemo(() => {
     return contacts.map((contact, index) => (
       <div
@@ -149,6 +179,16 @@ const Fetchchatlist = ({ socket }) => {
       </div>
     ));
   }, [contacts, setSelectedUser]);
+
+  if (!senderId) {
+    return (
+      <div className="Chatappleftdiv">
+        <div style={{ padding: "20px", color: "red" }}>
+          Please log in to use the chat.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="Chatappleftdiv">
@@ -168,8 +208,7 @@ const Fetchchatlist = ({ socket }) => {
         />
       </div>
 
-      {/* Inline Loader */}
-      {loading ? (
+      {loading && chatusers.length === 0 ? (
         <div className="loader-container">
           <div className="loader"></div>
         </div>
@@ -178,7 +217,6 @@ const Fetchchatlist = ({ socket }) => {
           {filteredUsers.length > 0 && <h2>Chats</h2>}
           {renderedChatList}
 
-          {/* Show contacts if filtered users are 5 or fewer */}
           {filteredUsers.length <= 5 && contacts.length > 0 && (
             <div className="Otherusers">
               <h2>Other Contacts</h2>
@@ -186,10 +224,9 @@ const Fetchchatlist = ({ socket }) => {
             </div>
           )}
         </div>
-      ) : (
+      ) : hasFetched && chatusers.length === 0 ? (
         <div className="Searchusers">Chat not found</div>
-      )}
-
+      ) : null}
       {showbar ? <Options /> : ""}
     </div>
   );

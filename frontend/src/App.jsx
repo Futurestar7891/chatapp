@@ -3,10 +3,10 @@ import { io } from "socket.io-client";
 import ChatApp from "./Components/ChatApp";
 import "./App.css";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import Login from "./Components/Login";
-import Signup from "./Components/Signup";
-import Options from "./Components/Options";
-import ChangePassword from "./Components/ChangePassword";
+import Login from "./Components/Forms/Login";
+import Signup from "./Components/Forms/Signup";
+import Options from "./Components/ChatListUsers/Options";
+import ChangePassword from "./Components/userEdit/ChangePassword";
 
 const App = () => {
   const [socket, setSocket] = useState(null);

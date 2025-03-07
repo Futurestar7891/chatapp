@@ -77,8 +77,6 @@ MessageSchema.statics.sendMessage = async function (
       throw new Error(`Receiver with ID ${receiverId} not found`);
     }
 
-
-
     // Check if receiver has blocked sender
     const isBlockedByReceiver = receiver.BlockedUsers.some((blocked) =>
       blocked.userId.equals(senderId)
@@ -105,9 +103,9 @@ MessageSchema.statics.sendMessage = async function (
       receiverId: receiverObjectId,
       text: message.text || "",
       files: uploadedFiles,
-      sentTime: new Date(message.sentTime),
+      sentTime: new Date(message.sentTime || Date.now()),
       receivedTime: null,
-      blockedId: isBlockedByReceiver ? senderObjectId : null, // Set blockedId to senderId if blocked by receiver
+      blockedId: isBlockedByReceiver ? senderObjectId : null, // Set blockedId if blocked by receiver
     };
 
     if (!conversation) {
@@ -121,45 +119,41 @@ MessageSchema.statics.sendMessage = async function (
 
     await conversation.save();
 
+    // Fetch the updated conversation with the saved message
     conversation = await this.findOne({
       participants: { $all: [senderObjectId, receiverObjectId] },
     });
-    const savedMessage = conversation.messages[conversation.messages.length - 1];
+    const savedMessage =
+      conversation.messages[conversation.messages.length - 1];
 
-    const updateChatList = async (userId, otherUserId, sentTime, receivedTime) => {
+    // Function to update ChatList
+    const updateChatList = async (userId, otherUserId, timestamp) => {
       const user = await UserSchema.findById(userId);
       if (user) {
         const chatEntry = user.ChatList.find((chat) =>
           chat.userId.equals(otherUserId)
         );
-        const lastMessageTime = userId === senderId ? sentTime : receivedTime;
         if (chatEntry) {
-          chatEntry.lastMessageTime = lastMessageTime;
+          chatEntry.lastMessageTime = timestamp;
         } else {
           user.ChatList.push({
             userId: otherUserId,
-            lastMessageTime: lastMessageTime,
+            lastMessageTime: timestamp,
           });
         }
         await user.save();
       }
     };
 
-    savedMessage.receivedTime = new Date();
-    await conversation.save();
+    // Update sender's ChatList with sentTime (always, even if blocked)
+    await updateChatList(senderId, receiverId, savedMessage.sentTime);
 
-    await updateChatList(
-      senderId,
-      receiverId,
-      savedMessage.sentTime,
-      savedMessage.receivedTime
-    );
-    await updateChatList(
-      receiverId,
-      senderId,
-      savedMessage.sentTime,
-      savedMessage.receivedTime
-    );
+    // Only update receiver's ChatList if not blocked
+    if (!isBlockedByReceiver) {
+      savedMessage.receivedTime = new Date();
+      await conversation.save();
+      await updateChatList(receiverId, senderId, savedMessage.receivedTime);
+    }
 
     // Only emit if receiver hasn't blocked sender
     if (!isBlockedByReceiver) {
@@ -167,7 +161,9 @@ MessageSchema.statics.sendMessage = async function (
       io.to(roomId).emit("receiveMessage", {
         ...savedMessage._doc,
         sentTime: savedMessage.sentTime.toISOString(),
-        receivedTime: savedMessage.receivedTime.toISOString(),
+        receivedTime: savedMessage.receivedTime
+          ? savedMessage.receivedTime.toISOString()
+          : null,
       });
       console.log(`Emitted message to room ${roomId}`);
     } else {

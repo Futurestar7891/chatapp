@@ -1,6 +1,6 @@
 import { useState } from "react";
 import EmojiPicker from "emoji-picker-react";
-
+import "../../Css/EmojiPicker.css";
 const EmojisPicker = ({ onEmojiSelect }) => {
   const [showPicker, setShowPicker] = useState(false);
 

@@ -1,0 +1,43 @@
+.Filtereduserleftdiv {
+  width: 70%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.Filtereduserphoto {
+  width: 30%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Filtereduserleftdiv > div > img {
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 100%;
+  object-fit: cover;
+}
+
+.Filteredusernamedetail {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.Filtereduserleftdiv > div > h2,
+.Filtereduserleftdiv > div > p,
+.Filtereduserrightdiv > p {
+  font-size: 90%;
+}
+
+.Filtereduserrightdiv {
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}

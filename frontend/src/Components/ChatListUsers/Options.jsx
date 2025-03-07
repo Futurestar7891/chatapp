@@ -1,6 +1,8 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { StateContext } from "../main";
+import { StateContext } from "../../main";
+import axios from "axios"; // Make sure to import axios
+import "../../Css/Options.css";
 
 const Options = ({ socket }) => {
   const {
@@ -21,39 +23,57 @@ const Options = ({ socket }) => {
 
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      // Notify the server to invalidate the token (or destroy the session)
-      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API_URL}/api/logout`, {
-        method: "POST",
-        credentials: "include", // Ensures cookies are included in the request
+
+const handleLogout = async () => {
+  try {
+    // Notify the server to invalidate the token (or destroy the session)
+    const response = await axios.post(
+      `${import.meta.env.VITE_PUBLIC_API_URL}/api/logout`,
+      {}, // No body needed, empty object
+      {
+        withCredentials: true, // Equivalent to credentials: "include"
         headers: {
           "Content-Type": "application/json",
         },
-      });
-
-      if (response.ok) {
-        // Remove the token from local storage
-        localStorage.removeItem("token");
-
-        // Notify the server via socket
-        if (socket) {
-          socket.emit("logout");
-        }
-        setShowPublicProfile(false);
-        setShowbar(false);
-
-        // Redirect to login
-        console.log("logout already");
-        navigate("/login", { replace: true });
-      } else {
-        console.error("Failed to logout:", await response.text());
       }
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
+    );
+    
+    const data=response.data;
+    // Axios resolves with response.data when successful
+    // No need to check response.ok as Axios throws for non-2xx responses
+    // Remove the token from local storage
+    if(data.success){
+         localStorage.removeItem("token");
 
+         // Notify the server via socket
+         if (socket) {
+           socket.emit("logout");
+         }
+         setShowPublicProfile(false);
+         setShowbar(false);
+
+         // Redirect to login
+         console.log("logout already");
+         navigate("/login", { replace: true });
+    }
+    else{
+      console.log(data);
+    }
+ 
+  } catch (error) {
+    // Axios error handling
+    if (error.response) {
+      // Server responded with a status outside 2xx
+      console.error("Failed to logout:", error.response.data);
+    } else if (error.request) {
+      // Request was made but no response received
+      console.error("Logout error: No response received", error.request);
+    } else {
+      // Error setting up the request
+      console.error("Logout error:", error.message);
+    }
+  }
+};
   return (
     <div className="Optionsmaindiv">
       <div className="Optionstopdiv">
