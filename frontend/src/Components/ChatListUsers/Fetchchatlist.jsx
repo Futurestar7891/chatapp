@@ -107,7 +107,7 @@ const Fetchchatlist = ({socket}) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/filter-contact`,
         { keyword },
         {
           headers: {

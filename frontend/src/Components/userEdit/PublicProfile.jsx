@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { StateContext } from "../../main";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -16,10 +17,11 @@ const PublicProfile = () => {
     setShowPublicProfile,
     showOtpPopup,
     setShowOtpPopup,
-    setSelectedUser,
     isBlocked,
     setIsBlocked,
+    isInContactList,
   } = useContext(StateContext);
+
   const [isEditing, setIsEditing] = useState(false);
   const [selectImage, setSelectImage] = useState(null);
   const [errors, setErrors] = useState({});
@@ -31,36 +33,9 @@ const PublicProfile = () => {
   });
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(300);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchBlockStatus = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/api/fetch-messages`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              senderid: localStorage.getItem("id"),
-              receiverid: showuserpublicprofiledata._id,
-            }),
-          }
-        );
-        const data = await response.json();
-        if (data.success) {
-          setIsBlocked(data.isBlocked);
-        }
-      } catch (error) {
-        console.error("Error fetching block status:", error);
-      }
-    };
-    if (showuserpublicprofiledata._id) fetchBlockStatus();
-  }, [showuserpublicprofiledata._id, setIsBlocked]);
-
+  // Timer for OTP popup
   useEffect(() => {
     let interval;
     if (showOtpPopup && timer > 0) {
@@ -117,8 +92,6 @@ const PublicProfile = () => {
       );
 
       const data = await response.json();
-      console.log("Server Response:", data);
-
       if (response.ok) {
         localStorage.setItem("Mobile", data.updatedUser.Mobile);
         localStorage.setItem("Photo", data.updatedUser.Photo);
@@ -179,7 +152,7 @@ const PublicProfile = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/${blockendpoint}`,
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/${blockendpoint}`,
         {
           method: "POST",
           headers: {
@@ -193,26 +166,6 @@ const PublicProfile = () => {
       if (response.ok) {
         setIsBlocked(data.isBlocked);
         setShowPublicProfile(false);
-        console.log("the state after change", data.isBlocked);
-        // Refresh messages to reflect block status
-        const fetchResponse = await fetch(
-          `${import.meta.env.VITE_PUBLIC_API_URL}/api/fetch-messages`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              senderid: localStorage.getItem("id"),
-              receiverid: blockedUserId,
-            }),
-          }
-        );
-        const fetchData = await fetchResponse.json();
-        if (fetchData.success) {
-          setIsBlocked(fetchData.isBlocked);
-        }
       } else {
         console.error("Failed to block/unblock user:", data.message);
       }
@@ -251,9 +204,19 @@ const PublicProfile = () => {
         ) : (
           <p>{showuserpublicprofiledata.Name || "No Name"}</p>
         )}
+        {/* Conditionally render Add Contact button */}
+        {showuserpublicprofiledata._id !== localStorage.getItem("id") &&
+          !isInContactList && (
+            <button
+              className="add-contact-button"
+              onClick={() => navigate("/add-contact")}
+            >
+              Add Contact
+            </button>
+          )}
       </div>
       <div className="PublicProfilemiddiv">
-        <button onClick={() => setSelectedUser(showuserpublicprofiledata)}>
+        <button onClick={() => setShowPublicProfile(!showpublicprofile)}>
           <FontAwesomeIcon style={{ fontSize: "2vw" }} icon={faMessage} />
         </button>
         <button>
@@ -320,6 +283,7 @@ const PublicProfile = () => {
           </button>
         )}
       </div>
+
       <div className="PublicProfilecommomgroup">
         <h2>Common Groups</h2>
       </div>

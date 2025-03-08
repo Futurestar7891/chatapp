@@ -18,6 +18,7 @@ const {
   resetPassword,
 } = require("../controllers/useredit");
 const { updateProfile, validateProfileOtp, blockUser, unblockUser, deleteUser } = require("../controllers/manageprofile");
+const { fetchContacts, addContact, searchContact } = require("../controllers/usercontact");
 
 // User authentication routes
 router.post("/signup", signupvalidation, signup);
@@ -32,6 +33,9 @@ router.post("/send-otp", sendOtp); // Fixed typo: removed extra slashes
 router.post("/validate-otp", validateOtp);
 router.post("/reset-password", resetPasswordValidation, resetPassword);
 router.post("/update-profile",authenticateToken,editprofilevalidation,updateProfile);
+router.post("/filter-contact",authenticateToken,fetchContacts);
+router.post("/search-contact",authenticateToken,searchContact);
+router.post("/add-contact",authenticateToken,addContact);
 router.post("/validateprofileotp",authenticateToken,validateProfileOtp);
 router.post("/block-user", authenticateToken,blockUser);
 router.post("/unblock-user", authenticateToken,unblockUser);

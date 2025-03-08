@@ -7,6 +7,7 @@ import Login from "./Components/Forms/Login";
 import Signup from "./Components/Forms/Signup";
 import Options from "./Components/ChatListUsers/Options";
 import ChangePassword from "./Components/userEdit/ChangePassword";
+import AddContact from "./Components/Forms/AddContact";
 
 const App = () => {
   const [socket, setSocket] = useState(null);
@@ -139,6 +140,15 @@ const App = () => {
         element={
           <ProtectedRoute>
             <ChangePassword />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/add-contact"
+        element={
+          <ProtectedRoute>
+            <AddContact />
           </ProtectedRoute>
         }
       />

@@ -1,10 +1,9 @@
 const { validationResult } = require("express-validator");
 const UserSchema = require("../models/user");
 
-
 const addContact = async (req, res) => {
   const errors = validationResult(req);
-
+   console.log("in add contact");
   if (!errors.isEmpty()) {
     const errorobj = {};
     errors.array().forEach((obj) => {
@@ -17,23 +16,25 @@ const addContact = async (req, res) => {
     });
   }
 
-  // Destructure the fields from the request body correctly
-  const { contactemail, contactname, contactmobile, Username } = req.body;
+  // Destructure the fields from the request body
+  const { contactemail, contactname, contactmobile } = req.body;
 
   try {
-    // Find the user who is adding the contact
-    const userexist = await UserSchema.findOne({ Mobile: Username });
-    console.log(Username);
+    // Get the current user's ID from the token (middleware)
+    const currentUserId = req.user.id;
+     console.log(req.body);
+    // Find the current user
+    const currentUser = await UserSchema.findById(currentUserId);
 
-    if (!userexist) {
-      return res.status(400).json({
+    if (!currentUser) {
+      return res.status(404).json({
         success: false,
-        message: "User does not exist",
+        message: "Current user not found",
       });
     }
 
     // Find the user being added as a contact
-    const contactUser = await Userschema.findOne({
+    const contactUser = await UserSchema.findOne({
       $or: [{ Email: contactemail }, { Mobile: contactmobile }],
     });
 
@@ -45,7 +46,7 @@ const addContact = async (req, res) => {
     }
 
     // Prevent adding oneself as a contact
-    if (contactUser._id.toString() === userexist._id.toString()) {
+    if (contactUser._id.toString() === currentUserId.toString()) {
       return res.status(400).json({
         success: false,
         message: "You cannot add yourself as a contact",
@@ -53,10 +54,10 @@ const addContact = async (req, res) => {
     }
 
     // Check if the contact already exists
-    const isAlreadyAdded = userexist.Contacts.some(
+    const isAlreadyAdded = currentUser.Contacts.some(
       (contact) =>
         contact.userId.toString() === contactUser._id.toString() ||
-        contact.contactname.toLowerCase() === contactname.toLowerCase()
+        contact.contactmobile === contactmobile
     );
 
     if (isAlreadyAdded) {
@@ -66,8 +67,8 @@ const addContact = async (req, res) => {
       });
     }
 
-    // Create the new contact object with userId
-    const newcontact = {
+    // Create the new contact object
+    const newContact = {
       userId: contactUser._id, // Add the userId for the contact
       contactemail: contactemail || contactUser.Email,
       contactmobile: contactmobile || contactUser.Mobile,
@@ -75,12 +76,12 @@ const addContact = async (req, res) => {
     };
 
     // Push the new contact into the user's Contacts array
-    userexist.Contacts.push(newcontact);
+    currentUser.Contacts.push(newContact);
 
     // Save the updated user document
-    await userexist.save();
+    await currentUser.save();
 
-    // Send a success response if the contact is saved successfully
+    // Send a success response
     return res.status(200).json({
       success: true,
       message: "Contact added successfully",
@@ -95,12 +96,14 @@ const addContact = async (req, res) => {
 };
 
 
+
+
 const fetchContacts = async (req, res) => {
   const userId = req.user.id; // Extract user ID from the token
   const { keyword } = req.body;
 
   try {
-    const userexist = await Userschema.findById(userId).populate(
+    const userexist = await UserSchema.findById(userId).populate(
       "Contacts.userId"
     );
 
@@ -135,4 +138,48 @@ const fetchContacts = async (req, res) => {
   }
 };
 
-module.exports={addContact,fetchContacts};
+const searchContact = async (req, res) => {
+  try {
+    const userId = req.user.id; // Extracted from the authenticated token
+    const { receiverId } = req.body; // Extract receiverId from the request body
+
+    console.log("Entered in searchContact");
+    console.log("Receiver ID:", receiverId);
+    console.log("Current User ID:", userId);
+
+    if (!receiverId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Receiver ID is required" });
+    }
+
+    // Find the current user and populate the Contacts.userId field
+    const currentUser = await UserSchema.findById(userId).populate(
+      "Contacts.userId"
+    );
+
+    if (!currentUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    console.log("Current User Contacts:", currentUser.Contacts);
+
+    // Check if the receiver is in the contact list
+    const isAlreadyAdded = currentUser.Contacts.some((contact) => {
+      console.log("Contact User ID:", contact.userId?._id.toString());
+      console.log("Receiver ID:", receiverId);
+      return contact.userId?._id.toString() === receiverId;
+    });
+
+    console.log("Is Already Added:", isAlreadyAdded);
+
+    res.status(200).json({ success: true, isInContactList: isAlreadyAdded });
+  } catch (error) {
+    console.error("Error checking contact list:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+module.exports={addContact,fetchContacts,searchContact};

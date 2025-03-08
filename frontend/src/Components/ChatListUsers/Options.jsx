@@ -118,6 +118,14 @@ const handleLogout = async () => {
         >
           <h4>Calls</h4>
         </div>
+        <div
+          onClick={() => {
+            setShowUserPublicProfileData({})
+            navigate("/add-contact")}}
+          className="option-item"
+        >
+          <h4>Add new Contact</h4>
+        </div>
         <div onClick={handleLogout} className="option-item">
           <h4 style={{ color: "red" }}>Logout</h4>
         </div>
