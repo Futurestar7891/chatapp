@@ -1,4 +1,4 @@
-import { useState, createContext, useMemo } from "react";
+import { useState, createContext, useMemo, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
@@ -7,7 +7,21 @@ import { BrowserRouter } from "react-router-dom";
 export const StateContext = createContext();
 
 export const StateProvider = ({ children }) => {
-  const [selectedUser, setSelectedUser] = useState({});
+  // Load persisted data from sessionStorage
+  const getInitialState = (key, defaultValue) => {
+    const storedData = sessionStorage.getItem(key);
+    return storedData ? JSON.parse(storedData) : defaultValue;
+  };
+
+  const [selectedUser, setSelectedUser] = useState(() =>
+    getInitialState("selectedUser", {})
+  );
+
+  const [showuserpublicprofiledata, setShowUserPublicProfileData] = useState(
+    () => getInitialState("showuserpublicprofiledata", {})
+  );
+
+  // Other states
   const [showpublicprofile, setShowPublicProfile] = useState(false);
   const [showbar, setShowbar] = useState(false);
   const [showOtpPopup, setShowOtpPopup] = useState(false);
@@ -17,12 +31,34 @@ export const StateProvider = ({ children }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [isBlocked, setIsBlocked] = useState(false); // Global block state
-  const [isInContactList,setIsInContactList]=useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isInContactList, setIsInContactList] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const [showuserpublicprofiledata, setShowUserPublicProfileData] = useState(
-    {}
-  );
+  // Persist selectedUser and showuserpublicprofiledata on change
+  useEffect(() => {
+    sessionStorage.setItem("selectedUser", JSON.stringify(selectedUser));
+  }, [selectedUser]);
+
+  useEffect(() => {
+    sessionStorage.setItem(
+      "showuserpublicprofiledata",
+      JSON.stringify(showuserpublicprofiledata)
+    );
+  }, [showuserpublicprofiledata]);
+
+  // Handle window resize to update isMobile state
+  useEffect(() => {
+    const handleResize = () => {
+      const newIsMobile = window.innerWidth <= 768;
+      if (newIsMobile !== isMobile) {
+        setIsMobile(newIsMobile);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMobile]);
 
   const stateobj = useMemo(
     () => ({
@@ -52,8 +88,11 @@ export const StateProvider = ({ children }) => {
       setIsBlocked,
       isInContactList,
       setIsInContactList,
+      isMobile,
+      setIsMobile,
     }),
     [
+      selectedUser,
       showpublicprofile,
       showbar,
       showuserpublicprofiledata,
@@ -64,9 +103,9 @@ export const StateProvider = ({ children }) => {
       selectedFiles,
       messageInput,
       messages,
-      selectedUser,
       isBlocked,
       isInContactList,
+      isMobile,
     ]
   );
 

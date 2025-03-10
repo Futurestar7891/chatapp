@@ -3,7 +3,7 @@ const UserSchema = require("../models/user");
 
 const addContact = async (req, res) => {
   const errors = validationResult(req);
-   console.log("in add contact");
+  //  console.log("in add contact");
   if (!errors.isEmpty()) {
     const errorobj = {};
     errors.array().forEach((obj) => {
@@ -22,7 +22,7 @@ const addContact = async (req, res) => {
   try {
     // Get the current user's ID from the token (middleware)
     const currentUserId = req.user.id;
-     console.log(req.body);
+    //  console.log(req.body);
     // Find the current user
     const currentUser = await UserSchema.findById(currentUserId);
 
@@ -164,7 +164,7 @@ const searchContact = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    console.log("Current User Contacts:", currentUser.Contacts);
+    // console.log("Current User Contacts:", currentUser.Contacts);
 
     // Check if the receiver is in the contact list
     const isAlreadyAdded = currentUser.Contacts.some((contact) => {
@@ -173,7 +173,7 @@ const searchContact = async (req, res) => {
       return contact.userId?._id.toString() === receiverId;
     });
 
-    console.log("Is Already Added:", isAlreadyAdded);
+    // console.log("Is Already Added:", isAlreadyAdded);
 
     res.status(200).json({ success: true, isInContactList: isAlreadyAdded });
   } catch (error) {

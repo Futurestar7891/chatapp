@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 
 const fetchChatlist = async (req, res) => {
   const userId = req.user.id; // Extract user ID from the token
-  console.log("i am enterd in fetching chats backend");
+  // console.log("i am enterd in fetching chats backend");
   try {
     // Find the user making the request
     const userexist = await UserSchema.findById(userId)
@@ -84,7 +84,7 @@ const fetchMessage = async (req, res) => {
       entry.userId.equals(receiverid)
     );
 
-    console.log("entered in fetching message");
+    // console.log("entered in fetching message");
 
     const conversation = await MessageSchema.findOne({
       participants: {
@@ -178,7 +178,7 @@ const message = async (req, res) => {
         message: "Sender or receiver does not exist",
       });
     }
-    console.log("here in send recive route");
+    // console.log("here in send recive route");
     const conversation = await MessageSchema.sendMessage(
       io,
       senderid,

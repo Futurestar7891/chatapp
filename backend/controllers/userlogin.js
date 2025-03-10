@@ -7,7 +7,7 @@ const login = async (req, res) => {
   try {
     const errors = validationResult(req);
     const { Email, Mobile, Password } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     const errorobject = {}; // Define errorobject here
 
     if (!errors.isEmpty()) {

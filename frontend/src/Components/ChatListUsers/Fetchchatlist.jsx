@@ -196,7 +196,7 @@ const Fetchchatlist = ({socket}) => {
         <div>
           <FontAwesomeIcon
             onClick={() => setShowbar(!showbar)}
-            style={{ fontSize: "2vw", cursor: "pointer" }}
+            className="baricon"
             icon={faBars}
           />
         </div>

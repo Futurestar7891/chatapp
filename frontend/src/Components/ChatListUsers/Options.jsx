@@ -10,6 +10,7 @@ const Options = ({ socket }) => {
     showbar,
     setShowbar,
     setShowUserPublicProfileData,
+    isMobile
   } = useContext(StateContext);
 
   const SenderDetail = {
@@ -90,9 +91,17 @@ const handleLogout = async () => {
       <div className="Optionsdowndiv">
         <div
           onClick={() => {
-            setShowPublicProfile(true);
-            setShowbar(!showbar);
+            if(isMobile){
+            navigate("/public-profile");
             setShowUserPublicProfileData(SenderDetail);
+            }
+            else{
+              setShowUserPublicProfileData(SenderDetail);
+               setShowPublicProfile(true);
+               setShowbar(!showbar);
+            }
+           
+            
           }}
           className="option-item"
         >

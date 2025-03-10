@@ -6,7 +6,7 @@ import { StateContext } from "../main";
 import "../Css/Chatapp.css";
 
 function ChatApp({ socket }) {
-  const { showpublicprofile, setShowPublicProfile } = useContext(StateContext);
+  const { showpublicprofile, setShowPublicProfile,isMobile } = useContext(StateContext);
 
   // Create a ref for the PublicProfile component
   const publicProfileRef = useRef(null);
@@ -40,7 +40,7 @@ function ChatApp({ socket }) {
         ""
       )}
       <Fetchchatlist socket={socket} />
-      <Fetchmessages socket={socket} />
+      {!isMobile && <Fetchmessages socket={socket} />}
     </div>
   );
 }

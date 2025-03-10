@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { StateContext } from "../../main";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,6 +20,8 @@ const PublicProfile = () => {
     isBlocked,
     setIsBlocked,
     isInContactList,
+    setIsInContactList,
+    isMobile
   } = useContext(StateContext);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -34,6 +36,60 @@ const PublicProfile = () => {
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(300);
   const navigate = useNavigate();
+
+  // Fetch block status and contact list status when the component mounts or when the user data changes
+  useEffect(() => {
+    const fetchBlockAndContactStatus = async () => {
+      if (!showuserpublicprofiledata?._id) return;
+
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("id");
+      const receiverId = showuserpublicprofiledata._id;
+
+      try {
+        // Fetch isBlocked status
+        const blockResponse = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/api/fetch-messages`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              senderid: userId,
+              receiverid: receiverId,
+            }),
+          }
+        );
+        const blockData = await blockResponse.json();
+        if (blockData.success) {
+          setIsBlocked(blockData.isBlocked);
+        }
+
+        // Fetch isInContactList status
+        const contactResponse = await fetch(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ receiverId }),
+          }
+        );
+        const contactData = await contactResponse.json();
+        if (contactData.success) {
+          setIsInContactList(contactData.isInContactList);
+        }
+      } catch (error) {
+        console.error("Error fetching block and contact status:", error);
+      }
+    };
+
+    fetchBlockAndContactStatus();
+  }, [showuserpublicprofiledata, setIsBlocked, setIsInContactList]);
 
   // Timer for OTP popup
   useEffect(() => {
@@ -216,17 +272,25 @@ const PublicProfile = () => {
           )}
       </div>
       <div className="PublicProfilemiddiv">
-        <button onClick={() => setShowPublicProfile(!showpublicprofile)}>
-          <FontAwesomeIcon style={{ fontSize: "2vw" }} icon={faMessage} />
+        <button onClick={() => {
+          if(isMobile){
+            navigate("/fetchmessage");
+          }
+          else{
+             setShowPublicProfile(!showpublicprofile);
+          }
+         
+          }}>
+          <FontAwesomeIcon className="publicprofileicon" icon={faMessage} />
         </button>
         <button>
-          <FontAwesomeIcon style={{ fontSize: "2vw" }} icon={faPhone} />
+          <FontAwesomeIcon className="publicprofileicon" icon={faPhone} />
         </button>
         <button>
-          <FontAwesomeIcon style={{ fontSize: "2vw" }} icon={faVideo} />
+          <FontAwesomeIcon className="publicprofileicon" icon={faVideo} />
         </button>
         <button>
-          <FontAwesomeIcon style={{ fontSize: "2vw" }} icon={faFile} />
+          <FontAwesomeIcon className="publicprofileicon" icon={faFile} />
         </button>
       </div>
       <div className="PublicProfilebiodiv">

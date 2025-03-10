@@ -8,10 +8,12 @@ import Signup from "./Components/Forms/Signup";
 import Options from "./Components/ChatListUsers/Options";
 import ChangePassword from "./Components/userEdit/ChangePassword";
 import AddContact from "./Components/Forms/AddContact";
+import Fetchmessages from "./Components/userMessage/Fetchmessages";
+import PublicProfile from "./Components/userEdit/PublicProfile";
 
 const App = () => {
   const [socket, setSocket] = useState(null);
-  const navigate = useNavigate(); // For manual navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
@@ -43,7 +45,7 @@ const App = () => {
     const checkTokenExpiration = () => {
       const tokenExpiry = localStorage.getItem("tokenExpiry");
       if (tokenExpiry && Date.now() >= tokenExpiry) {
-        handleLogout(); // Call logout if token has expired
+        handleLogout();
       }
     };
 
@@ -53,44 +55,36 @@ const App = () => {
       localStorage.removeItem("id");
       localStorage.removeItem("Mobile");
       window.alert("session expire");
-      navigate("/login", { replace: true }); // Redirect to login page
+      navigate("/login", { replace: true });
     };
 
-    // Set up interval to check token expiration every second
     const interval = setInterval(checkTokenExpiration, 1000);
 
-    return () => clearInterval(interval); // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, [navigate]);
 
-  // Wrapper for protected routes
   const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      // Redirect to the login page if there's no token
       return <Navigate to="/login" replace />;
     }
 
-    // Render the protected component if the token exists
     return children;
   };
 
-  // Wrapper for public routes
   const PublicRoute = ({ children }) => {
     const token = localStorage.getItem("token");
 
     if (token) {
-      // Redirect to the main page (or another protected page) if the token exists
       return <Navigate to="/" replace />;
     }
 
-    // Render the public component if no token exists
     return children;
   };
 
   return (
     <Routes>
-      {/* Public Routes (Only accessible if no token exists) */}
       <Route
         path="/signup"
         element={
@@ -107,7 +101,6 @@ const App = () => {
           </PublicRoute>
         }
       />
-
       <Route
         path="/forgotpassword"
         element={
@@ -116,13 +109,27 @@ const App = () => {
           </PublicRoute>
         }
       />
-
-      {/* Protected Routes (Only accessible if a token exists) */}
       <Route
         path="/"
         element={
           <ProtectedRoute>
             <ChatApp socket={socket} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/fetchmessage"
+        element={
+          <ProtectedRoute>
+            <Fetchmessages socket={socket} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/public-profile"
+        element={
+          <ProtectedRoute>
+            <PublicProfile />
           </ProtectedRoute>
         }
       />
@@ -134,7 +141,6 @@ const App = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/changepassword"
         element={
@@ -143,7 +149,6 @@ const App = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/add-contact"
         element={

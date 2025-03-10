@@ -1,9 +1,11 @@
 import { StateContext } from "../../main";
 import { useContext } from "react";
 import "../../Css/FilteredUsers.css";
+import { useNavigate } from "react-router-dom";
 
 const FilteredUsers = ({ user }) => {
-  const { setShowPublicProfile, setSelectedUser } = useContext(StateContext);
+  const { setShowPublicProfile, setSelectedUser,isMobile } = useContext(StateContext);
+  const navigate=useNavigate();
 
   const lastMessageTime = user.lastMessageTime
     ? new Date(user.lastMessageTime)
@@ -12,6 +14,9 @@ const FilteredUsers = ({ user }) => {
     user.Name.length > 15 ? user.Name.substring(0, 15) + "..." : user.Name;
 
   const handleClick = () => {
+    if(isMobile){
+      navigate("/fetchmessage");
+    }
     setSelectedUser({});
     setSelectedUser(user);
     setShowPublicProfile(false);

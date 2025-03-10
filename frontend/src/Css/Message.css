@@ -6,12 +6,23 @@
   margin-top: 3vh;
 }
 
+@media (max-width: 768px) {
+    .message{
+      width: 70%;
+      margin-top: 4vh;
+      
+    }
+    .sent{
+      flex-direction: row-reverse;
+    }
+}
 .sent {
   background-color: transparent;
   align-self: flex-end;
   margin-right: 1vw;
   text-align: center;
   margin-left: auto;
+  
 }
 
 .received {

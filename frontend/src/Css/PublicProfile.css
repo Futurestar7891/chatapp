@@ -27,6 +27,7 @@
   border-radius: 50%;
 }
 
+
 .PublicProfilemiddiv {
   width: 100%;
   display: flex;
@@ -35,7 +36,9 @@
   height: 10%;
   /* border: 2px solid red; */
 }
-
+.publicprofileicon{
+  font-size: 2vw;
+}
 .PublicProfilemiddiv > button {
   background-color: transparent;
   width: 12%;
@@ -44,6 +47,8 @@
   cursor: pointer;
   border: none;
 }
+
+
 
 .PublicProfilebiodiv {
   margin-top: 1%;
@@ -154,7 +159,7 @@
   background: transparent;
   padding: 2%;
   outline: white;
-  margin-bottom: 1%;
+  margin-bottom: 3%;
   align-content: center;
 }
 
@@ -196,4 +201,93 @@
 
 .add-contact-button:hover {
   color: #218838;
+}
+
+
+@media(max-width:768px){
+  * {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  font-family: "Open Sans", sans-serif;
+}
+   .PublicProilemaindiv{
+    position: none;
+    width: 100vw;
+    height: 100vh;
+   }
+
+   .PublicProfiletopdiv{
+    /* border: 2px solid red; */
+    height: fit-content;
+    justify-content: space-evenly;
+    
+   }
+   .PublicProfiletopdiv > img {
+     min-width: 25%;
+   }
+   .PublicProfiletopdiv>p{
+    font-size: 6vw;
+    color: white;
+   }
+
+.PublicProfilemiddiv > button {
+  width: 16%;
+}
+.PublicProfilemiddiv>p{
+  font-size: 6vw;
+  color: white;
+}
+
+.publicprofileicon{
+  font-size: 7vw;
+}
+
+
+.PublicProfilebiodiv {
+ font-size: 5vw;
+ color: white;
+}
+
+.PublicProfiledowndiv > p {
+ font-size: 5vw;
+ color: white;
+}
+.editpublicprofilename {
+  font-size: 5vw;
+}
+
+.editpublicprofileemail,
+.editpublicprofilemobile {
+ font-size: 5vw;
+}
+
+.editpublicprofilebio {
+font-size: 5vw;
+}
+
+.editprofilesavebutton {
+ font-size: 5vw;
+}
+
+.editprofileeditbutton,
+.blockuserbutton {
+ font-size: 5vw;
+}
+
+
+/* Add Contact Button */
+.add-contact-button {
+  font-size: 4vw;
+
+}
+
+.add-contact-button:hover {
+  color: #218838;
+}
+
+
+
+
 }
