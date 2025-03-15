@@ -1,80 +1,155 @@
+/* Add Contact Container */
+.add-contact-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #f0f2f5;
+}
+
 /* Add Contact Form */
 .add-contact-form {
-  background-color: #f8f9fa;
-  padding: 20px;
+  background-color: #ffffff;
+  padding: clamp(1rem, 5vw, 2rem); /* Dynamic padding */
   border-radius: 10px;
-  margin-top: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: clamp(300px, 90vw, 600px); /* Responsive width */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-top: clamp(1rem, 5vh, 2rem); /* Dynamic margin */
 }
 
 .add-contact-form h3 {
-  margin-bottom: 20px;
-  font-size: 18px;
+  margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  font-size: clamp(1rem, 4vw, 1.5rem); /* Responsive font size */
   color: #333;
+  text-align: center;
 }
 
+/* Form Group */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: clamp(0.75rem, 2vw, 1rem);
 }
 
 .form-group label {
   display: block;
-  font-size: 14px;
+  font-size: clamp(0.8rem, 2.5vw, 1rem); /* Responsive font size */
   color: #555;
-  margin-bottom: 5px;
+  margin-bottom: 0.5rem;
 }
 
 .form-group input {
   width: 100%;
-  padding: 8px;
+  padding: clamp(0.5rem, 1.5vw, 0.75rem); /* Dynamic padding */
   border: 1px solid #ddd;
   border-radius: 5px;
-  font-size: 14px;
+  font-size: clamp(0.8rem, 2.5vw, 1rem); /* Responsive font size */
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
+.form-group input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Error and Success Messages */
 .error-message {
-  color: red;
-  font-size: 14px;
-  margin-top: 10px;
+  color: #dc3545;
+  font-size: clamp(0.75rem, 2vw, 0.9rem); /* Responsive font size */
+  margin-top: 0.5rem;
+  text-align: center;
 }
 
 .success-message {
-  color: green;
-  font-size: 14px;
-  margin-top: 10px;
+  color: #28a745;
+  font-size: clamp(0.75rem, 2vw, 0.9rem); /* Responsive font size */
+  margin-top: 0.5rem;
+  text-align: center;
 }
 
+/* Form Buttons */
 .form-buttons {
   display: flex;
-  gap: 10px;
+  gap: clamp(0.5rem, 1.5vw, 1rem); /* Dynamic gap */
+  justify-content: center;
+  margin-top: clamp(1rem, 3vw, 1.5rem);
+}
+
+.submit-contact-button,
+.cancel-button {
+  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 3vw, 1.5rem); /* Dynamic padding */
+  border: none;
+  border-radius: 5px;
+  font-size: clamp(0.8rem, 2.5vw, 1rem); /* Responsive font size */
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  flex: 1;
+  max-width: 200px; /* Prevent buttons from becoming too wide */
 }
 
 .submit-contact-button {
   background-color: #007bff;
   color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
 }
 
 .submit-contact-button:hover {
   background-color: #0056b3;
+  transform: translateY(-2px);
 }
 
 .cancel-button {
   background-color: #dc3545;
   color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
 }
 
 .cancel-button:hover {
   background-color: #c82333;
+  transform: translateY(-2px);
+}
+
+/* Media Queries for Fine-Tuning */
+
+/* Tablets and Smaller Laptops (max-width: 1024px) */
+@media (max-width: 1024px) {
+  .add-contact-form {
+    max-width: 80vw;
+  }
+}
+
+/* Mobile Devices (max-width: 768px) */
+@media (max-width: 768px) {
+  .add-contact-container {
+    padding: 0.5rem;
+  }
+
+  .add-contact-form {
+    max-width: 90vw;
+    padding: 1rem;
+  }
+
+  .form-buttons {
+    flex-direction: column; /* Stack buttons vertically on small screens */
+    gap: 0.75rem;
+  }
+
+  .submit-contact-button,
+  .cancel-button {
+    max-width: 100%; /* Full width on mobile */
+  }
+}
+
+/* Very Small Devices (max-width: 480px) */
+@media (max-width: 480px) {
+  .add-contact-form h3 {
+    font-size: 1.2rem;
+  }
+
+  .form-group label,
+  .form-group input,
+  .submit-contact-button,
+  .cancel-button {
+    font-size: 0.9rem;
+  }
 }
