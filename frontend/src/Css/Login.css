@@ -1,128 +1,123 @@
-.Loginmaindiv {
+.login-main-div {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh;
   width: 100%;
-  padding: 0 10px;
+  padding: 0 1%;
   background-position: center;
-  background-size: fill;
+  background-size: cover;
 }
 
-.Loginmaindiv form {
+.login-main-div form {
   width: 25%;
-  border-radius: 8px;
-  padding: 30px;
+  border-radius: 0.5rem;
+  padding: 2%;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(0.5rem);
+  -webkit-backdrop-filter: blur(0.5rem);
   background: rgba(255, 255, 255, 0.1);
 }
 
-.Loginmaindiv form h2 {
+.login-main-div form h2 {
   font-size: 2rem;
-  margin-bottom: 20px;
+  margin-bottom: 2%;
   color: #fff;
 }
 
-.Loginmaindiv .Logininput,
-.Loginmaindiv .logininput {
+.login-main-div .login-input {
   position: relative;
-  border-bottom: 2px solid #ccc;
-  margin: 15px 0;
+  border-bottom: 0.125rem solid #ccc;
+  margin: 1.5% 0;
 }
 
-.Loginmaindiv .Logininput label,
-.Loginmaindiv .logininput label {
+.login-main-div .login-input label {
   position: absolute;
   top: 50%;
   left: 0;
   transform: translateY(-50%);
   color: #fff;
-  font-size: 16px;
+  font-size: 1rem;
   pointer-events: none;
   transition: 0.15s ease;
 }
 
-.Loginmaindiv .Logininput input,
-.Loginmaindiv .logininput input {
+.login-main-div .login-input input {
   width: 100%;
-  height: 40px;
+  height: 2.5rem;
   background: transparent;
   border: none;
   outline: none;
-  font-size: 16px;
+  font-size: 1rem;
   color: #fff;
 }
 
-.Loginmaindiv .Logininput input:focus ~ label,
-.Loginmaindiv .Logininput input:valid ~ label,
-.Loginmaindiv .logininput input:focus ~ label,
-.Loginmaindiv .logininput input:valid ~ label {
+.login-main-div .login-input input:focus ~ label,
+.login-main-div .login-input input:valid ~ label {
   font-size: 0.8rem;
-  top: 10px;
+  top: 0.625rem;
   transform: translateY(-120%);
 }
 
-.Loginmaindiv .forgetpassword {
+.login-main-div .login-forget-password {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 25px 0 35px 0;
+  margin: 2.5% 0 3.5%;
   color: #fff;
 }
 
-.Loginmaindiv .forgetpassword #remember {
+.login-main-div .login-forget-password #remember {
   accent-color: #fff;
 }
 
-.Loginmaindiv .forgetpassword label {
+.login-main-div .login-forget-password label {
   display: flex;
   align-items: center;
 }
 
-.Loginmaindiv .forgetpassword label p {
-  margin-left: 8px;
+.login-main-div .login-forget-password label p {
+  margin-left: 0.5rem;
 }
 
-.Loginmaindiv .forgetpassword a,
-.Loginmaindiv .register a {
+.login-main-div .login-forget-password a,
+.login-main-div .login-register a {
   color: #efefef;
   text-decoration: none;
 }
 
-.Loginmaindiv .forgetpassword a:hover,
-.Loginmaindiv .register a:hover {
+.login-main-div .login-forget-password a:hover,
+.login-main-div .login-register a:hover {
   text-decoration: underline;
 }
 
-.Loginmaindiv form button {
+.login-main-div form button {
   background: #fff;
   color: #000;
   font-weight: 600;
   border: none;
-  padding: 12px 20px;
+  padding: 0.75rem 1.25rem;
   cursor: pointer;
-  border-radius: 3px;
-  font-size: 16px;
-  border: 2px solid transparent;
+  border-radius: 0.1875rem;
+  font-size: 1rem;
+  border: 0.125rem solid transparent;
   transition: 0.3s ease;
 }
 
-.Loginmaindiv form button:hover {
+.login-main-div form button:hover {
   color: #fff;
   border-color: #fff;
   background: rgba(255, 255, 255, 0.15);
 }
 
-.Loginmaindiv .register {
+.login-main-div .login-register {
   text-align: center;
-  margin-top: 30px;
+  margin-top: 2%;
   color: #fff;
 }
 
-.otp-popup {
+.login-otp-popup {
   position: fixed;
   top: 0;
   left: 0;
@@ -135,55 +130,210 @@
   z-index: 1000;
 }
 
-.otp-popup-content {
+.login-otp-popup-content {
   background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  padding: 2%;
+  border-radius: 0.625rem;
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.2);
   text-align: center;
-  max-width: 400px;
+  max-width: 25rem;
   width: 90%;
 }
 
-.otp-popup-content h3 {
-  margin-bottom: 10px;
+.login-otp-popup-content h3 {
+  margin-bottom: 1%;
   font-size: 1.5rem;
   color: #333;
 }
 
-.otp-popup-content p {
-  margin-bottom: 20px;
+.login-otp-popup-content p {
+  margin-bottom: 2%;
   color: #666;
 }
 
-.otp-popup-content input {
+.login-otp-popup-content input {
   width: 80%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 0.625rem;
+  margin-bottom: 2%;
+  border: 0.0625rem solid #ccc;
+  border-radius: 0.3125rem;
   font-size: 1rem;
 }
 
-.otp-popup-content button {
-  padding: 10px 20px;
-  margin: 5px;
+.login-otp-popup-content button {
+  padding: 0.625rem 1.25rem;
+  margin: 0.5%;
   border: none;
-  border-radius: 5px;
+  border-radius: 0.3125rem;
   background: #007bff;
   color: white;
   font-size: 1rem;
   cursor: pointer;
 }
 
-.otp-popup-content button:hover {
+.login-otp-popup-content button:hover {
   background: #0056b3;
 }
 
-.otp-popup-content button:last-child {
+.login-otp-popup-content button:last-child {
   background: #dc3545;
 }
 
-.otp-popup-content button:last-child:hover {
+.login-otp-popup-content button:last-child:hover {
   background: #a71d2a;
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+  .login-main-div {
+    padding: 0;
+  }
+
+  .login-main-div form {
+    width: 100%;
+    height: 100vh;
+    padding: 5%;
+    border-radius: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    backdrop-filter: blur(0.75rem);
+    -webkit-backdrop-filter: blur(0.75rem);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .login-main-div form h2 {
+    font-size: 2.5rem;
+    margin-bottom: 5%;
+  }
+
+  .login-main-div .login-input {
+    margin: 3% 0;
+    border-bottom: 0.2rem solid #ccc;
+  }
+
+  .login-main-div .login-input input {
+    height: 3.5rem;
+    font-size: 1.5rem;
+  }
+
+  .login-main-div .login-input label {
+    font-size: 1.25rem;
+  }
+
+  .login-main-div .login-input input:focus ~ label,
+  .login-main-div .login-input input:valid ~ label {
+    font-size: 1rem;
+    top: 0.5rem;
+  }
+
+  .login-main-div .login-forget-password {
+    margin: 5% 0;
+    font-size: 1.25rem;
+  }
+
+  .login-main-div .login-forget-password label p {
+    margin-left: 0.75rem;
+  }
+
+  .login-main-div form button {
+    padding: 1rem 1.5rem;
+    font-size: 1.25rem;
+    border-radius: 0.25rem;
+  }
+
+  .login-main-div .login-register {
+    margin-top: 5%;
+    font-size: 1.25rem;
+  }
+
+  .login-otp-popup-content {
+    width: 95%;
+    padding: 5%;
+    border-radius: 0.5rem;
+    max-width: none;
+  }
+
+  .login-otp-popup-content h3 {
+    font-size: 1.75rem;
+    margin-bottom: 2%;
+  }
+
+  .login-otp-popup-content p {
+    font-size: 1.25rem;
+    margin-bottom: 3%;
+  }
+
+  .login-otp-popup-content input {
+    width: 90%;
+    padding: 0.75rem;
+    margin-bottom: 3%;
+    font-size: 1.25rem;
+    border-radius: 0.375rem;
+  }
+
+  .login-otp-popup-content button {
+    padding: 0.75rem 1.5rem;
+    margin: 1%;
+    font-size: 1.25rem;
+    border-radius: 0.375rem;
+  }
+}
+
+/* Ensure the form fits well on very small screens */
+@media (max-width: 480px) {
+  .login-main-div form h2 {
+    font-size: 2rem;
+  }
+
+  .login-main-div .login-input input {
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+
+  .login-main-div .login-input label {
+    font-size: 1rem;
+  }
+
+  .login-main-div .login-input input:focus ~ label,
+  .login-main-div .login-input input:valid ~ label {
+    font-size: 0.875rem;
+    top: 0.375rem;
+  }
+
+  .login-main-div .login-forget-password {
+    font-size: 1rem;
+  }
+
+  .login-main-div .login-forget-password label p {
+    margin-left: 0.5rem;
+  }
+
+  .login-main-div form button {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .login-main-div .login-register {
+    font-size: 1rem;
+  }
+
+  .login-otp-popup-content h3 {
+    font-size: 1.5rem;
+  }
+
+  .login-otp-popup-content p {
+    font-size: 1rem;
+  }
+
+  .login-otp-popup-content input {
+    padding: 0.625rem;
+    font-size: 1rem;
+  }
+
+  .login-otp-popup-content button {
+    padding: 0.625rem 1.25rem;
+    font-size: 1rem;
+  }
 }

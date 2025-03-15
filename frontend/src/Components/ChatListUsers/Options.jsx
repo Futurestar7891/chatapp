@@ -10,7 +10,7 @@ const Options = ({ socket }) => {
     showbar,
     setShowbar,
     setShowUserPublicProfileData,
-    isMobile
+    isMobile,
   } = useContext(StateContext);
 
   const SenderDetail = {

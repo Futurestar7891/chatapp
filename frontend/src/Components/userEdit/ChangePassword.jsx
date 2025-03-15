@@ -1,7 +1,9 @@
 import { useState, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { StateContext } from "../../main";
+import axios from "axios";
 import "../../Css/ChangePassword.css";
+
 const ChangePassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,25 +45,23 @@ const ChangePassword = () => {
         ? `${import.meta.env.VITE_PUBLIC_API_URL}/api/change-password` // Change password endpoint
         : `${import.meta.env.VITE_PUBLIC_API_URL}/api/reset-password`; // Forgot password endpoint
 
-      const response = await fetch(endpoint, {
-        method: "POST",
+      const response = await axios.post(endpoint, requestBody, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Include token for change password
+          ...(token && { Authorization: `Bearer ${token}` }), // Include token for change password
         },
-        body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
+      if (data.success) {
         alert(data.message || "Password updated successfully!");
         setShowOtpPopup(false);
         navigate("/login"); // Redirect to login page
       } else {
         // Set errors returned from the backend
         setErrors(data.error || {});
-        console.log(errors);
+        console.log(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -71,7 +71,7 @@ const ChangePassword = () => {
 
   return (
     <div
-      className="Loginmaindiv" // Reuse the same class name as Login
+      className="change-password-main-div"
       style={{
         background: `url('Login.jpg') center/cover no-repeat`,
       }}
@@ -81,9 +81,7 @@ const ChangePassword = () => {
 
         {/* Show Old Password field only if token exists */}
         {token && (
-          <div className="Logininput">
-            {" "}
-            {/* Reuse the same class name as Login */}
+          <div className="change-password-input">
             <input
               type="password"
               name="oldPassword"
@@ -96,9 +94,7 @@ const ChangePassword = () => {
         )}
 
         {/* New Password field */}
-        <div className="Logininput">
-          {" "}
-          {/* Reuse the same class name as Login */}
+        <div className="change-password-input">
           <input
             type="password"
             name="newPassword"
@@ -110,9 +106,7 @@ const ChangePassword = () => {
         </div>
 
         {/* Confirm Password field */}
-        <div className="Logininput">
-          {" "}
-          {/* Reuse the same class name as Login */}
+        <div className="change-password-input">
           <input
             type="password"
             name="confirmPassword"
@@ -123,9 +117,7 @@ const ChangePassword = () => {
           {errors.confirmPassword && <label>{errors.confirmPassword}</label>}
         </div>
 
-        <button type="submit" className="Loginbutton">
-          {" "}
-          {/* Reuse the same class name as Login */}
+        <button type="submit" className="change-password-button">
           {token ? "Change Password" : "Save Changes"}
         </button>
       </form>

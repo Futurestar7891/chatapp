@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera, faUser } from "@fortawesome/free-solid-svg-icons";
 import { NavLink } from "react-router-dom";
 import "../../Css/Signup.css";
+
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -104,7 +105,7 @@ const Signup = () => {
 
   return (
     <div
-      className="Loginmaindiv"
+      className="signup-main-div"
       style={{
         background: `url('Login.jpg') center/cover no-repeat`,
       }}
@@ -113,15 +114,19 @@ const Signup = () => {
         <h2>Signup</h2>
 
         {/* Circular Image Picker */}
-        <div className="image-picker" onClick={handleImageClick}>
+        <div className="signup-image-picker" onClick={handleImageClick}>
           {formData.photo ? (
-            <img src={formData.photo} alt="Profile" className="profile-image" />
+            <img
+              src={formData.photo}
+              alt="Profile"
+              className="signup-profile-image"
+            />
           ) : (
-            <div className="default-icon">
+            <div className="signup-default-icon">
               <FontAwesomeIcon icon={faUser} />
             </div>
           )}
-          <div className="camera-icon">
+          <div className="signup-camera-icon">
             <FontAwesomeIcon icon={faCamera} />
           </div>
           <input
@@ -135,7 +140,7 @@ const Signup = () => {
         </div>
 
         {/* Name Field */}
-        <div className="Logininput">
+        <div className="signup-input">
           <input
             type="text"
             name="name"
@@ -147,7 +152,7 @@ const Signup = () => {
         </div>
 
         {/* Email Field */}
-        <div className="Logininput">
+        <div className="signup-input">
           <input
             type="email"
             name="email"
@@ -159,7 +164,7 @@ const Signup = () => {
         </div>
 
         {/* Mobile Field */}
-        <div className="Logininput">
+        <div className="signup-input">
           <input
             type="text"
             name="mobile"
@@ -171,7 +176,7 @@ const Signup = () => {
         </div>
 
         {/* Password Field */}
-        <div className="logininput">
+        <div className="signup-input">
           <input
             type="password"
             name="password"
@@ -185,7 +190,7 @@ const Signup = () => {
         </div>
 
         <button type="submit">Sign Up</button>
-        <div className="register">
+        <div className="signup-register">
           <p>
             Already have an account? <NavLink to="/">Login</NavLink>
           </p>

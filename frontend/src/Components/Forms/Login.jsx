@@ -97,7 +97,7 @@ const Login = () => {
         localStorage.setItem("Name", data.Name);
         localStorage.setItem("Bio", data.Bio);
         localStorage.setItem("Email", data.Email);
-        console.log("login succesfull");
+        console.log("login successful");
 
         setTimeout(() => {
           navigate("/", { replace: true });
@@ -130,7 +130,7 @@ const Login = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/send-otp`,
-        requestBody,
+        { emailOrMobile },
         {
           headers: {
             "Content-Type": "application/json",
@@ -139,7 +139,7 @@ const Login = () => {
       );
 
       const data = response.data;
-      if (data) {
+      if (data.success) {
         setForgotEmailOrMobile(emailOrMobile);
         localStorage.setItem("showOtpPopup", "true");
         localStorage.setItem("starttime", Math.floor(Date.now() / 1000)); // Store start time in seconds
@@ -159,7 +159,7 @@ const Login = () => {
   const startTimer = () => {
     const interval = setInterval(() => {
       setTimer((prev) => {
-        if (prev === 0) {
+        if (prev <= 0) {
           clearInterval(interval);
           localStorage.removeItem("timer");
           localStorage.removeItem("showOtpPopup");
@@ -176,7 +176,7 @@ const Login = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/validate-otp`,
-        requestBody,
+        { emailOrMobile: forgotEmailOrMobile, otp },
         {
           headers: {
             "Content-Type": "application/json",
@@ -185,7 +185,7 @@ const Login = () => {
       );
 
       const data = response.data;
-      if (data) {
+      if (data.success) {
         localStorage.removeItem("emailOrMobile");
         localStorage.removeItem("showOtpPopup");
         localStorage.removeItem("timer");
@@ -212,14 +212,14 @@ const Login = () => {
 
   return (
     <div
-      className="Loginmaindiv"
+      className="login-main-div"
       style={{
         background: `url('Login.jpg') center/cover no-repeat`,
       }}
     >
       <form onSubmit={handleSubmit}>
         <h2>Login</h2>
-        <div className="Logininput">
+        <div className="login-input">
           <input
             type="text"
             name="email"
@@ -235,7 +235,7 @@ const Login = () => {
               : "Enter your Email or Mobile No."}
           </label>
         </div>
-        <div className="logininput">
+        <div className="login-input">
           <input
             type="password"
             name="password"
@@ -247,7 +247,7 @@ const Login = () => {
             {errors.Password ? errors.Password : "Enter your Password"}
           </label>
         </div>
-        <div className="forgetpassword">
+        <div className="login-forget-password">
           <label htmlFor="rememberpassword">
             <input
               type="checkbox"
@@ -261,17 +261,17 @@ const Login = () => {
           <a onClick={handleForgotPassword}>Forgot password?</a>
         </div>
         <button type="submit">Log In</button>
-        <div className="register">
+        <div className="login-register">
           <p>
-            Dont have an account? <NavLink to="/signup">Register</NavLink>
+            Don’t have an account? <NavLink to="/signup">Register</NavLink>
           </p>
         </div>
       </form>
 
       {/* OTP Popup */}
       {showOtpPopup && (
-        <div className="otp-popup">
-          <div className="otp-popup-content">
+        <div className="login-otp-popup">
+          <div className="login-otp-popup-content">
             <h3>Enter OTP</h3>
             <p>A 4-digit OTP has been sent to your email/mobile.</p>
             {timer > 0 ? (

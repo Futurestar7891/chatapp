@@ -1,146 +1,261 @@
-.Loginmaindiv {
+.signup-main-div {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh;
   width: 100%;
-  padding: 0 10px;
+  padding: 0 1%;
   background-position: center;
-  background-size: fill;
+  background-size: cover;
 }
 
-.Loginmaindiv form {
+.signup-main-div form {
   width: 25%;
-  border-radius: 8px;
-  padding: 30px;
+  border-radius: 0.5rem;
+  padding: 2%;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(0.5rem);
+  -webkit-backdrop-filter: blur(0.5rem);
   background: rgba(255, 255, 255, 0.1);
 }
 
-.Loginmaindiv form h2 {
+.signup-main-div form h2 {
   font-size: 2rem;
-  margin-bottom: 20px;
+  margin-bottom: 2%;
   color: #fff;
 }
 
-.Loginmaindiv .Logininput,
-.Loginmaindiv .logininput {
+.signup-main-div .signup-input {
   position: relative;
-  border-bottom: 2px solid #ccc;
-  margin: 15px 0;
+  border-bottom: 0.125rem solid #ccc;
+  margin: 1.5% 0;
 }
 
-.Loginmaindiv .Logininput label,
-.Loginmaindiv .logininput label {
+.signup-main-div .signup-input label {
   position: absolute;
   top: 50%;
   left: 0;
   transform: translateY(-50%);
   color: #fff;
-  font-size: 16px;
+  font-size: 1rem;
   pointer-events: none;
   transition: 0.15s ease;
 }
 
-.Loginmaindiv .Logininput input,
-.Loginmaindiv .logininput input {
+.signup-main-div .signup-input input {
   width: 100%;
-  height: 40px;
+  height: 2.5rem;
   background: transparent;
   border: none;
   outline: none;
-  font-size: 16px;
+  font-size: 1rem;
   color: #fff;
 }
 
-.Loginmaindiv .Logininput input:focus ~ label,
-.Loginmaindiv .Logininput input:valid ~ label,
-.Loginmaindiv .logininput input:focus ~ label,
-.Loginmaindiv .logininput input:valid ~ label {
+.signup-main-div .signup-input input:focus ~ label,
+.signup-main-div .signup-input input:valid ~ label {
   font-size: 0.8rem;
-  top: 10px;
+  top: 0.625rem;
   transform: translateY(-120%);
 }
 
-.Loginmaindiv form button {
+.signup-main-div form button {
   background: #fff;
   color: #000;
   font-weight: 600;
   border: none;
-  padding: 12px 20px;
+  padding: 0.75rem 1.25rem;
   cursor: pointer;
-  border-radius: 3px;
-  font-size: 16px;
-  border: 2px solid transparent;
+  border-radius: 0.1875rem;
+  font-size: 1rem;
+  border: 0.125rem solid transparent;
   transition: 0.3s ease;
 }
 
-.Loginmaindiv form button:hover {
+.signup-main-div form button:hover {
   color: #fff;
   border-color: #fff;
   background: rgba(255, 255, 255, 0.15);
 }
 
-.Loginmaindiv .register {
+.signup-main-div .signup-register {
   text-align: center;
-  margin-top: 30px;
+  margin-top: 2%;
   color: #fff;
 }
 
-.Loginmaindiv .register a {
+.signup-main-div .signup-register a {
   color: #efefef;
   text-decoration: none;
 }
 
-.Loginmaindiv .register a:hover {
+.signup-main-div .signup-register a:hover {
   text-decoration: underline;
 }
 
-.image-picker {
+.signup-image-picker {
   position: relative;
-  width: 80px;
-  height: 80px;
-  margin: 20px auto;
+  width: 15%;
+  aspect-ratio: 1/1;
+  margin: 2% auto;
   cursor: pointer;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border: 0.1875rem solid #fff;
+  box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.profile-image {
+.signup-profile-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
 }
 
-.default-icon {
-  font-size: 60px;
+.signup-default-icon {
+  font-size: 3.75rem;
   color: #fff;
 }
 
-.camera-icon {
+.signup-camera-icon {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
+  bottom: 0.3125rem;
+  right: 0.3125rem;
   background: rgba(255, 255, 255, 0.8);
-  padding: 5px;
+  padding: 0.3125rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0.3125rem rgba(0, 0, 0, 0.2);
 }
 
-.camera-icon svg {
+.signup-camera-icon svg {
   color: #000;
-  font-size: 18px;
+  font-size: 1.125rem;
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+  .signup-main-div {
+    padding: 0;
+  }
+
+  .signup-main-div form {
+    width: 100%;
+    height: 100vh;
+    padding: 5%;
+    border-radius: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    backdrop-filter: blur(0.75rem);
+    -webkit-backdrop-filter: blur(0.75rem);
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .signup-main-div form h2 {
+    font-size: 2.5rem;
+    margin-bottom: 5%;
+  }
+
+  .signup-main-div .signup-input {
+    margin: 3% 0;
+    border-bottom: 0.2rem solid #ccc;
+  }
+
+  .signup-main-div .signup-input input {
+    height: 3.5rem;
+    font-size: 1.5rem;
+  }
+
+  .signup-main-div .signup-input label {
+    font-size: 1.25rem;
+  }
+
+  .signup-main-div .signup-input input:focus ~ label,
+  .signup-main-div .signup-input input:valid ~ label {
+    font-size: 1rem;
+    top: 0.5rem;
+  }
+
+  .signup-main-div form button {
+    padding: 1rem 1.5rem;
+    font-size: 1.25rem;
+    border-radius: 0.25rem;
+  }
+
+  .signup-main-div .signup-register {
+    margin-top: 5%;
+    font-size: 1.25rem;
+  }
+
+  .signup-image-picker {
+    width: 30%;
+    aspect-ratio: 1/1;
+    margin: 5% auto;
+    border: 0.25rem solid #fff;
+    box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
+  }
+
+  .signup-default-icon {
+    font-size: 5rem;
+  }
+
+  .signup-camera-icon {
+    padding: 0.5rem;
+  }
+
+  .signup-camera-icon svg {
+    font-size: 1.5rem;
+  }
+}
+
+/* Ensure the form fits well on very small screens */
+@media (max-width: 480px) {
+  .signup-main-div form h2 {
+    font-size: 2rem;
+  }
+
+  .signup-main-div .signup-input input {
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+
+  .signup-main-div .signup-input label {
+    font-size: 1rem;
+  }
+
+  .signup-main-div .signup-input input:focus ~ label,
+  .signup-main-div .signup-input input:valid ~ label {
+    font-size: 0.875rem;
+    top: 0.375rem;
+  }
+
+  .signup-main-div form button {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .signup-main-div .signup-register {
+    font-size: 1rem;
+  }
+
+  .signup-image-picker {
+    width: 40%;
+  }
+
+  .signup-default-icon {
+    font-size: 4rem;
+  }
+
+  .signup-camera-icon svg {
+    font-size: 1.25rem;
+  }
 }
