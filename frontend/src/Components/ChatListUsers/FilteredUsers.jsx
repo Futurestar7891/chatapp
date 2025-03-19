@@ -16,6 +16,7 @@ const FilteredUsers = ({ user }) => {
   const handleClick = () => {
     if(isMobile){
       navigate("/fetchmessage");
+      return;
     }
     setSelectedUser({});
     setSelectedUser(user);
