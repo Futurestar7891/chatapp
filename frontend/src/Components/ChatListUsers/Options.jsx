@@ -24,57 +24,54 @@ const Options = ({ socket }) => {
 
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    try {
+      // Notify the server to invalidate the token (or destroy the session)
+      const response = await axios.post(
+        `${import.meta.env.VITE_PUBLIC_API_URL}/api/logout`,
+        {}, // No body needed, empty object
+        {
+          withCredentials: true, // Equivalent to credentials: "include"
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-const handleLogout = async () => {
-  try {
-    // Notify the server to invalidate the token (or destroy the session)
-    const response = await axios.post(
-      `${import.meta.env.VITE_PUBLIC_API_URL}/api/logout`,
-      {}, // No body needed, empty object
-      {
-        withCredentials: true, // Equivalent to credentials: "include"
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const data = response.data;
+      // Axios resolves with response.data when successful
+      // No need to check response.ok as Axios throws for non-2xx responses
+      // Remove the token from local storage
+      if (data.success) {
+        localStorage.removeItem("token");
+
+        // Notify the server via socket
+        if (socket) {
+          socket.emit("logout");
+        }
+        setShowPublicProfile(false);
+        setShowbar(false);
+
+        // Redirect to login
+        console.log("logout already");
+        navigate("/login", { replace: true });
+      } else {
+        console.log(data);
       }
-    );
-    
-    const data=response.data;
-    // Axios resolves with response.data when successful
-    // No need to check response.ok as Axios throws for non-2xx responses
-    // Remove the token from local storage
-    if(data.success){
-         localStorage.removeItem("token");
-
-         // Notify the server via socket
-         if (socket) {
-           socket.emit("logout");
-         }
-         setShowPublicProfile(false);
-         setShowbar(false);
-
-         // Redirect to login
-         console.log("logout already");
-         navigate("/login", { replace: true });
+    } catch (error) {
+      // Axios error handling
+      if (error.response) {
+        // Server responded with a status outside 2xx
+        console.error("Failed to logout:", error.response.data);
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error("Logout error: No response received", error.request);
+      } else {
+        // Error setting up the request
+        console.error("Logout error:", error.message);
+      }
     }
-    else{
-      console.log(data);
-    }
- 
-  } catch (error) {
-    // Axios error handling
-    if (error.response) {
-      // Server responded with a status outside 2xx
-      console.error("Failed to logout:", error.response.data);
-    } else if (error.request) {
-      // Request was made but no response received
-      console.error("Logout error: No response received", error.request);
-    } else {
-      // Error setting up the request
-      console.error("Logout error:", error.message);
-    }
-  }
-};
+  };
   return (
     <div className="Optionsmaindiv">
       <div className="Optionstopdiv">
@@ -91,17 +88,14 @@ const handleLogout = async () => {
       <div className="Optionsdowndiv">
         <div
           onClick={() => {
-            if(isMobile){
-            navigate("/public-profile");
-            setShowUserPublicProfileData(SenderDetail);
-            }
-            else{
+            if (isMobile) {
+              navigate("/public-profile");
               setShowUserPublicProfileData(SenderDetail);
-               setShowPublicProfile(true);
-               setShowbar(!showbar);
+            } else {
+              setShowUserPublicProfileData(SenderDetail);
+              setShowPublicProfile(true);
+              setShowbar(!showbar);
             }
-           
-            
           }}
           className="option-item"
         >
@@ -129,8 +123,9 @@ const handleLogout = async () => {
         </div>
         <div
           onClick={() => {
-            setShowUserPublicProfileData({})
-            navigate("/add-contact")}}
+            setShowUserPublicProfileData({});
+            navigate("/add-contact");
+          }}
           className="option-item"
         >
           <h4>Add new Contact</h4>

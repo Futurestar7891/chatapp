@@ -19,8 +19,11 @@ const {
 } = require("../controllers/useredit");
 const { updateProfile, validateProfileOtp, blockUser, unblockUser, deleteUser } = require("../controllers/manageprofile");
 const { fetchContacts, addContact, searchContact } = require("../controllers/usercontact");
+const { getUserInfo} = require("../controllers/userinfo");
 
 // User authentication routes
+router.post("/userinfo",authenticateToken,getUserInfo);
+router.post("")
 router.post("/signup", signupvalidation, signup);
 router.post("/login", loginvalidation, login); // Fixed typo: removed extra slash
 router.post(

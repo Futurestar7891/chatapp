@@ -16,6 +16,8 @@ const App = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const userId = localStorage.getItem("id"); // Get the user's ID from localStorage
+
     const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
       withCredentials: true,
       transports: ["websocket", "polling"],
@@ -23,6 +25,11 @@ const App = () => {
 
     newSocket.once("connect", () => {
       console.log("✅ Connected to server, ID:", newSocket.id);
+
+      // Emit the "setOnline" event to update the user's status to "online"
+      if (userId) {
+        newSocket.emit("setOnline", userId);
+      }
     });
 
     newSocket.once("disconnect", () => {
@@ -50,6 +57,11 @@ const App = () => {
     };
 
     const handleLogout = () => {
+      const userId = localStorage.getItem("id");
+      if (socket && userId) {
+        socket.emit("logout", userId); // Emit logout event
+      }
+
       localStorage.removeItem("token");
       localStorage.removeItem("tokenExpiry");
       localStorage.removeItem("id");
@@ -61,7 +73,7 @@ const App = () => {
     const interval = setInterval(checkTokenExpiration, 1000);
 
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, [navigate, socket]);
 
   const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem("token");

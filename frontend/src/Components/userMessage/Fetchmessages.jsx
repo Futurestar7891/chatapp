@@ -11,6 +11,7 @@ import { StateContext } from "../../main";
 import UserStatus from "./userStatus";
 import MessageInput from "./MessageInput";
 import "../../Css/Fetchmessages.css";
+import {getUserInfo} from "../utils/user";
 
 const FetchMessages = ({ socket }) => {
   const senderId = localStorage.getItem("id");
@@ -23,6 +24,7 @@ const FetchMessages = ({ socket }) => {
   const senderphoto = localStorage.getItem("Photo") || "/default-avatar.png";
   const {
     selectedUser,
+    setSelectedUser,
     setMessages,
     setIsBlocked,
     showAttachmentPopup,
@@ -163,14 +165,6 @@ const FetchMessages = ({ socket }) => {
       console.log("Socket connected:", socket.id);
     });
 
-    if (!receiverId) {
-      setMessages([]);
-      setCurrentRoom(null);
-      setError(null);
-      setRecieverPhoto("");
-      setIsBlocked(false);
-      return;
-    }
 
     // Load messages (cached first, then fresh)
     loadMessages();
@@ -236,6 +230,59 @@ const FetchMessages = ({ socket }) => {
       );
     });
   }, [messages, senderId, recieverphoto, senderphoto]);
+
+  // Fetch user info and update state
+ const fetchUserInfo = useCallback(async () => {
+   if (!receiverId) return;
+
+   try {
+     const userInfo = await getUserInfo(receiverId);
+     if (userInfo && userInfo.success) {
+       console.log(userInfo);
+
+       // Update the selected user's info in the state
+       setSelectedUser({
+         ...selectedUser, // Preserve existing selectedUser properties
+         status: userInfo.data.status, // Access status from userInfo.data
+         lastSeen: userInfo.data.lastSeen, // Access lastSeen from userInfo.data
+       });
+
+       // Update the isBlocked state
+       setIsBlocked(userInfo.data.isBlocked); // Access isBlocked from userInfo.data
+
+       console.log("User info fetched and state updated:", userInfo.data);
+     } else {
+       console.error("Failed to fetch user info: No data returned");
+     }
+   } catch (error) {
+     console.error("Error fetching user info:", error.message || error);
+   }
+ }, [receiverId, setSelectedUser, setIsBlocked, selectedUser]);
+
+ // Call fetchUserInfo only when receiverId changes
+ useEffect(() => {
+   fetchUserInfo();
+ }, [receiverId]); // Only depend on receiverId
+
+ // Listen for user status changes from the server
+ useEffect(() => {
+   if (!socket) return;
+
+   const handleUserStatusChanged = ({ userId, status }) => {
+     if (userId === receiverId) {
+       setSelectedUser((prev) => ({
+         ...prev,
+         status: status,
+       }));
+     }
+   };
+
+   socket.on("userStatusChanged", handleUserStatusChanged);
+
+   return () => {
+     socket.off("userStatusChanged", handleUserStatusChanged);
+   };
+ }, [socket, receiverId, setSelectedUser]);
 
   return (
     <>

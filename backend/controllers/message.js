@@ -5,7 +5,6 @@ const mongoose = require("mongoose");
 
 const fetchChatlist = async (req, res) => {
   const userId = req.user.id; // Extract user ID from the token
-  // console.log("i am enterd in fetching chats backend");
   try {
     // Find the user making the request
     const userexist = await UserSchema.findById(userId)
@@ -26,6 +25,11 @@ const fetchChatlist = async (req, res) => {
           (contact) => contact.contactmobile === chat.userId.Mobile
         );
 
+        // Check if the sender (userexist) has blocked this receiver (chat.userId)
+        const isBlockedBySender = userexist.BlockedUsers.some((entry) =>
+          entry.userId.equals(chat.userId._id)
+        );
+
         return {
           _id: chat.userId._id,
           Name: contactEntry ? contactEntry.contactname : chat.userId.Name,
@@ -34,6 +38,8 @@ const fetchChatlist = async (req, res) => {
           Email: chat.userId.Email,
           Mobile: chat.userId.Mobile,
           lastMessageTime: chat.lastMessageTime,
+          status: chat.userId.status, // Receiver's online/offline status
+          isBlocked: isBlockedBySender, // Whether sender blocked this receiver
         };
       });
 
@@ -42,7 +48,7 @@ const fetchChatlist = async (req, res) => {
       users: chatUsers,
     });
   } catch (error) {
-    console.error("Error in /search-user:", error.message);
+    console.error("Error in /fetch-chatlist:", error.message);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
