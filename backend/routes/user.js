@@ -9,40 +9,81 @@ const {
   resetPasswordValidation,
   editprofilevalidation,
 } = require("../Validatedata");
-const { signup } = require("../controllers/usersignup");
-const { login, logout } = require("../controllers/userlogin");
+const { signup } = require("../controllers/userForms/usersignup");
+const { login, logout } = require("../controllers/userForms/userlogin");
 const {
   changePassword,
   sendOtp,
   validateOtp,
   resetPassword,
-} = require("../controllers/useredit");
-const { updateProfile, validateProfileOtp, blockUser, unblockUser, deleteUser } = require("../controllers/manageprofile");
-const { fetchContacts, addContact, searchContact } = require("../controllers/usercontact");
-const { getUserInfo} = require("../controllers/userinfo");
+} = require("../controllers/userProfile/useredit");
+const {
+  updateProfile,
+  validateProfileOtp,
+  blockUser,
+  unblockUser,
+  deleteAccount,
+} = require("../controllers/userProfile/manageprofile");
+const {
+  fetchContacts,
+  addContact,
+  searchContact,
+  
+} = require("../controllers/userInfo/usercontact");
+const { getUserInfo } = require("../controllers/userInfo/userinfo");
+const{ getPrivacySettings,
+  updatePrivacySettings}=require("../controllers/userInfo/privacysetting");
 
 // User authentication routes
-router.post("/userinfo",authenticateToken,getUserInfo);
-router.post("")
+router.post("/userinfo", authenticateToken, getUserInfo);
+//userForms Routes
 router.post("/signup", signupvalidation, signup);
-router.post("/login", loginvalidation, login); // Fixed typo: removed extra slash
+router.post("/login", loginvalidation, login); 
+router.post("/logout", logout);
+
+//userPrifile/useredit routes
 router.post(
   "/change-password",
   authenticateToken,
   changePasswordValidation,
   changePassword
 );
-router.post("/send-otp", sendOtp); // Fixed typo: removed extra slashes
+router.post("/send-otp", sendOtp); 
 router.post("/validate-otp", validateOtp);
 router.post("/reset-password", resetPasswordValidation, resetPassword);
-router.post("/update-profile",authenticateToken,editprofilevalidation,updateProfile);
-router.post("/filter-contact",authenticateToken,fetchContacts);
-router.post("/search-contact",authenticateToken,searchContact);
-router.post("/add-contact",authenticateToken,addContact);
-router.post("/validateprofileotp",authenticateToken,validateProfileOtp);
-router.post("/block-user", authenticateToken,blockUser);
-router.post("/unblock-user", authenticateToken,unblockUser);
-router.delete("/delete-user", authenticateToken,deleteUser);
-router.post("/logout",logout);
+
+//userPrifile/manageprofile routes
+router.post(
+  "/update-profile",
+  authenticateToken,
+  editprofilevalidation,
+  updateProfile
+);
+router.post("/validateprofileotp", authenticateToken, validateProfileOtp);
+router.post("/block-user", authenticateToken, blockUser);
+router.post("/unblock-user", authenticateToken, unblockUser);
+router.delete("/delete-account", authenticateToken, deleteAccount);
+
+//userINfo/usercontacts routes
+router.post("/add-contact", authenticateToken, addContact);
+// router.post("", authenticateToken, searchContact);
+router.post("/search-contact", authenticateToken, fetchContacts);
+
+//userInfo/privacysetting routes
+router.get(
+  "/privacy-settings",
+  authenticateToken,
+  getPrivacySettings
+);
+router.put(
+  "/privacy-settings",
+   authenticateToken,
+  updatePrivacySettings
+);
+
+
+
+
+
 
 module.exports = router; // Simple export, no io needed here

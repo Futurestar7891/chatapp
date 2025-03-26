@@ -23,6 +23,7 @@ const PublicProfile = () => {
     setIsInContactList,
     isMobile
   } = useContext(StateContext);
+  
 
   const [isEditing, setIsEditing] = useState(false);
   const [selectImage, setSelectImage] = useState(null);

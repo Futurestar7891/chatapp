@@ -11,11 +11,11 @@ import { StateContext } from "../../main";
 import UserStatus from "./userStatus";
 import MessageInput from "./MessageInput";
 import "../../Css/Fetchmessages.css";
-import {getUserInfo} from "../utils/user";
+import { getCacheKey, getCachedData, setCachedData } from "../utils/caching";
 
 const FetchMessages = ({ socket }) => {
   const senderId = localStorage.getItem("id");
-  const [recieverphoto, setRecieverPhoto] = useState("");
+  const [recieverphoto, setRecieverPhoto] = useState(null); // Allow null
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentRoom, setCurrentRoom] = useState(null);
@@ -31,15 +31,9 @@ const FetchMessages = ({ socket }) => {
     setShowAttachmentPopup,
     messages,
   } = useContext(StateContext);
-
+ console.log(selectedUser);
   const receiverId = selectedUser?._id || null;
 
-  // Generate a unique key for the chat room cache
-  const getCacheKey = useCallback((senderId, receiverId) => {
-    return `messages_${[senderId, receiverId].sort().join("-")}`;
-  }, []);
-
-  // Fetch messages from the API
   const fetchMessagesFromApi = useCallback(async () => {
     if (!senderId || !receiverId) return null;
 
@@ -61,7 +55,9 @@ const FetchMessages = ({ socket }) => {
       if (data.success) {
         return {
           messages: data.messages || [],
-          userphoto: data.userphoto || "",
+          userphoto: data.userphoto, // Privacy-filtered
+          status: data.status, // Privacy-filtered
+          lastSeen: data.lastSeen, // Privacy-filtered
           isBlocked: data.isBlocked,
         };
       }
@@ -73,52 +69,6 @@ const FetchMessages = ({ socket }) => {
     }
   }, [senderId, receiverId]);
 
-  // Load cached data and fetch fresh data
-  const loadMessages = useCallback(async () => {
-    if (!senderId || !receiverId) return;
-
-    const cacheKey = getCacheKey(senderId, receiverId);
-    const cachedData = sessionStorage.getItem(cacheKey);
-
-    // Immediately show cached data if available
-    if (cachedData) {
-      const parsedData = JSON.parse(cachedData);
-      setMessages(parsedData.messages || []);
-      setRecieverPhoto(parsedData.userphoto || "");
-      setIsBlocked(parsedData.isBlocked || false);
-    }
-
-    // Fetch fresh data from API in the background
-    setLoading(true);
-    const freshData = await fetchMessagesFromApi();
-    setLoading(false);
-
-    if (freshData) {
-      setMessages(freshData.messages);
-      setRecieverPhoto(freshData.userphoto);
-      setIsBlocked(freshData.isBlocked);
-      setError(null);
-
-      // Update cache with fresh data
-      sessionStorage.setItem(
-        cacheKey,
-        JSON.stringify({
-          messages: freshData.messages,
-          userphoto: freshData.userphoto,
-          isBlocked: freshData.isBlocked,
-        })
-      );
-    }
-  }, [
-    senderId,
-    receiverId,
-    getCacheKey,
-    fetchMessagesFromApi,
-    setMessages,
-    setIsBlocked,
-  ]);
-
-  // Handle new messages received via WebSocket
   const handleReceiveMessage = useCallback(
     (newMessage) => {
       console.log("Received message on client:", newMessage);
@@ -133,22 +83,18 @@ const FetchMessages = ({ socket }) => {
             (a, b) => new Date(a.sentTime) - new Date(b.sentTime)
           );
 
-          // Update the cache with the new message
           const cacheKey = getCacheKey(senderId, receiverId);
-          const cachedData = JSON.parse(sessionStorage.getItem(cacheKey)) || {};
-          sessionStorage.setItem(
-            cacheKey,
-            JSON.stringify({
-              ...cachedData,
-              messages: updatedMessages,
-            })
-          );
+          const cachedData = getCachedData(cacheKey) || {};
+          setCachedData(cacheKey, {
+            ...cachedData,
+            messages: updatedMessages,
+          });
 
           return updatedMessages;
         });
       }
     },
-    [receiverId, senderId, setMessages, getCacheKey]
+    [receiverId, senderId, setMessages]
   );
 
   useEffect(() => {
@@ -161,41 +107,82 @@ const FetchMessages = ({ socket }) => {
       return;
     }
 
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-    });
-
-
-    // Load messages (cached first, then fresh)
-    loadMessages();
-
     const newRoomId = [senderId, receiverId].sort().join("-");
 
-    if (currentRoom && currentRoom !== newRoomId) {
-      socket.emit("leaveRoom", currentRoom);
-      console.log(`Left room: ${currentRoom}`);
-    }
+    const fetchInitialData = async () => {
+      setLoading(true);
+
+      const cacheKey = getCacheKey(senderId, receiverId);
+      const cachedData = getCachedData(cacheKey);
+
+      if (cachedData) {
+        setMessages(cachedData.messages || []);
+        setRecieverPhoto(cachedData.userphoto || null);
+        setIsBlocked(cachedData.isBlocked || false);
+        setSelectedUser((prev) => ({
+          ...prev,
+          Photo: cachedData.userphoto,
+          status: cachedData.status,
+          lastSeen: cachedData.lastSeen,
+        }));
+      }
+
+      const freshData = await fetchMessagesFromApi();
+      if (freshData) {
+        console.log(freshData);
+        setMessages(freshData.messages);
+        setRecieverPhoto(freshData.userphoto);
+        setIsBlocked(freshData.isBlocked);
+        setSelectedUser((prev) => ({
+          ...prev,
+          Photo: freshData.userphoto,
+          status: freshData.status,
+          lastSeen: freshData.lastSeen,
+        }));
+        setCachedData(cacheKey, {
+          messages: freshData.messages,
+          userphoto: freshData.userphoto,
+          lastSeen: freshData.lastSeen,
+          isBlocked: freshData.isBlocked,
+        });
+      }
+
+      setLoading(false);
+    };
+
+    fetchInitialData();
 
     socket.emit("joinRoom", newRoomId);
     setCurrentRoom(newRoomId);
-    console.log(`Joined room: ${newRoomId}`);
 
-    socket.off("receiveMessage").on("receiveMessage", handleReceiveMessage);
+    socket.on("connect", () => console.log("Socket connected:", socket.id));
+    socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("userStatusChanged", ({ userId, status }) => {
+      console.log(`Status update for ${userId}: ${status}`);
+      if (userId === receiverId) {
+        setSelectedUser((prev) => ({
+          ...prev,
+          status:selectedUser.status!=null?status:"offline",
+          lastSeen: status === "offline" ? new Date() : prev.lastSeen,
+        }));
+      }
+    });
 
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("userStatusChanged");
       if (newRoomId) {
         socket.emit("leaveRoom", newRoomId);
-        console.log(`Left room on cleanup: ${newRoomId}`);
       }
     };
   }, [
+    senderId,
     receiverId,
     socket,
-    loadMessages,
-    senderId,
+    fetchMessagesFromApi,
     setMessages,
-    currentRoom,
+    setIsBlocked,
+    setSelectedUser,
     handleReceiveMessage,
   ]);
 
@@ -230,59 +217,6 @@ const FetchMessages = ({ socket }) => {
       );
     });
   }, [messages, senderId, recieverphoto, senderphoto]);
-
-  // Fetch user info and update state
- const fetchUserInfo = useCallback(async () => {
-   if (!receiverId) return;
-
-   try {
-     const userInfo = await getUserInfo(receiverId);
-     if (userInfo && userInfo.success) {
-       console.log(userInfo);
-
-       // Update the selected user's info in the state
-       setSelectedUser({
-         ...selectedUser, // Preserve existing selectedUser properties
-         status: userInfo.data.status, // Access status from userInfo.data
-         lastSeen: userInfo.data.lastSeen, // Access lastSeen from userInfo.data
-       });
-
-       // Update the isBlocked state
-       setIsBlocked(userInfo.data.isBlocked); // Access isBlocked from userInfo.data
-
-       console.log("User info fetched and state updated:", userInfo.data);
-     } else {
-       console.error("Failed to fetch user info: No data returned");
-     }
-   } catch (error) {
-     console.error("Error fetching user info:", error.message || error);
-   }
- }, [receiverId, setSelectedUser, setIsBlocked, selectedUser]);
-
- // Call fetchUserInfo only when receiverId changes
- useEffect(() => {
-   fetchUserInfo();
- }, [receiverId]); // Only depend on receiverId
-
- // Listen for user status changes from the server
- useEffect(() => {
-   if (!socket) return;
-
-   const handleUserStatusChanged = ({ userId, status }) => {
-     if (userId === receiverId) {
-       setSelectedUser((prev) => ({
-         ...prev,
-         status: status,
-       }));
-     }
-   };
-
-   socket.on("userStatusChanged", handleUserStatusChanged);
-
-   return () => {
-     socket.off("userStatusChanged", handleUserStatusChanged);
-   };
- }, [socket, receiverId, setSelectedUser]);
 
   return (
     <>

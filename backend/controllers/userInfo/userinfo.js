@@ -1,5 +1,5 @@
 // controllers/userinfo.js
-const UserSchema = require("../models/user");
+const UserSchema = require("../../models/user");
 
 const getUserInfo = async (req, res) => {
   try {

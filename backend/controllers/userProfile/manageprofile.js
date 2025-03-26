@@ -1,10 +1,10 @@
 
 
-const UserSchema = require("../models/user");
-const { sendEmail } = require("../middleware"); 
+const UserSchema = require("../../models/user");
+const { sendEmail } = require("../../middleware"); 
 const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
-const {uploadToCloudinary}=require("../utils/cloudinary")
+const { uploadToCloudinary } = require("../../utils/cloudinary");
 
 const updateProfile = async (req, res) => {
   const errorobject = {};
@@ -184,7 +184,7 @@ const unblockUser = async (req, res) => {
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteAccount = async (req, res) => {
   const userId = req.user.id;
 
   try {
@@ -199,4 +199,4 @@ const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-module.exports={updateProfile,validateProfileOtp,blockUser,unblockUser,deleteUser};
+module.exports={updateProfile,validateProfileOtp,blockUser,unblockUser,deleteAccount};

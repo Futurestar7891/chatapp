@@ -1,16 +1,18 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { StateContext } from "../../main";
-import axios from "axios"; // Make sure to import axios
+import axios from "axios";
 import "../../Css/Options.css";
 
 const Options = ({ socket }) => {
   const {
     setShowPublicProfile,
+    showpublicprofile,
     showbar,
     setShowbar,
     setShowUserPublicProfileData,
     isMobile,
+    setShowPrivacy,
   } = useContext(StateContext);
 
   const SenderDetail = {
@@ -26,12 +28,12 @@ const Options = ({ socket }) => {
 
   const handleLogout = async () => {
     try {
-      // Notify the server to invalidate the token (or destroy the session)
+      const userId = localStorage.getItem("id");
       const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/logout`,
-        {}, // No body needed, empty object
+        {},
         {
-          withCredentials: true, // Equivalent to credentials: "include"
+          withCredentials: true,
           headers: {
             "Content-Type": "application/json",
           },
@@ -39,39 +41,34 @@ const Options = ({ socket }) => {
       );
 
       const data = response.data;
-      // Axios resolves with response.data when successful
-      // No need to check response.ok as Axios throws for non-2xx responses
-      // Remove the token from local storage
       if (data.success) {
         localStorage.removeItem("token");
 
-        // Notify the server via socket
-        if (socket) {
-          socket.emit("logout");
+        // Notify server via socket without disconnecting client-side
+        if (socket && socket.connected) {
+          socket.emit("logout", userId); // Send userId with logout event
+          console.log("Logout event emitted to server");
         }
+
         setShowPublicProfile(false);
         setShowbar(false);
 
-        // Redirect to login
-        console.log("logout already");
+        console.log("Logout successful");
         navigate("/login", { replace: true });
       } else {
         console.log(data);
       }
     } catch (error) {
-      // Axios error handling
       if (error.response) {
-        // Server responded with a status outside 2xx
         console.error("Failed to logout:", error.response.data);
       } else if (error.request) {
-        // Request was made but no response received
         console.error("Logout error: No response received", error.request);
       } else {
-        // Error setting up the request
         console.error("Logout error:", error.message);
       }
     }
   };
+
   return (
     <div className="Optionsmaindiv">
       <div className="Optionstopdiv">
@@ -95,6 +92,7 @@ const Options = ({ socket }) => {
               setShowUserPublicProfileData(SenderDetail);
               setShowPublicProfile(true);
               setShowbar(!showbar);
+              setShowPrivacy(false);
             }
           }}
           className="option-item"
@@ -110,7 +108,17 @@ const Options = ({ socket }) => {
           <h4>Change Password</h4>
         </div>
         <div
-          onClick={() => console.log("Privacy Settings")}
+          onClick={() => {
+            if (isMobile) {
+              navigate("/privacy-setting");
+            } else {
+              if (showpublicprofile) {
+                setShowPublicProfile(false);
+              }
+              setShowPrivacy(true);
+              setShowbar(!showbar);
+            }
+          }}
           className="option-item"
         >
           <h4>Privacy Settings</h4>

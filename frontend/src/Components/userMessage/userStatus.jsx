@@ -3,10 +3,8 @@ import { StateContext } from "../../main";
 import "../../Css/Fetchmessages.css";
 import { useNavigate } from "react-router-dom";
 
-
-
 const formatLastSeen = (lastSeen) => {
-  if (!lastSeen) return "Unknown";
+  if (!lastSeen) return "";
 
   const now = new Date();
   const lastSeenDate = new Date(lastSeen);
@@ -15,16 +13,19 @@ const formatLastSeen = (lastSeen) => {
   const diffInDays = diffInHours / 24;
 
   if (diffInHours < 48) {
-    // Within 48 hours, show "last seen at [time]" or "X hours ago"
     if (diffInHours < 1) {
       return "Last seen just now";
     } else if (diffInHours < 24) {
-      return `Last seen ${Math.floor(diffInHours)} hour${Math.floor(diffInHours) === 1 ? "" : "s"} ago`;
+      return `Last seen ${Math.floor(diffInHours)} hour${
+        Math.floor(diffInHours) === 1 ? "" : "s"
+      } ago`;
     } else {
-      return `Last seen at ${lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return `Last seen at ${lastSeenDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`;
     }
   } else {
-    // After 48 hours, show the date
     return `Last seen on ${lastSeenDate.toLocaleDateString()}`;
   }
 };
@@ -37,7 +38,7 @@ const UserStatus = () => {
     setShowPublicProfile,
     showpublicprofile,
     isMobile,
-    isBlocked,
+    // isBlocked, // Not used here; we'll use selectedUser.isBlockedByReceiver
   } = useContext(StateContext);
 
   const handleImageClick = (e) => {
@@ -52,29 +53,54 @@ const UserStatus = () => {
       e.stopPropagation();
     }
   };
+  console.log(selectedUser);
+  const displayName = selectedUser?.Name || "Unknown";
 
   return (
     <div className="Chatapprightdivtopdiv">
       <div className="user-status-container">
-        <img
-          onClick={handleImageClick}
-          src={selectedUser?.Photo || "/default-avatar.png"}
-          alt="User"
-          className="user-avatar"
-        />
-        {selectedUser?.status === "online" && !isBlocked && (
-          <span className="online-indicator"></span>
+        {selectedUser?.Photo ? (
+          <img
+            onClick={handleImageClick}
+            src={selectedUser.Photo}
+            alt="User"
+            className="user-avatar"
+          />
+        ) : (
+          <div
+            onClick={handleImageClick}
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              backgroundColor: "#ccc",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: "20px",
+              cursor: "pointer",
+            }}
+          >
+            {displayName[0]} {/* Show initial if no photo */}
+          </div>
         )}
+        {selectedUser?.status === "online" &&
+          !selectedUser?.isBlockedByReceiver && (
+            <span className="online-indicator"></span>
+          )}
       </div>
+      
       <div className="user-info">
-        <h2>{selectedUser?.Name || "Select a User"}</h2>
+        <h2>{selectedUser?.Name || ""}</h2>
         {selectedUser && (
           <p className="status-text">
-            {selectedUser.status === "online"
+            {selectedUser.status === "online" &&
+            !selectedUser.isBlockedByReceiver
               ? "Online"
-              : formatLastSeen(selectedUser.lastSeen)}{" "}:
-              
-            {/* Use the utility function here */}
+              : !selectedUser.isBlockedByReceiver && selectedUser.lastSeen
+              ? formatLastSeen(selectedUser.lastSeen)
+              : ""}
           </p>
         )}
       </div>

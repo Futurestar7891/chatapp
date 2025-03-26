@@ -4,7 +4,7 @@ import { StateContext } from "../../main";
 import axios from "axios";
 import "../../Css/Login.css";
 
-const Login = () => {
+const Login = ({ socket }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -17,7 +17,6 @@ const Login = () => {
   const [forgotEmailOrMobile, setForgotEmailOrMobile] = useState("");
   const [timer, setTimer] = useState(0);
 
-  // Initialize showOtpPopup and timer from localStorage when the component mounts
   useEffect(() => {
     const storedShowOtpPopup = localStorage.getItem("showOtpPopup");
     const storedTimer = localStorage.getItem("timer");
@@ -28,16 +27,15 @@ const Login = () => {
     }
 
     if (storedTimer && storedStartTime) {
-      const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-      const startTime = parseInt(storedStartTime, 10); // Start time in seconds
-      const elapsedTime = currentTime - startTime; // Elapsed time in seconds
-      const remainingTime = Math.max(0, 300 - elapsedTime); // Remaining time in seconds (max 0)
+      const currentTime = Math.floor(Date.now() / 1000);
+      const startTime = parseInt(storedStartTime, 10);
+      const elapsedTime = currentTime - startTime;
+      const remainingTime = Math.max(0, 300 - elapsedTime);
 
       if (remainingTime > 0) {
-        setTimer(remainingTime); // Set the remaining time
-        startTimer(); // Start the timer
+        setTimer(remainingTime);
+        startTimer();
       } else {
-        // Timer has expired
         localStorage.removeItem("timer");
         localStorage.removeItem("showOtpPopup");
         localStorage.removeItem("starttime");
@@ -45,6 +43,28 @@ const Login = () => {
       }
     }
   }, [setShowOtpPopup]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("connect", () => {
+        console.log("Login component - Socket connected:", socket.id);
+      });
+      socket.on("disconnect", () => {
+        console.log("Login component - Socket disconnected");
+      });
+      socket.on("connect_error", (err) => {
+        console.error("Login component - Socket connection error:", err);
+      });
+
+      return () => {
+        socket.off("connect");
+        socket.off("disconnect");
+        socket.off("connect_error");
+      };
+    } else {
+      console.log("Login component - Socket is not provided");
+    }
+  }, [socket]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -54,7 +74,6 @@ const Login = () => {
     };
     setFormData(updatedFormData);
 
-    // Store the email/mobile in localStorage
     if (name === "email") {
       localStorage.setItem("emailOrMobile", updatedFormData.email.trim());
     }
@@ -97,11 +116,36 @@ const Login = () => {
         localStorage.setItem("Name", data.Name);
         localStorage.setItem("Bio", data.Bio);
         localStorage.setItem("Email", data.Email);
-        console.log("login successful");
+        console.log("Login successful");
+
+        // Emit "setOnline" with socket handling
+        const userId = data.id;
+        if (socket) {
+          if (socket.connected) {
+            socket.emit("setOnline", userId);
+            console.log("Emitted setOnline for user:", userId);
+          } else {
+            console.log("Socket not connected, waiting for connection");
+            socket.once("connect", () => {
+              socket.emit("setOnline", userId);
+              console.log(
+                "Emitted setOnline after connection for user:",
+                userId
+              );
+            });
+            // Optionally force reconnect if not already connecting
+            if (!socket.connecting) {
+              socket.connect();
+              console.log("Attempting to reconnect socket");
+            }
+          }
+        } else {
+          console.log("Socket is not available");
+        }
 
         setTimeout(() => {
           navigate("/", { replace: true });
-        }, 100);
+        }, 100); // Small delay to allow socket event to be sent
       } else {
         if (data.error) {
           setErrors(data.error);
@@ -142,8 +186,8 @@ const Login = () => {
       if (data.success) {
         setForgotEmailOrMobile(emailOrMobile);
         localStorage.setItem("showOtpPopup", "true");
-        localStorage.setItem("starttime", Math.floor(Date.now() / 1000)); // Store start time in seconds
-        localStorage.setItem("timer", "300"); // Set timer to 300 seconds
+        localStorage.setItem("starttime", Math.floor(Date.now() / 1000));
+        localStorage.setItem("timer", "300");
         setShowOtpPopup(true);
         setTimer(300);
         startTimer();
@@ -166,7 +210,7 @@ const Login = () => {
           localStorage.removeItem("starttime");
           return 0;
         }
-        localStorage.setItem("timer", prev - 1); // Update localStorage
+        localStorage.setItem("timer", prev - 1);
         return prev - 1;
       });
     }, 1000);
@@ -268,7 +312,6 @@ const Login = () => {
         </div>
       </form>
 
-      {/* OTP Popup */}
       {showOtpPopup && (
         <div className="login-otp-popup">
           <div className="login-otp-popup-content">

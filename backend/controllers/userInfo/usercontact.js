@@ -1,5 +1,5 @@
 const { validationResult } = require("express-validator");
-const UserSchema = require("../models/user");
+const UserSchema = require("../../models/user");
 
 const addContact = async (req, res) => {
   const errors = validationResult(req);
@@ -85,6 +85,8 @@ const addContact = async (req, res) => {
 const fetchContacts = async (req, res) => {
   const userId = req.user.id; // Extract user ID from the token
   const { keyword } = req.body;
+  console.log(req.body);
+  console.log(userId);
 
   try {
     const userexist = await UserSchema.findById(userId).populate(
@@ -96,7 +98,7 @@ const fetchContacts = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-
+   
     const contactUsers = userexist.Contacts.filter((contact) =>
       contact.contactname.toLowerCase().includes(keyword.toLowerCase())
     ).map((contact) => ({
@@ -108,13 +110,14 @@ const fetchContacts = async (req, res) => {
       Mobile: contact.userId.Mobile,
       status: contact.userId.status, // Add status field
     }));
+    console.log(contactUsers);
 
     return res.status(200).json({
       success: true,
       contacts: contactUsers,
     });
   } catch (error) {
-    console.error("Error in /filter-contact:", error.message);
+    console.error("Error in searchcontact:", error.message);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

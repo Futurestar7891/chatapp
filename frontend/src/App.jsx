@@ -10,42 +10,42 @@ import ChangePassword from "./Components/userEdit/ChangePassword";
 import AddContact from "./Components/Forms/AddContact";
 import Fetchmessages from "./Components/userMessage/Fetchmessages";
 import PublicProfile from "./Components/userEdit/PublicProfile";
+import PrivacySettings from "./Components/userEdit/PrivacySettings";
 
 const App = () => {
   const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const userId = localStorage.getItem("id"); // Get the user's ID from localStorage
+useEffect(() => {
+  const userId = localStorage.getItem("id");
 
-    const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
-      withCredentials: true,
-      transports: ["websocket", "polling"],
-    });
+  const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
+    withCredentials: true,
+    transports: ["websocket", "polling"],
+    autoConnect: true, // Ensure socket connects on initialization
+  });
 
-    newSocket.once("connect", () => {
-      console.log("✅ Connected to server, ID:", newSocket.id);
+  newSocket.once("connect", () => {
+    console.log("✅ Connected to server, ID:", newSocket.id);
+    if (userId) {
+      newSocket.emit("setOnline", userId);
+    }
+  });
 
-      // Emit the "setOnline" event to update the user's status to "online"
-      if (userId) {
-        newSocket.emit("setOnline", userId);
-      }
-    });
+  newSocket.once("disconnect", () => {
+    console.log("❌ Disconnected from server");
+  });
 
-    newSocket.once("disconnect", () => {
-      console.log("❌ Disconnected from server");
-    });
+  newSocket.once("connect_error", (err) => {
+    console.error("⚠️ Connection error:", err);
+  });
 
-    newSocket.once("connect_error", (err) => {
-      console.error("⚠️ Connection error:", err);
-    });
+  setSocket(newSocket);
 
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
+  return () => {
+    newSocket.disconnect();
+  };
+}, []);
 
   // Check token expiration and handle logout
   useEffect(() => {
@@ -109,7 +109,7 @@ const App = () => {
         path="/login"
         element={
           <PublicRoute>
-            <Login />
+            <Login socket={socket} />
           </PublicRoute>
         }
       />
@@ -166,6 +166,15 @@ const App = () => {
         element={
           <ProtectedRoute>
             <AddContact />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/privacy-setting"
+        element={
+          <ProtectedRoute>
+            <PrivacySettings />
           </ProtectedRoute>
         }
       />

@@ -32,6 +32,7 @@ export const StateProvider = ({ children }) => {
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [showPrivacy,setShowPrivacy]=useState(false);
   const [isInContactList, setIsInContactList] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -88,6 +89,8 @@ export const StateProvider = ({ children }) => {
       setIsBlocked,
       isInContactList,
       setIsInContactList,
+      showPrivacy,
+      setShowPrivacy,
       isMobile,
       setIsMobile,
     }),
@@ -105,6 +108,7 @@ export const StateProvider = ({ children }) => {
       messages,
       isBlocked,
       isInContactList,
+      showPrivacy,
       isMobile,
     ]
   );

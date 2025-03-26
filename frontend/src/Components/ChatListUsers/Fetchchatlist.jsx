@@ -8,15 +8,14 @@ import { StateContext } from "../../main";
 import axios from "axios";
 import "../../Css/Fetchchatlist.css";
 
-const Fetchchatlist = ({socket}) => {
+const Fetchchatlist = ({ socket }) => {
   const [search, setSearch] = useState("");
   const [chatusers, setChatUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
-  const { showbar, setShowbar, setSelectedUser } =
-    useContext(StateContext);
+  const { showbar, setShowbar, setSelectedUser } = useContext(StateContext);
 
   const senderId = localStorage.getItem("id");
 
@@ -103,49 +102,59 @@ const Fetchchatlist = ({socket}) => {
     }
   }, [socket, loadChatList]);
 
-  const fetchContacts = useCallback(async (keyword) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
-        `${import.meta.env.VITE_PUBLIC_API_URL}/api/filter-contact`,
-        { keyword },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = response.data;
-      if (data.success) {
-        setContacts(data.contacts);
-      }
-    } catch (error) {
-      console.error("Error fetching contacts:", error);
-    }
-  }, []);
-
-  const handleSearch = useCallback(
-    _.debounce((keyword) => {
-      if (keyword.trim() === "") {
-        setFilteredUsers(chatusers);
-        setContacts([]);
-      } else {
-        const filtered = chatusers.filter((user) =>
-          user.Name.toLowerCase().includes(keyword.toLowerCase())
+  const fetchContacts = useCallback(
+    async (keyword) => {
+      try {
+        console.log("enter in frontend ");
+        const token = localStorage.getItem("token");
+        const response = await axios.post(
+          `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
+          { keyword },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-        setFilteredUsers(filtered);
 
-        if (filtered.length <= 5) {
-          fetchContacts(keyword);
-        } else {
-          setContacts([]);
+        const data = response.data;
+        console.log(data);
+        if (data.success) {
+          // Filter out contacts that are already in the chat list
+          const uniqueContacts = data.contacts.filter(
+            (contact) =>
+              !chatusers.some((user) => user._id === contact._id)
+          );
+          setContacts(uniqueContacts);
         }
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
       }
-    }, 300),
-    [chatusers, fetchContacts]
+    },
+    [chatusers] // Add chatusers as a dependency
   );
+const handleSearch = useCallback(
+  _.debounce((keyword) => {
+    if (keyword.trim() === "") {
+      setFilteredUsers(chatusers);
+      setContacts([]);
+    } else {
+      const filtered = chatusers.filter((user) => {
+        const name = user?.Name || user?.name || ""; // Fallback for missing/undefined
+        return name.toLowerCase().includes(keyword.toLowerCase());
+      });
+      setFilteredUsers(filtered);
+
+      if (filtered.length <= 5) {
+        fetchContacts(keyword);
+      } else {
+        setContacts([]);
+      }
+    }
+  }, 300),
+  [chatusers, fetchContacts]
+);
 
   const handleInputChange = useCallback(
     (e) => {
@@ -227,7 +236,7 @@ const Fetchchatlist = ({socket}) => {
       ) : hasFetched && chatusers.length === 0 ? (
         <div className="Searchusers">Chat not found</div>
       ) : null}
-      {showbar ? <Options /> : ""}
+      {showbar ? <Options socket={socket} /> : ""}
     </div>
   );
 };

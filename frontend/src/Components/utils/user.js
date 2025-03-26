@@ -26,4 +26,24 @@ const getUserInfo = async (receiverId) => {
   }
 };
 
-export { getUserInfo };
+const getPrivacySettings = async () => {
+  console.log("Fetching privacy settings...");
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token found");
+
+    const response = await axios.get(`${API_URL}/api/privacy-settings`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching privacy settings:", error.message);
+    return { success: false, settings: null, blockedUsers: [] };
+  }
+};
+
+export { getUserInfo, getPrivacySettings };

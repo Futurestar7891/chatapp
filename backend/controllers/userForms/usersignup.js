@@ -1,8 +1,8 @@
 
 const { validationResult } = require("express-validator");
-const UserSchema = require("../models/user");
+const UserSchema = require("../../models/user");
 const { hash } = require("bcryptjs");
-const {uploadToCloudinary}=require("../utils/cloudinary");
+const {uploadToCloudinary}=require("../../utils/cloudinary");
 
 const signup = async(req,res)=>{
     try {

@@ -28,12 +28,29 @@ const FilteredUsers = ({ user }) => {
     <>
       <div onClick={handleClick} className="Filtereduserleftdiv">
         <div className="Filtereduserphoto">
-          {user.Photo && (
+          {user.Photo ? (
             <img
               style={{ cursor: "pointer" }}
               src={user.Photo}
               alt={user.Name}
             />
+          ) : (
+            <div
+              style={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "50%",
+                backgroundColor: "#ccc",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            >
+              {displayName[0]} {/* Show initial if no photo */}
+            </div>
           )}
         </div>
 

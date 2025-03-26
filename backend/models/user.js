@@ -104,10 +104,10 @@ const UserSchema = new mongoose.Schema({
       enum: ["public", "contacts", "private"],
       default: "public",
     },
-    messageRequests: {
+    bioVisibility: {
       type: String,
-      enum: ["everyone", "contacts", "none"],
-      default: "everyone",
+      enum: ["public", "contacts", "private"],
+      default: "public",
     },
   },
   notifications: {
@@ -128,20 +128,7 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  archived: {
-    type: Boolean,
-    default: false,
-  },
-  twoFactorAuth: {
-    enabled: {
-      type: Boolean,
-      default: false,
-    },
-    secret: {
-      type: String,
-      default: null,
-    },
-  },
+
   role: {
     type: String,
     enum: ["user", "admin", "moderator"],
@@ -176,31 +163,7 @@ const UserSchema = new mongoose.Schema({
     enum: ["light", "dark", "system"],
     default: "system",
   },
-  verification: {
-    emailVerified: {
-      type: Boolean,
-      default: false,
-    },
-    mobileVerified: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  activityLog: [
-    {
-      action: {
-        type: String,
-        required: true,
-      },
-      timestamp: {
-        type: Date,
-        default: Date.now,
-      },
-      details: {
-        type: mongoose.Schema.Types.Mixed,
-      },
-    },
-  ],
+
   groups: [
     {
       groupId: {
@@ -219,60 +182,6 @@ const UserSchema = new mongoose.Schema({
       },
     },
   ],
-  preferences: {
-    fontSize: {
-      type: String,
-      enum: ["small", "medium", "large"],
-      default: "medium",
-    },
-    notificationSound: {
-      type: String,
-      default: "default",
-    },
-  },
-  reports: [
-    {
-      reportedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      reason: {
-        type: String,
-        required: true,
-      },
-      timestamp: {
-        type: Date,
-        default: Date.now,
-      },
-      resolved: {
-        type: Boolean,
-        default: false,
-      },
-    },
-  ],
-  backupEmail: {
-    type: String,
-    default: null,
-  },
-  socialLinks: {
-    facebook: {
-      type: String,
-      default: null,
-    },
-    twitter: {
-      type: String,
-      default: null,
-    },
-    instagram: {
-      type: String,
-      default: null,
-    },
-    linkedin: {
-      type: String,
-      default: null,
-    },
-  },
 });
 
 module.exports = mongoose.models.User || mongoose.model("User", UserSchema);

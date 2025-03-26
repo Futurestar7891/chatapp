@@ -7,7 +7,7 @@ const {
   fetchMessage,
   chattingRoom,
   message,
-} = require("../controllers/message");
+} = require("../controllers/userMessaging/message");
 
 router.post("/search-chatlist", authenticateToken, fetchChatlist);
 router.post("/fetch-messages", conversationvalidation, fetchMessage);

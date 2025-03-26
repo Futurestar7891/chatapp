@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
-const UserSchema = require("../models/user");
+const UserSchema = require("../../models/user");
 const { hash, compare } = require("bcryptjs");
-const { sendEmail } = require("../middleware");
+const { sendEmail } = require("../../middleware");
 
 // Change Password Function
 const changePassword = async (req, res) => {

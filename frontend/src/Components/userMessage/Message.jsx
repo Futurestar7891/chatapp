@@ -1,12 +1,16 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useContext } from "react";
 import {
   faFilePdf,
   faFileWord,
   faFileAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../Css/Message.css";
+import { StateContext } from "../../main";
 
 const Message = ({ message, isSent, userphoto }) => {
+  const { selectedUser } = useContext(StateContext);
+
   const getFileIcon = (fileType) => {
     if (fileType === "application/pdf") return faFilePdf;
     if (
@@ -44,7 +48,6 @@ const Message = ({ message, isSent, userphoto }) => {
 
   const renderFile = (file) => {
     if (file.url.startsWith("data:")) {
-      // Handle data URL content
       if (file.type.startsWith("image")) {
         return (
           <div className="message-media" key={file.name}>
@@ -111,7 +114,6 @@ const Message = ({ message, isSent, userphoto }) => {
         );
       }
     } else {
-      // Handle backend URLs
       if (file.type.startsWith("image")) {
         return (
           <div className="message-media" key={file.name}>
@@ -175,10 +177,33 @@ const Message = ({ message, isSent, userphoto }) => {
     return null;
   };
 
+  // Define displayName before the return statement
+  const displayName = selectedUser?.Name || "Unknown";
+
   return (
     <div className={`message ${isSent ? "sent" : "received"}`}>
       <div className="userphotodiv">
-        <img src={userphoto} alt="User" />
+        {isSent ? (
+          <img src={userphoto} alt="Sender" />
+        ) : selectedUser?.Photo ? (
+          <img src={selectedUser.Photo} alt="Receiver" />
+        ) : (
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              backgroundColor: "#ccc",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: "20px",
+            }}
+          >
+            {displayName[0]} {/* Show initial if no photo */}
+          </div>
+        )}
       </div>
       <div className={`messagesdiv ${isSent ? "sendermsg" : "receivermsg"}`}>
         {message.files && message.files.map((file) => renderFile(file))}
