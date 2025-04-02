@@ -13,7 +13,7 @@ import Blockedpopup from "../userEdit/BlockedPopup";
 import { StateContext } from "../../main";
 import "../../Css/Fetchmessages.css";
 
-const MessageInput = ({ socket, handleAttachmentClick }) => {
+const MessageInput = ({ handleAttachmentClick }) => {
   const {
     isBlocked,
     messageInput,

@@ -53,7 +53,6 @@ const UserStatus = () => {
       e.stopPropagation();
     }
   };
-  console.log(selectedUser);
   const displayName = selectedUser?.Name || "Unknown";
 
   return (

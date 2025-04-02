@@ -71,12 +71,6 @@ const Fetchchatlist = ({ socket }) => {
       setChatUsers(freshUsers);
       setFilteredUsers(freshUsers);
       sessionStorage.setItem(cacheKey, JSON.stringify(freshUsers));
-
-      freshUsers.forEach((user) => {
-        const roomId = [senderId, user._id].sort().join("-");
-        socket.emit("joinRoom", roomId);
-        console.log(`Proactively joined room: ${roomId}`);
-      });
     }
   }, [senderId, socket, getCacheKey, fetchChatListFromApi]);
 
@@ -123,8 +117,7 @@ const Fetchchatlist = ({ socket }) => {
         if (data.success) {
           // Filter out contacts that are already in the chat list
           const uniqueContacts = data.contacts.filter(
-            (contact) =>
-              !chatusers.some((user) => user._id === contact._id)
+            (contact) => !chatusers.some((user) => user._id === contact._id)
           );
           setContacts(uniqueContacts);
         }
@@ -134,27 +127,28 @@ const Fetchchatlist = ({ socket }) => {
     },
     [chatusers] // Add chatusers as a dependency
   );
-const handleSearch = useCallback(
-  _.debounce((keyword) => {
-    if (keyword.trim() === "") {
-      setFilteredUsers(chatusers);
-      setContacts([]);
-    } else {
-      const filtered = chatusers.filter((user) => {
-        const name = user?.Name || user?.name || ""; // Fallback for missing/undefined
-        return name.toLowerCase().includes(keyword.toLowerCase());
-      });
-      setFilteredUsers(filtered);
 
-      if (filtered.length <= 5) {
-        fetchContacts(keyword);
-      } else {
+  const handleSearch = useCallback(
+    _.debounce((keyword) => {
+      if (keyword.trim() === "") {
+        setFilteredUsers(chatusers);
         setContacts([]);
+      } else {
+        const filtered = chatusers.filter((user) => {
+          const name = user?.Name || user?.name || ""; // Fallback for missing/undefined
+          return name.toLowerCase().includes(keyword.toLowerCase());
+        });
+        setFilteredUsers(filtered);
+
+        if (filtered.length <= 5) {
+          fetchContacts(keyword);
+        } else {
+          setContacts([]);
+        }
       }
-    }
-  }, 300),
-  [chatusers, fetchContacts]
-);
+    }, 300),
+    [chatusers, fetchContacts]
+  );
 
   const handleInputChange = useCallback(
     (e) => {

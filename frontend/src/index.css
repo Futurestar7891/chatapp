@@ -18,3 +18,12 @@
   text-decoration: none;
   font-family: "Open Sans", sans-serif;
 }
+
+body, html {
+  height: 100%;
+  margin: 0;
+}
+
+.main-container {
+  height: calc(var(--vh, 1vh) * 100);
+}

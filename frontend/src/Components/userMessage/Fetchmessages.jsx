@@ -93,6 +93,35 @@ const FetchMessages = ({ socket }) => {
           return updatedMessages;
         });
       }
+      else {
+      setMessages((prev) => {
+        // Clone previous messages
+        const updatedMessages = [...prev];
+
+        // Find the latest message (last in sorted order)
+        if (updatedMessages.length > 0) {
+          const latestMessageIndex = updatedMessages.length - 1;
+          updatedMessages[latestMessageIndex] = {
+            ...updatedMessages[latestMessageIndex],
+            receivedTime: newMessage.sentTime,
+          };
+        }
+
+        // Sort messages after updating receivedTime
+        updatedMessages.sort((a, b) => new Date(a.sentTime) - new Date(b.sentTime));
+
+        // Update the cache
+        const cacheKey = getCacheKey(senderId, receiverId);
+        const cachedData = getCachedData(cacheKey) || {};
+        setCachedData(cacheKey, {
+          ...cachedData,
+          messages: updatedMessages,
+        });
+
+        console.log(newMessage);
+        return updatedMessages;
+      });
+    }
     },
     [receiverId, senderId, setMessages]
   );

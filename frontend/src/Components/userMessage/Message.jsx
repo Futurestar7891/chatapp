@@ -1,9 +1,11 @@
+// src/components/Message.js
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext } from "react";
 import {
   faFilePdf,
   faFileWord,
   faFileAlt,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../Css/Message.css";
 import { StateContext } from "../../main";
@@ -177,7 +179,22 @@ const Message = ({ message, isSent, userphoto }) => {
     return null;
   };
 
-  // Define displayName before the return statement
+  const renderMessageStatus = () => {
+    if (!isSent) return null;
+
+    // Check if message is from backend (has _id) and has receivedTime
+    const isRead = message._id && message.receivedTime;
+
+    return (
+      <span className="message-status">
+        <FontAwesomeIcon icon={faCheck} className="tick single-tick" />
+        {isRead && (
+          <FontAwesomeIcon icon={faCheck} className="tick double-tick" />
+        )}
+      </span>
+    );
+  };
+
   const displayName = selectedUser?.Name || "Unknown";
 
   return (
@@ -201,19 +218,20 @@ const Message = ({ message, isSent, userphoto }) => {
               fontSize: "20px",
             }}
           >
-            {displayName[0]} {/* Show initial if no photo */}
+            {displayName[0]}
           </div>
         )}
       </div>
       <div className={`messagesdiv ${isSent ? "sendermsg" : "receivermsg"}`}>
         {message.files && message.files.map((file) => renderFile(file))}
         <div className="messagetextdiv">
-          <p>
-            {message.text}{" "}
+          <p>{message.text}</p>
+          <div className="message-footer">
             <span className="message-timestamp">
-              {formatTimestamp(message.timestamp)}
+              {formatTimestamp(isSent ?message.sentTime:message.receivedTime)}
             </span>
-          </p>
+            {renderMessageStatus()}
+          </div>
         </div>
       </div>
     </div>
