@@ -4,7 +4,7 @@ import { StateContext } from "../../main";
 import axios from "axios";
 import "../../Css/Login.css";
 
-const Login = ({ socket }) => {
+const Login = ({socket}) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -43,28 +43,6 @@ const Login = ({ socket }) => {
       }
     }
   }, [setShowOtpPopup]);
-
-  useEffect(() => {
-    if (socket) {
-      socket.on("connect", () => {
-        console.log("Login component - Socket connected:", socket.id);
-      });
-      socket.on("disconnect", () => {
-        console.log("Login component - Socket disconnected");
-      });
-      socket.on("connect_error", (err) => {
-        console.error("Login component - Socket connection error:", err);
-      });
-
-      return () => {
-        socket.off("connect");
-        socket.off("disconnect");
-        socket.off("connect_error");
-      };
-    } else {
-      console.log("Login component - Socket is not provided");
-    }
-  }, [socket]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -118,30 +96,8 @@ const Login = ({ socket }) => {
         localStorage.setItem("Email", data.Email);
         console.log("Login successful");
 
-        // Emit "setOnline" with socket handling
-        const userId = data.id;
-        if (socket) {
-          if (socket.connected) {
-            socket.emit("setOnline", userId);
-            console.log("Emitted setOnline for user:", userId);
-          } else {
-            console.log("Socket not connected, waiting for connection");
-            socket.once("connect", () => {
-              socket.emit("setOnline", userId);
-              console.log(
-                "Emitted setOnline after connection for user:",
-                userId
-              );
-            });
-            // Optionally force reconnect if not already connecting
-            if (!socket.connecting) {
-              socket.connect();
-              console.log("Attempting to reconnect socket");
-            }
-          }
-        } else {
-          console.log("Socket is not available");
-        }
+        // Emit setUserId to associate user with socket
+        socket.emit("setUserId", data.id);
 
         setTimeout(() => {
           navigate("/", { replace: true });

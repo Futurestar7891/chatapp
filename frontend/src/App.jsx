@@ -16,38 +16,39 @@ const App = () => {
   const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
 
-useEffect(() => {
-  const userId = localStorage.getItem("id");
+  useEffect(() => {
+    const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
+      withCredentials: true,
+      transports: ["websocket", "polling"],
+      autoConnect: true,
+    });
 
-  const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
-    withCredentials: true,
-    transports: ["websocket", "polling"],
-    autoConnect: true, // Ensure socket connects on initialization
-  });
+    newSocket.on("disconnect", () => {
+      console.log("❌ Disconnected from server");
+    });
 
-  newSocket.once("connect", () => {
-    console.log("✅ Connected to server, ID:", newSocket.id);
+    newSocket.on("connect_error", (err) => {
+      console.error("⚠️ Connection error:", err);
+    });
+
+    const userId = localStorage.getItem("id");
     if (userId) {
-      newSocket.emit("setOnline", userId);
+      newSocket.emit("setUserId", userId);
+      console.log(`Emitted setUserId for user ${userId} on refresh`);
     }
-  });
 
-  newSocket.once("disconnect", () => {
-    console.log("❌ Disconnected from server");
-  });
+    setSocket(newSocket);
 
-  newSocket.once("connect_error", (err) => {
-    console.error("⚠️ Connection error:", err);
-  });
+    return () => {
+      const userId = localStorage.getItem("id");
+      if (userId) {
+        newSocket.emit("logout", userId);
+        console.log(`Emitted logout for user ${userId} on unmount`);
+      }
+      newSocket.disconnect();
+    };
+  }, []);
 
-  setSocket(newSocket);
-
-  return () => {
-    newSocket.disconnect();
-  };
-}, []);
-
-  // Check token expiration and handle logout
   useEffect(() => {
     const checkTokenExpiration = () => {
       const tokenExpiry = localStorage.getItem("tokenExpiry");
@@ -59,14 +60,15 @@ useEffect(() => {
     const handleLogout = () => {
       const userId = localStorage.getItem("id");
       if (socket && userId) {
-        socket.emit("logout", userId); // Emit logout event
+        socket.emit("logout", userId);
+        console.log(`Emitted logout for user ${userId} on token expiry`);
       }
 
       localStorage.removeItem("token");
       localStorage.removeItem("tokenExpiry");
       localStorage.removeItem("id");
       localStorage.removeItem("Mobile");
-      window.alert("session expire");
+      window.alert("Session expired");
       navigate("/login", { replace: true });
     };
 
@@ -169,7 +171,6 @@ useEffect(() => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/privacy-setting"
         element={

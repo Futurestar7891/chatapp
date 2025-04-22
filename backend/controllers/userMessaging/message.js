@@ -4,9 +4,8 @@ const MessageSchema = require("../../models/message");
 const mongoose = require("mongoose");
 
 const fetchChatlist = async (req, res) => {
-  const userId = req.user.id; // Sender's ID (authenticated user)
+  const userId = req.user.id;
   try {
-    // Find the user making the request
     const sender = await UserSchema.findById(userId)
       .populate(
         "ChatList.userId",
@@ -20,26 +19,21 @@ const fetchChatlist = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    // Fetch ChatList users sorted by lastMessageTime (latest first)
-    let chatUsers = sender.ChatList.filter((chat) => chat.userId) // Ensure userId exists
-      .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime)) // Sort by timestamp
+    let chatUsers = sender.ChatList.filter((chat) => chat.userId)
+      .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
       .map((chat) => {
-        const receiver = chat.userId; // The user in the chat list (receiver)
+        const receiver = chat.userId;
         const contactEntry = sender.Contacts.find(
           (contact) => contact.contactmobile === receiver.Mobile
         );
 
-        // Check if sender blocked the receiver
         const isBlockedBySender = sender.BlockedUsers.some((entry) =>
           entry.userId.equals(receiver._id)
         );
-
-        // Check if receiver blocked the sender
         const isBlockedByReceiver = receiver.BlockedUsers.some((entry) =>
           entry.userId.equals(userId)
         );
 
-        // Determine visibility based on receiver's privacy settings
         const isSenderInReceiverContacts = receiver.Contacts.some((contact) =>
           contact.userId.equals(userId)
         );
@@ -50,7 +44,7 @@ const fetchChatlist = async (req, res) => {
           if (receiver.privacySettings.profileVisibility === "contacts")
             return isSenderInReceiverContacts;
           if (receiver.privacySettings.profileVisibility === "private")
-            return userId === receiver._id.toString(); // Only the user themselves
+            return userId === receiver._id.toString();
           return false;
         };
 
@@ -72,22 +66,22 @@ const fetchChatlist = async (req, res) => {
             return userId === receiver._id.toString();
           return false;
         };
-        
+
         return {
           _id: receiver._id,
           Name: contactEntry ? contactEntry.contactname : receiver.Name,
           Photo:
             canSeeProfile() && !isBlockedByReceiver ? receiver.Photo : null,
           Bio: canSeeBio() && !isBlockedByReceiver ? receiver.Bio : null,
-          Email: receiver.Email, // Email visibility not controlled by privacy settings here
+          Email: receiver.Email,
           Mobile: receiver.Mobile,
           lastMessageTime: chat.lastMessageTime,
           status:
             canSeeLastSeen() && !isBlockedByReceiver ? receiver.status : null,
           lastSeen:
             canSeeLastSeen() && !isBlockedByReceiver ? receiver.lastSeen : null,
-          isBlockedBySender, // Sender blocked receiver
-          isBlockedByReceiver, // Receiver blocked sender
+          isBlockedBySender,
+          isBlockedByReceiver,
         };
       });
 
@@ -141,28 +135,37 @@ const fetchMessage = async (req, res) => {
       entry.userId.equals(senderid)
     );
 
-    // Determine visibility based on receiver's privacy settings
     const isSenderInReceiverContacts = receiver.Contacts.some((contact) =>
       contact.userId.equals(senderid)
     );
 
     const canSeeLastSeen = () => {
-      if (isBlockedByReceiver) return false; // Receiver blocked sender
+      if (isBlockedByReceiver) return false;
       if (receiver.privacySettings.lastSeenVisibility === "public") return true;
       if (receiver.privacySettings.lastSeenVisibility === "contacts")
         return isSenderInReceiverContacts;
       if (receiver.privacySettings.lastSeenVisibility === "private")
-        return senderid === receiverid; // Only the user themselves
+        return senderid === receiverid;
       return false;
     };
 
     const canSeeProfile = () => {
-      if (isBlockedByReceiver) return false; // Receiver blocked sender
+      if (isBlockedByReceiver) return false;
       if (receiver.privacySettings.profileVisibility === "public") return true;
       if (receiver.privacySettings.profileVisibility === "contacts")
         return isSenderInReceiverContacts;
       if (receiver.privacySettings.profileVisibility === "private")
-        return senderid === receiverid; // Only the user themselves
+        return senderid === receiverid;
+      return false;
+    };
+
+    const canSeeBio = () => {
+      if (isBlockedByReceiver) return false;
+      if (receiver.privacySettings.bioVisibility === "public") return true;
+      if (receiver.privacySettings.bioVisibility === "contacts")
+        return isSenderInReceiverContacts;
+      if (receiver.privacySettings.bioVisibility === "private")
+        return senderid === receiverid;
       return false;
     };
 
@@ -178,16 +181,14 @@ const fetchMessage = async (req, res) => {
     const filteredMessages = conversation
       ? conversation.messages
           .filter((msg) => {
-            // Sender sees their own messages
             if (msg.senderId.equals(senderid)) return true;
-            // Don't show messages where sender is blocked by receiver
             if (
               msg.blockedId &&
               msg.blockedId.equals(receiverid) &&
               msg.receiverId.equals(senderid)
             )
               return false;
-            return true; // Show all other messages
+            return true;
           })
           .sort((a, b) => new Date(a.sentTime) - new Date(b.sentTime))
       : [];
@@ -195,17 +196,19 @@ const fetchMessage = async (req, res) => {
     return res.status(200).json({
       success: true,
       messages: filteredMessages,
-      userphoto: canSeeProfile() ? receiver.Photo : null, // Privacy-filtered photo
+      userphoto: canSeeProfile() ? receiver.Photo : null,
       status: canSeeLastSeen() ? receiver.status : null,
       lastSeen: canSeeLastSeen() ? receiver.lastSeen : null,
+      bio: canSeeBio() ? receiver.Bio : null,
       isBlocked: isBlockedBySender,
-      isBlockedByReceiver, // Included for completeness
+      isBlockedByReceiver,
     });
   } catch (error) {
     console.error("Error:", error.message);
     return res.status(500).json({ success: false, error: error.message });
   }
 };
+
 const chattingRoom = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -244,7 +247,7 @@ const chattingRoom = async (req, res) => {
 
 const message = async (req, res) => {
   const { senderid, receiverid, message } = req.body;
-  const io = req.io; // Use io from req
+  const io = req.io;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, error: errors.array() });
@@ -260,7 +263,7 @@ const message = async (req, res) => {
         message: "Sender or receiver does not exist",
       });
     }
-    // console.log("here in send recive route");
+
     const conversation = await MessageSchema.sendMessage(
       io,
       senderid,

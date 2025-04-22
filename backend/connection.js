@@ -31,6 +31,36 @@ const updateUserStatus = async (userId, status) => {
   }
 };
 
+const canSeeStatus = async (senderId, receiverId) => {
+  try {
+    const receiver = await UserSchema.findById(receiverId);
+    if (!receiver) {
+      console.error(`❌ Receiver ${receiverId} not found`);
+      return false;
+    }
+    const isBlocked = receiver.BlockedUsers.some((entry) =>
+      entry.userId.equals(senderId)
+    );
+    if (isBlocked) return false;
+    const { privacySettings } = receiver;
+    if (privacySettings.lastSeenVisibility === "public") return true;
+    if (privacySettings.lastSeenVisibility === "private")
+      return senderId === receiverId;
+    if (privacySettings.lastSeenVisibility === "contacts") {
+      return receiver.Contacts.some((contact) =>
+        contact.userId.equals(senderId)
+      );
+    }
+    return false;
+  } catch (error) {
+    console.error(
+      `❌ Error checking status visibility for ${receiverId}:`,
+      error
+    );
+    return false;
+  }
+};
+
 const setupSocketIO = (server) => {
   const io = new Server(server, {
     cors: {
@@ -43,52 +73,99 @@ const setupSocketIO = (server) => {
   io.on("connection", (socket) => {
     console.log(`New client connected: ${socket.id}`);
 
-    socket.on("setOnline", async (userId) => {
-      if (userId) {
-        socket.userId = userId;
-        await updateUserStatus(userId, "online");
-        console.log(`User ${userId} is now online`);
-        socket.broadcast.emit("userStatusChanged", {
-          userId,
-          status: "online",
-        });
+    socket.on("setUserId", async (userId) => {
+      socket.userId = userId;
+      console.log(`User ${userId} associated with socket ${socket.id}`);
+      await updateUserStatus(userId, "online");
+      const rooms = Array.from(socket.rooms).filter(
+        (room) => room !== socket.id
+      );
+      console.log(`User ${userId} is in rooms: ${rooms.join(", ")}`);
+      for (const roomId of rooms) {
+        const [user1, user2] = roomId.split("-");
+        const otherUserId = user1 === userId ? user2 : user1;
+        if (await canSeeStatus(otherUserId, userId)) {
+          socket.to(roomId).emit("userStatusChanged", {
+            userId,
+            status: "online",
+          });
+          console.log(
+            `Emitted online status for user ${userId} to room ${roomId}`
+          );
+        }
       }
     });
 
-    socket.on("logout", async (userId) => {
-      console.log("enterd in logut connection");
-      if (userId && socket.userId === userId) {
-        console.log("entered in the logout event");
-        await updateUserStatus(userId, "offline");
-        console.log(`User ${userId} logged out and is now offline`);
-        socket.broadcast.emit("userStatusChanged", {
-          userId,
-          status: "offline",
-        });
-        socket.disconnect(); // Disconnect only on explicit logout
-      }
-    });
-
-    socket.on("disconnect", async () => {
-      const userId = socket.userId;
-      if (userId) {
-        await updateUserStatus(userId, "offline");
-        console.log(`User ${userId} disconnected and is now offline`);
-        socket.broadcast.emit("userStatusChanged", {
-          userId,
-          status: "offline",
-        });
-      }
-    });
-
-    socket.on("joinRoom", (roomId) => {
+    socket.on("joinRoom", async (roomId) => {
       socket.join(roomId);
       console.log(`Socket ${socket.id} joined room: ${roomId}`);
+      if (socket.userId) {
+        const [user1, user2] = roomId.split("-");
+        const otherUserId = user1 === socket.userId ? user2 : user1;
+        if (await canSeeStatus(otherUserId, socket.userId)) {
+          socket.to(roomId).emit("userStatusChanged", {
+            userId: socket.userId,
+            status: "online",
+          });
+          console.log(
+            `Emitted online status for user ${socket.userId} to room ${roomId}`
+          );
+        }
+      }
     });
 
     socket.on("leaveRoom", (roomId) => {
       socket.leave(roomId);
       console.log(`Socket ${socket.id} left room: ${roomId}`);
+    });
+
+    socket.on("logout", async (userId) => {
+      console.log(`User ${userId} logged out: ${socket.id}`);
+      if (socket.userId === userId) {
+        await updateUserStatus(userId, "offline");
+        const rooms = Array.from(socket.rooms).filter(
+          (room) => room !== socket.id
+        );
+        console.log(`User ${userId} was in rooms: ${rooms.join(", ")}`);
+        for (const roomId of rooms) {
+          const [user1, user2] = roomId.split("-");
+          const otherUserId = user1 === userId ? user2 : user1;
+          if (await canSeeStatus(otherUserId, userId)) {
+            socket.to(roomId).emit("userStatusChanged", {
+              userId,
+              status: "offline",
+            });
+            console.log(
+              `Emitted offline status for user ${userId} to room ${roomId}`
+            );
+          }
+        }
+        socket.userId = null;
+      }
+    });
+
+    socket.on("disconnect", async () => {
+      console.log(`Client disconnected: ${socket.id}`);
+      if (socket.userId) {
+        await updateUserStatus(socket.userId, "offline");
+        const rooms = Array.from(socket.rooms).filter(
+          (room) => room !== socket.id
+        );
+        console.log(`User ${socket.userId} was in rooms: ${rooms.join(", ")}`);
+        for (const roomId of rooms) {
+          const [user1, user2] = roomId.split("-");
+          const otherUserId = user1 === socket.userId ? user2 : user1;
+          if (await canSeeStatus(otherUserId, socket.userId)) {
+            socket.to(roomId).emit("userStatusChanged", {
+              userId: socket.userId,
+              status: "offline",
+            });
+            console.log(
+              `Emitted offline status for user ${socket.userId} to room ${roomId}`
+            );
+          }
+        }
+      }
     });
   });
 

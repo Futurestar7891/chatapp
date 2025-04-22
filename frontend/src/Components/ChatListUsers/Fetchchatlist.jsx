@@ -78,20 +78,26 @@ const Fetchchatlist = ({ socket }) => {
     loadChatList();
   }, [loadChatList]);
 
-  // Add socket listener for new messages
   useEffect(() => {
     if (socket) {
-      console.log("message is here");
       const handleReceiveMessage = (newMessage) => {
         console.log("Chatlist received message:", newMessage);
-        // Refresh chat list when a message is sent or received
+        loadChatList();
+      };
+
+      const handleStatusChange = ({ userId, status }) => {
+        console.log(
+          `Chatlist received status update for user ${userId}: ${status}`
+        );
         loadChatList();
       };
 
       socket.on("receiveMessage", handleReceiveMessage);
+      socket.on("userStatusChanged", handleStatusChange);
 
       return () => {
         socket.off("receiveMessage", handleReceiveMessage);
+        socket.off("userStatusChanged", handleStatusChange);
       };
     }
   }, [socket, loadChatList]);
@@ -99,7 +105,6 @@ const Fetchchatlist = ({ socket }) => {
   const fetchContacts = useCallback(
     async (keyword) => {
       try {
-        console.log("enter in frontend ");
         const token = localStorage.getItem("token");
         const response = await axios.post(
           `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
@@ -113,9 +118,7 @@ const Fetchchatlist = ({ socket }) => {
         );
 
         const data = response.data;
-        console.log(data);
         if (data.success) {
-          // Filter out contacts that are already in the chat list
           const uniqueContacts = data.contacts.filter(
             (contact) => !chatusers.some((user) => user._id === contact._id)
           );
@@ -125,7 +128,7 @@ const Fetchchatlist = ({ socket }) => {
         console.error("Error fetching contacts:", error);
       }
     },
-    [chatusers] // Add chatusers as a dependency
+    [chatusers]
   );
 
   const handleSearch = useCallback(
@@ -135,7 +138,7 @@ const Fetchchatlist = ({ socket }) => {
         setContacts([]);
       } else {
         const filtered = chatusers.filter((user) => {
-          const name = user?.Name || user?.name || ""; // Fallback for missing/undefined
+          const name = user?.Name || user?.name || "";
           return name.toLowerCase().includes(keyword.toLowerCase());
         });
         setFilteredUsers(filtered);

@@ -128,7 +128,6 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-
   role: {
     type: String,
     enum: ["user", "admin", "moderator"],
@@ -163,7 +162,6 @@ const UserSchema = new mongoose.Schema({
     enum: ["light", "dark", "system"],
     default: "system",
   },
-
   groups: [
     {
       groupId: {
@@ -185,5 +183,3 @@ const UserSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.models.User || mongoose.model("User", UserSchema);
-
-

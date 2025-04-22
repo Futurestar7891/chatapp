@@ -7,7 +7,6 @@ import { BrowserRouter } from "react-router-dom";
 export const StateContext = createContext();
 
 export const StateProvider = ({ children }) => {
-  // Load persisted data from sessionStorage
   const getInitialState = (key, defaultValue) => {
     const storedData = sessionStorage.getItem(key);
     return storedData ? JSON.parse(storedData) : defaultValue;
@@ -16,12 +15,9 @@ export const StateProvider = ({ children }) => {
   const [selectedUser, setSelectedUser] = useState(() =>
     getInitialState("selectedUser", {})
   );
-
   const [showuserpublicprofiledata, setShowUserPublicProfileData] = useState(
     () => getInitialState("showuserpublicprofiledata", {})
   );
-
-  // Other states
   const [showpublicprofile, setShowPublicProfile] = useState(false);
   const [showbar, setShowbar] = useState(false);
   const [showOtpPopup, setShowOtpPopup] = useState(false);
@@ -32,11 +28,10 @@ export const StateProvider = ({ children }) => {
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [showPrivacy,setShowPrivacy]=useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const [isInContactList, setIsInContactList] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // Persist selectedUser and showuserpublicprofiledata on change
   useEffect(() => {
     sessionStorage.setItem("selectedUser", JSON.stringify(selectedUser));
   }, [selectedUser]);
@@ -48,7 +43,6 @@ export const StateProvider = ({ children }) => {
     );
   }, [showuserpublicprofiledata]);
 
-  // Handle window resize to update isMobile state
   useEffect(() => {
     const handleResize = () => {
       const newIsMobile = window.innerWidth <= 768;
@@ -118,10 +112,7 @@ export const StateProvider = ({ children }) => {
   );
 };
 
-// Create root once and store it
 const root = createRoot(document.getElementById("root"));
-
-// Initial render
 root.render(
   <StateProvider>
     <BrowserRouter>
@@ -130,7 +121,6 @@ root.render(
   </StateProvider>
 );
 
-// Optional: Handle HMR if using a dev server
 if (import.meta.hot) {
   import.meta.hot.accept();
 }
