@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import { useEffect } from "react";
 import ChatApp from "./Components/ChatApp";
 import "./App.css";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
@@ -13,41 +12,7 @@ import PublicProfile from "./Components/userEdit/PublicProfile";
 import PrivacySettings from "./Components/userEdit/PrivacySettings";
 
 const App = () => {
-  const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
-      withCredentials: true,
-      transports: ["websocket", "polling"],
-      autoConnect: true,
-    });
-
-    newSocket.on("disconnect", () => {
-      console.log("❌ Disconnected from server");
-    });
-
-    newSocket.on("connect_error", (err) => {
-      console.error("⚠️ Connection error:", err);
-    });
-
-    const userId = localStorage.getItem("id");
-    if (userId) {
-      newSocket.emit("setUserId", userId);
-      console.log(`Emitted setUserId for user ${userId} on refresh`);
-    }
-
-    setSocket(newSocket);
-
-    return () => {
-      const userId = localStorage.getItem("id");
-      if (userId) {
-        newSocket.emit("logout", userId);
-        console.log(`Emitted logout for user ${userId} on unmount`);
-      }
-      newSocket.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     const checkTokenExpiration = () => {
@@ -58,12 +23,6 @@ const App = () => {
     };
 
     const handleLogout = () => {
-      const userId = localStorage.getItem("id");
-      if (socket && userId) {
-        socket.emit("logout", userId);
-        console.log(`Emitted logout for user ${userId} on token expiry`);
-      }
-
       localStorage.removeItem("token");
       localStorage.removeItem("tokenExpiry");
       localStorage.removeItem("id");
@@ -75,7 +34,7 @@ const App = () => {
     const interval = setInterval(checkTokenExpiration, 1000);
 
     return () => clearInterval(interval);
-  }, [navigate, socket]);
+  }, [navigate]);
 
   const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem("token");
@@ -111,7 +70,7 @@ const App = () => {
         path="/login"
         element={
           <PublicRoute>
-            <Login socket={socket} />
+            <Login />
           </PublicRoute>
         }
       />
@@ -127,7 +86,7 @@ const App = () => {
         path="/"
         element={
           <ProtectedRoute>
-            <ChatApp socket={socket} />
+            <ChatApp />
           </ProtectedRoute>
         }
       />
@@ -135,7 +94,7 @@ const App = () => {
         path="/fetchmessage"
         element={
           <ProtectedRoute>
-            <Fetchmessages socket={socket} />
+            <Fetchmessages />
           </ProtectedRoute>
         }
       />

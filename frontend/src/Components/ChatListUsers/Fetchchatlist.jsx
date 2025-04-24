@@ -8,14 +8,15 @@ import { StateContext } from "../../main";
 import axios from "axios";
 import "../../Css/Fetchchatlist.css";
 
-const Fetchchatlist = ({ socket }) => {
+const Fetchchatlist = () => {
   const [search, setSearch] = useState("");
   const [chatusers, setChatUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
-  const { showbar, setShowbar, setSelectedUser } = useContext(StateContext);
+  const { showbar, setShowbar, setSelectedUser, socket, onlineUsers } =
+    useContext(StateContext);
 
   const senderId = localStorage.getItem("id");
 
@@ -85,19 +86,10 @@ const Fetchchatlist = ({ socket }) => {
         loadChatList();
       };
 
-      const handleStatusChange = ({ userId, status }) => {
-        console.log(
-          `Chatlist received status update for user ${userId}: ${status}`
-        );
-        loadChatList();
-      };
-
       socket.on("receiveMessage", handleReceiveMessage);
-      socket.on("userStatusChanged", handleStatusChange);
 
       return () => {
         socket.off("receiveMessage", handleReceiveMessage);
-        socket.off("userStatusChanged", handleStatusChange);
       };
     }
   }, [socket, loadChatList]);
@@ -169,10 +161,16 @@ const Fetchchatlist = ({ socket }) => {
         onClick={() => setSelectedUser(user)}
         className="Filteredusermaindiv"
       >
-        <FilteredUsers user={user} />
+        <FilteredUsers
+          user={{
+            ...user,
+            status: onlineUsers.includes(user._id) ? "online" : "offline",
+            lastSeen: onlineUsers.includes(user._id) ? null : new Date(),
+          }}
+        />
       </div>
     ));
-  }, [filteredUsers, setSelectedUser]);
+  }, [filteredUsers, setSelectedUser, onlineUsers]);
 
   const renderedContacts = useMemo(() => {
     return contacts.map((contact, index) => (
@@ -181,10 +179,16 @@ const Fetchchatlist = ({ socket }) => {
         onClick={() => setSelectedUser(contact)}
         className="Filteredusermaindiv"
       >
-        <FilteredUsers user={contact} />
+        <FilteredUsers
+          user={{
+            ...contact,
+            status: onlineUsers.includes(contact._id) ? "online" : "offline",
+            lastSeen: onlineUsers.includes(contact._id) ? null : new Date(),
+          }}
+        />
       </div>
     ));
-  }, [contacts, setSelectedUser]);
+  }, [contacts, setSelectedUser, onlineUsers]);
 
   if (!senderId) {
     return (
@@ -233,7 +237,7 @@ const Fetchchatlist = ({ socket }) => {
       ) : hasFetched && chatusers.length === 0 ? (
         <div className="Searchusers">Chat not found</div>
       ) : null}
-      {showbar ? <Options socket={socket} /> : ""}
+      {showbar ? <Options /> : ""}
     </div>
   );
 };

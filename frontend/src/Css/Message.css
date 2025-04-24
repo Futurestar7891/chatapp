@@ -132,6 +132,9 @@
   top: 5px;
   color: grey;
 }
+.seen-tick{
+  color: blue;
+}
 
 .document-preview {
   width: 150px;

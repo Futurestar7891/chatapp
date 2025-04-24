@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const UserSchema = require("./user");
 const { uploadToCloudinary } = require("../utils/cloudinary");
+const { userSocketMap, userRoomMap } = require("../connection");
 
 const MessageSchema = new mongoose.Schema({
   participants: [
@@ -105,6 +106,7 @@ MessageSchema.statics.sendMessage = async function (
       files: uploadedFiles,
       sentTime: new Date(message.sentTime || Date.now()),
       receivedTime: null,
+      seentTime:null,
       blockedId: isBlockedByReceiver ? senderObjectId : null, // Set blockedId if blocked by receiver
     };
 
@@ -150,12 +152,18 @@ MessageSchema.statics.sendMessage = async function (
 
     // Only update receiver's ChatList if not blocked
     if (!isBlockedByReceiver) {
+      const reciverRoom = userRoomMap.get(receiverId);
+      const RoomId=[senderId,receiverId].sort().join("-");
+
+      if(reciverRoom===RoomId){
+        savedMessage.seenTime = new Date();
+      }
       savedMessage.receivedTime = new Date();
       await conversation.save();
       await updateChatList(receiverId, senderId, savedMessage.receivedTime);
     }
 
-    // Only emit if receiver hasn't blocked sender
+
     if (!isBlockedByReceiver) {
       const roomId = [senderId, receiverId].sort().join("-");
       io.to(roomId).emit("receiveMessage", {
@@ -163,6 +171,9 @@ MessageSchema.statics.sendMessage = async function (
         sentTime: savedMessage.sentTime.toISOString(),
         receivedTime: savedMessage.receivedTime
           ? savedMessage.receivedTime.toISOString()
+          : null,
+        seenTime: savedMessage.seenTime
+          ? savedMessage.seenTime.toISOString()
           : null,
       });
       console.log(`Emitted message to room ${roomId}`);

@@ -1,5 +1,6 @@
 import { useState, createContext, useMemo, useEffect } from "react";
 import { createRoot } from "react-dom/client";
+import { io } from "socket.io-client"; // Import socket.io-client
 import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
@@ -7,6 +8,7 @@ import { BrowserRouter } from "react-router-dom";
 export const StateContext = createContext();
 
 export const StateProvider = ({ children }) => {
+  const token = localStorage.getItem("token");
   const getInitialState = (key, defaultValue) => {
     const storedData = sessionStorage.getItem(key);
     return storedData ? JSON.parse(storedData) : defaultValue;
@@ -31,6 +33,53 @@ export const StateProvider = ({ children }) => {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [isInContactList, setIsInContactList] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [socket, setSocket] = useState(null);
+  
+  // Initialize socket connection
+  useEffect(() => {
+    if (token) {
+      const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
+        withCredentials: true,
+        transports: ["websocket", "polling"],
+        autoConnect: true,
+        query: { token },
+      });
+
+      newSocket.on("disconnect", () => {
+        console.log("❌ Disconnected from server");
+      });
+
+      newSocket.on("connect_error", (err) => {
+        console.error("⚠️ Connection error:", err);
+      });
+
+      setSocket(newSocket);
+
+      return () => {
+        newSocket.disconnect();
+        setSocket(null);
+      };
+    } else {
+      setSocket(null);
+    }
+  }, [token]);
+
+  // Listen for onlineUsers event
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleOnlineUsers = (userIds) => {
+      console.log("Online users (main.jsx):", userIds);
+      setOnlineUsers(userIds);
+    };
+
+    socket.on("onlineUsers", handleOnlineUsers);
+
+    return () => {
+      socket.off("onlineUsers", handleOnlineUsers);
+    };
+  }, [socket]);
 
   useEffect(() => {
     sessionStorage.setItem("selectedUser", JSON.stringify(selectedUser));
@@ -87,6 +136,10 @@ export const StateProvider = ({ children }) => {
       setShowPrivacy,
       isMobile,
       setIsMobile,
+      onlineUsers,
+      setOnlineUsers,
+      socket,
+      setSocket,
     }),
     [
       selectedUser,
@@ -104,6 +157,8 @@ export const StateProvider = ({ children }) => {
       isInContactList,
       showPrivacy,
       isMobile,
+      onlineUsers,
+      socket,
     ]
   );
 

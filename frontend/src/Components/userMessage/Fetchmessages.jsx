@@ -1,27 +1,15 @@
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-  useContext,
-} from "react";
+import { useState, useEffect, useCallback, useMemo, useContext } from "react";
 import Message from "./Message";
 import { StateContext } from "../../main";
 import UserStatus from "./userStatus";
 import MessageInput from "./MessageInput";
 import "../../Css/Fetchmessages.css";
-import { getCacheKey, getCachedData, setCachedData } from "../utils/caching";
 
-const FetchMessages = ({ socket }) => {
+const FetchMessages = () => {
   const senderId = localStorage.getItem("id");
   const [recieverphoto, setRecieverPhoto] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentRoom, setCurrentRoom] = useState(null);
-  const [canSeeStatus, setCanSeeStatus] = useState(false);
-  const [canSeeBio, setCanSeeBio] = useState(false);
-  const popupRef = useRef(null);
 
   const senderphoto = localStorage.getItem("Photo") || "/default-avatar.png";
   const {
@@ -32,6 +20,8 @@ const FetchMessages = ({ socket }) => {
     showAttachmentPopup,
     setShowAttachmentPopup,
     messages,
+    onlineUsers,
+    socket // Access onlineUsers from StateContext
   } = useContext(StateContext);
   const receiverId = selectedUser?._id || null;
 
@@ -57,9 +47,6 @@ const FetchMessages = ({ socket }) => {
         return {
           messages: data.messages || [],
           userphoto: data.userphoto,
-          status: data.status,
-          lastSeen: data.lastSeen,
-          bio: data.bio,
           isBlocked: data.isBlocked,
         };
       }
@@ -84,14 +71,6 @@ const FetchMessages = ({ socket }) => {
           const updatedMessages = [...prev, newMessage].sort(
             (a, b) => new Date(a.sentTime) - new Date(b.sentTime)
           );
-
-          const cacheKey = getCacheKey(senderId, receiverId);
-          const cachedData = getCachedData(cacheKey) || {};
-          setCachedData(cacheKey, {
-            ...cachedData,
-            messages: updatedMessages,
-          });
-
           return updatedMessages;
         });
       } else {
@@ -101,18 +80,13 @@ const FetchMessages = ({ socket }) => {
             const latestMessageIndex = updatedMessages.length - 1;
             updatedMessages[latestMessageIndex] = {
               ...updatedMessages[latestMessageIndex],
-              receivedTime: newMessage.sentTime,
+              receivedTime: newMessage.receivedTime,
+              seenTime:newMessage.seenTime,
             };
           }
           updatedMessages.sort(
             (a, b) => new Date(a.sentTime) - new Date(b.sentTime)
           );
-          const cacheKey = getCacheKey(senderId, receiverId);
-          const cachedData = getCachedData(cacheKey) || {};
-          setCachedData(cacheKey, {
-            ...cachedData,
-            messages: updatedMessages,
-          });
           console.log("Updated messages with received time:", newMessage);
           return updatedMessages;
         });
@@ -133,28 +107,8 @@ const FetchMessages = ({ socket }) => {
       return;
     }
 
-    const newRoomId = [senderId, receiverId].sort().join("-");
-
     const fetchInitialData = async () => {
       setLoading(true);
-
-      const cacheKey = getCacheKey(senderId, receiverId);
-      const cachedData = getCachedData(cacheKey);
-
-      if (cachedData) {
-        setMessages(cachedData.messages || []);
-        setRecieverPhoto(cachedData.userphoto || null);
-        setIsBlocked(cachedData.isBlocked || false);
-        setCanSeeStatus(!!cachedData.status);
-        setCanSeeBio(!!cachedData.bio);
-        setSelectedUser((prev) => ({
-          ...prev,
-          Photo: cachedData.userphoto,
-          status: cachedData.status,
-          lastSeen: cachedData.lastSeen,
-          Bio: cachedData.bio,
-        }));
-      }
 
       const freshData = await fetchMessagesFromApi();
       if (freshData) {
@@ -162,84 +116,25 @@ const FetchMessages = ({ socket }) => {
         setMessages(freshData.messages);
         setRecieverPhoto(freshData.userphoto);
         setIsBlocked(freshData.isBlocked);
-        setCanSeeStatus(!!freshData.status);
-        setCanSeeBio(!!freshData.bio);
         setSelectedUser((prev) => ({
           ...prev,
           Photo: freshData.userphoto,
-          status: freshData.status,
-          lastSeen: freshData.lastSeen,
-          Bio: freshData.bio,
+          status: onlineUsers.includes(receiverId) ? "online" : "offline",
+          lastSeen: onlineUsers.includes(receiverId) ? null : new Date(),
         }));
-        setCachedData(cacheKey, {
-          messages: freshData.messages,
-          userphoto: freshData.userphoto,
-          lastSeen: freshData.lastSeen,
-          isBlocked: freshData.isBlocked,
-          status: freshData.status,
-          bio: freshData.bio,
-        });
       }
 
       setLoading(false);
     };
 
     fetchInitialData();
-
-    const joinRoom = () => {
-      if (socket.connected) {
-        socket.emit("joinRoom", newRoomId);
-        console.log(`Joined room: ${newRoomId}`);
-        setCurrentRoom(newRoomId);
-      } else {
-        console.warn("Socket not connected, waiting to join room:", newRoomId);
-      }
-    };
-
-    const onConnect = () => {
-      console.log("Socket connected:", socket.id);
-      joinRoom();
-    };
-
-    const onDisconnect = () => {
-      console.log("Socket disconnected");
-      setCurrentRoom(null);
-    };
-
-    const onStatusChange = ({ userId, status }) => {
-      console.log(
-        `FetchMessages received status update for user ${userId}: ${status}`
-      );
-      if (userId === receiverId && canSeeStatus) {
-        console.log(`Updating status for ${userId} to ${status}`);
-        setSelectedUser((prev) => ({
-          ...prev,
-          status: status,
-          lastSeen: status === "offline" ? new Date() : prev.lastSeen,
-        }));
-      } else if (userId === receiverId) {
-        console.log(
-          `Status update ignored for ${userId}: not allowed to see status`
-        );
-      }
-    };
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    const roomId=[senderId,receiverId].sort().join("-");
+    socket.emit("joinRoom",{roomId,senderId});
     socket.on("receiveMessage", handleReceiveMessage);
-    socket.on("userStatusChanged", onStatusChange);
-
-    joinRoom();
 
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
       socket.off("receiveMessage", handleReceiveMessage);
-      socket.off("userStatusChanged", onStatusChange);
-      if (newRoomId && socket.connected) {
-        socket.emit("leaveRoom", newRoomId);
-        console.log(`Left room: ${newRoomId}`);
-      }
+      socket.emit("leaveRoom");
     };
   }, [
     senderId,
@@ -250,19 +145,8 @@ const FetchMessages = ({ socket }) => {
     setIsBlocked,
     setSelectedUser,
     handleReceiveMessage,
-    canSeeStatus,
-    canSeeBio,
+    onlineUsers, // Depend on onlineUsers
   ]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (popupRef.current && !popupRef.current.contains(event.target)) {
-        setShowAttachmentPopup(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [setShowAttachmentPopup]);
 
   const handleAttachmentClick = useCallback(() => {
     setShowAttachmentPopup(!showAttachmentPopup);

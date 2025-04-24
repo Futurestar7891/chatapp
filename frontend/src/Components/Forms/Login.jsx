@@ -3,8 +3,10 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { StateContext } from "../../main";
 import axios from "axios";
 import "../../Css/Login.css";
+import { io } from "socket.io-client";
 
-const Login = ({socket}) => {
+
+const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -12,7 +14,7 @@ const Login = ({socket}) => {
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
-  const { showOtpPopup, setShowOtpPopup } = useContext(StateContext);
+  const { showOtpPopup, setShowOtpPopup,setSocket } = useContext(StateContext);
   const [otp, setOtp] = useState("");
   const [forgotEmailOrMobile, setForgotEmailOrMobile] = useState("");
   const [timer, setTimer] = useState(0);
@@ -95,9 +97,15 @@ const Login = ({socket}) => {
         localStorage.setItem("Bio", data.Bio);
         localStorage.setItem("Email", data.Email);
         console.log("Login successful");
+         
+      const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
+              withCredentials: true,
+              transports: ["websocket", "polling"],
+              autoConnect: true,
+              query: { },
+            });
 
-        // Emit setUserId to associate user with socket
-        socket.emit("setUserId", data.id);
+       setSocket(newSocket);
 
         setTimeout(() => {
           navigate("/", { replace: true });

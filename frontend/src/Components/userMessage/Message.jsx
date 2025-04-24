@@ -184,12 +184,22 @@ const Message = ({ message, isSent, userphoto }) => {
 
     // Check if message is from backend (has _id) and has receivedTime
     const isRead = message._id && message.receivedTime;
+    const isSeen = message._id && message.seenTime;
 
     return (
       <span className="message-status">
-        <FontAwesomeIcon icon={faCheck} className="tick single-tick" />
+        {/* Always show single tick */}
+        <FontAwesomeIcon
+          icon={faCheck}
+          className={`tick single-tick ${isSeen ? "seen-tick" : ""}`}
+        />
+
+        {/* Show double tick when read */}
         {isRead && (
-          <FontAwesomeIcon icon={faCheck} className="tick double-tick" />
+          <FontAwesomeIcon
+            icon={faCheck}
+            className={`tick double-tick ${isSeen ? "seen-tick" : ""}`}
+          />
         )}
       </span>
     );
