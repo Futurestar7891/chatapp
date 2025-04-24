@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const UserSchema = require("./user");
 const { uploadToCloudinary } = require("../utils/cloudinary");
-const { userSocketMap, userRoomMap } = require("../connection");
+const { userRoomMap } = require("../utils/socketMap");
 
 const MessageSchema = new mongoose.Schema({
   participants: [
@@ -40,6 +40,10 @@ const MessageSchema = new mongoose.Schema({
       },
       receivedTime: {
         type: Date,
+        default: null,
+      },
+      seenTime:{
+         type: Date,
         default: null,
       },
       blockedId: {

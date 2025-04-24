@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
+const Message=require("./models/message");
+const {userRoomMap,userSocketMap}=require("./utils/socketMap");
 
- const userSocketMap = new Map();
- const userRoomMap = new Map();
+ 
 
 const connectDB = async () => {
   try {
@@ -48,14 +49,62 @@ const setupSocketIO = (server) => {
       socket.disconnect(true);
       return;
     }
+socket.on("joinRoom", async ({ roomId }) => {
+  socket.join(roomId);
+  userRoomMap.set(socket.userId, roomId);
+  console.log(userRoomMap);
+  console.log(`User ${socket.userId} joined room ${roomId}`);
 
-    socket.on("joinRoom", ({ roomId}) => {
-      socket.join(roomId);
-      userRoomMap.set(socket.userId, roomId);
-      console.log(userRoomMap);
-      console.log(`User ${socket.userId} joined room ${roomId}`);
+  // Split roomId to get both user IDs
+  const [user1, user2] = roomId.split("-");
+  const receiverId = socket.userId;
+  const senderId = user1 === receiverId ? user2 : user1;
+
+  try {
+
+    let conversation = await Message.findOne({
+      participants: { $all: [senderId, receiverId] },
     });
 
+ if (!conversation) return;
+
+ const unseenMessages = conversation.messages.filter(
+   (msg) =>
+     String(msg.senderId) === String(senderId) &&
+     String(msg.receiverId) === String(receiverId) &&
+     msg.seenTime === null
+ );
+
+    if (unseenMessages.length > 0) {
+      const seenTime = new Date();
+
+      // Update seenTime for all those messages
+      await Message.updateMany(
+        {
+          senderId: senderId,
+          receiverId: receiverId,
+          seenTime: null,
+        },
+        { $set: { seenTime } }
+      );
+
+      // 2. Notify the sender that their messages are seen
+      const senderSocketId = userSocketMap.get(senderId);
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("messagesSeen", {
+          senderId: senderId,
+          receiverId: receiverId,
+          seenTime,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error updating seenTime:", err);
+  }
+});
+
+
+   
     socket.on("leaveRoom", () => {
       const roomId = userRoomMap.get(socket.userId);
       socket.leave(roomId);
@@ -86,4 +135,7 @@ const setupSocketIO = (server) => {
   return io;
 };
 
-module.exports = { connectDB, setupSocketIO, userSocketMap, userRoomMap };
+module.exports = { connectDB, setupSocketIO,
+    getSocketMap: () => userSocketMap, 
+  getRoomMap: () => userRoomMap       
+}

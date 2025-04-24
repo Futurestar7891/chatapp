@@ -132,9 +132,25 @@ const FetchMessages = () => {
     socket.emit("joinRoom",{roomId,senderId});
     socket.on("receiveMessage", handleReceiveMessage);
 
+    socket.on(
+      "messagesSeen",
+      ({ senderId: seenFrom, receiverId: seenTo, seenTime }) => {
+        if (seenFrom === senderId && seenTo === receiverId) {
+          setMessages((prevMessages) =>
+            prevMessages.map((msg) =>
+              msg.seenTime || msg.senderId !== senderId
+                ? msg
+                : { ...msg, seenTime }
+            )
+          );
+        }
+      }
+    );
+
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
-      socket.emit("leaveRoom");
+      socket.off("messageSeen");
+       socket.emit("leaveRoom");
     };
   }, [
     senderId,
