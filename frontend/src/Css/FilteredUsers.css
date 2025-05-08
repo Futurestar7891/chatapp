@@ -19,19 +19,48 @@
   aspect-ratio: 1;
   border-radius: 100%;
   object-fit: cover;
+  border: 2px solid rgba(74, 22, 171, 0.3);
+}
+
+.Filtereduserleftdiv > div > div {
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 100%;
+  background-color: rgba(74, 22, 171, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a16ab;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 2px solid rgba(74, 22, 171, 0.3);
+  font-family: "Open Sans", sans-serif;
 }
 
 .Filteredusernamedetail {
-  width: 60%;
+  width: 70%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: center;
 }
 
-.Filtereduserleftdiv > div > h2,
-.Filtereduserleftdiv > div > p,
-.Filtereduserrightdiv > p {
-  font-size: 90%;
+.Filteredusermaindiv .Filteredusernamedetail > h2 {
+  font-size: 1.2rem !important; /* Ensure font-size applies */
+  /* border: 2px solid green; */
+  margin-top: 10px;
+  font-weight: 600;
+  color: #2d1a5b;
+  line-height: normal;
+  font-family: "Open Sans", sans-serif;
+}
+
+.Filteredusernamedetail > p {
+  margin-bottom: 5px;
+  line-height: 0.2cm;
+  font-size: 0.85rem;
+  color: #4a16ab;
+  font-family: "Open Sans", sans-serif;
 }
 
 .Filtereduserrightdiv {
@@ -40,4 +69,58 @@
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
+}
+
+.Filtereduserrightdiv p {
+  font-size: 0.9rem;
+  color: black;
+  font-family: "Open Sans", sans-serif;
+}
+
+/* Responsive for Mobile Screens */
+@media (max-width: 768px) {
+  .Filteredusermaindiv .Filteredusernamedetail h2 {
+    font-size: 0.8rem !important;
+    font-family: "Open Sans", sans-serif;
+  }
+
+  .Filteredusernamedetail p {
+    font-size: 0.8rem;
+    font-family: "Open Sans", sans-serif;
+  }
+
+  .Filtereduserrightdiv p {
+    font-size: 0.75rem;
+    font-family: "Open Sans", sans-serif;
+  }
+
+  .Filtereduserleftdiv > div > img,
+  .Filtereduserleftdiv > div > div {
+    font-size: 0.95rem;
+    font-family: "Open Sans", sans-serif;
+  }
+}
+
+/* Ensure the form fits well on very small screens */
+@media (max-width: 480px) {
+  .Filteredusermaindiv .Filteredusernamedetail h2 {
+    font-size: 1.2rem !important;
+    font-family: "Open Sans", sans-serif;
+  }
+
+  .Filteredusernamedetail p {
+    font-size: 1rem;
+    font-family: "Open Sans", sans-serif;
+  }
+
+  .Filtereduserrightdiv p {
+    font-size: 1rem;
+    font-family: "Open Sans", sans-serif;
+  }
+
+  .Filtereduserleftdiv > div > img,
+  .Filtereduserleftdiv > div > div {
+    font-size: 0.85rem;
+    font-family: "Open Sans", sans-serif;
+  }
 }

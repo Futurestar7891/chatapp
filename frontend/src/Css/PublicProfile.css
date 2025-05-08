@@ -8,7 +8,12 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  background-color: rgb(45, 44, 44);
+  background: rgba(255, 255, 255, 0.95);
+  background-image: linear-gradient(135deg, rgba(74, 22, 171, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: "Open Sans", sans-serif;
 }
 
 .PublicProfiletopdiv {
@@ -19,14 +24,23 @@
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom: 1px solid rgba(74, 22, 171, 0.2);
 }
 
 .PublicProfiletopdiv > img {
   width: 20%;
   aspect-ratio: 1;
   border-radius: 50%;
+  border: 2px solid rgba(74, 22, 171, 0.3);
+  object-fit: cover;
 }
 
+.PublicProfiletopdiv > p {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d1a5b;
+}
 
 .PublicProfilemiddiv {
   width: 100%;
@@ -34,21 +48,35 @@
   justify-content: space-around;
   align-items: center;
   height: 10%;
-  /* border: 2px solid red; */
 }
-.publicprofileicon{
-  font-size: 2vw;
+
+.publicprofileicon {
+  font-size: 1.5rem;
+  color: #4a16ab;
+  transition: all 0.3s ease;
 }
+
 .PublicProfilemiddiv > button {
-  background-color: transparent;
-  width: 12%;
-  aspect-ratio: 1;
+  background: rgba(74, 22, 171, 0.05);
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
   cursor: pointer;
   border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
 }
 
+.PublicProfilemiddiv > button:hover {
+  background: rgba(74, 22, 171, 0.1);
+  transform: scale(1.1);
+}
 
+.PublicProfilemiddiv > button:hover .publicprofileicon {
+  color: #5e29d1;
+}
 
 .PublicProfilebiodiv {
   margin-top: 1%;
@@ -56,6 +84,11 @@
   height: fit-content;
   text-align: left;
   text-wrap: break-word;
+}
+
+.PublicProfilebiodiv > p {
+  font-size: 1rem;
+  color: #2d1a5b;
 }
 
 .PublicProfiledowndiv {
@@ -66,7 +99,6 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  /* border: 2px solid green; */
 }
 
 .PublicProfiledowndiv > p {
@@ -75,6 +107,8 @@
   text-wrap: break-word;
   text-align: left;
   margin: 2% 0%;
+  font-size: 1rem;
+  color: #2d1a5b;
 }
 
 .otp-popup {
@@ -91,33 +125,40 @@
 }
 
 .otp-popup-content {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  background-image: linear-gradient(135deg, rgba(74, 22, 171, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
   text-align: center;
   max-width: 400px;
   width: 90%;
+  font-family: "Open Sans", sans-serif;
 }
 
 .otp-popup-content h3 {
   margin-bottom: 10px;
   font-size: 1.5rem;
-  color: #333;
+  font-weight: 600;
+  color: #2d1a5b;
 }
 
 .otp-popup-content p {
   margin-bottom: 20px;
-  color: #666;
+  font-size: 1rem;
+  color: #2d1a5b;
 }
 
 .otp-popup-content input {
   width: 80%;
   padding: 10px;
   margin-bottom: 20px;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(74, 22, 171, 0.2);
   border-radius: 5px;
   font-size: 1rem;
+  color: #2d1a5b;
+  background: rgba(255, 255, 255, 0.97);
+  font-family: "Open Sans", sans-serif;
 }
 
 .otp-popup-content button {
@@ -125,169 +166,241 @@
   margin: 5px;
   border: none;
   border-radius: 5px;
-  background: #007bff;
+  background: #4a16ab;
   color: white;
   font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .otp-popup-content button:hover {
-  background: #0056b3;
+  background: #5e29d1;
 }
 
 .otp-popup-content button:last-child {
-  background: #dc3545;
+  background: #d32f2f;
 }
 
 .otp-popup-content button:last-child:hover {
-  background: #a71d2a;
+  background: #b71c1c;
 }
 
 .editpublicprofilename {
   width: 50%;
-  border: none;
+  border: 1px solid rgba(74, 22, 171, 0.2);
   outline: none;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.97);
   padding: 5%;
   text-align: center;
-  font-size: 100%;
-}
-
-.editpublicprofileemail,
-.editpublicprofilemobile {
-  width: 100%;
-  background: transparent;
-  padding: 2%;
-  outline: white;
-  margin-bottom: 3%;
-  align-content: center;
-}
-
-.editpublicprofilebio {
-  width: 100%;
-  background: transparent;
-  padding: 5%;
-  outline: white;
-}
-
-.editprofilesavebutton {
-  width: 100%;
-  padding: 3%;
-  background-color: #28a745;
-  align-self: center;
-  font-size: large;
-  cursor: pointer;
-}
-
-.editprofileeditbutton,
-.blockuserbutton {
-  width: 100%;
-  padding: 3%;
-  background-color: #de622e;
-  align-self: center;
-  font-size: large;
-  cursor: pointer;
-}
-
-
-/* Add Contact Button */
-.add-contact-button {
-  background-color: transparent;
-  color: white;
-  border: none;
-  cursor: pointer;
-
-}
-
-.add-contact-button:hover {
-  color: #218838;
-}
-
-
-@media(max-width:768px){
-  * {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  text-decoration: none;
+  font-size: 1.25rem;
+  color: #2d1a5b;
   font-family: "Open Sans", sans-serif;
 }
-   .PublicProilemaindiv{
-    position: none;
-    width: 100vw;
-    height: 100vh;
-   }
-
-   .PublicProfiletopdiv{
-    /* border: 2px solid red; */
-    height: fit-content;
-    justify-content: space-evenly;
-    
-   }
-   .PublicProfiletopdiv > img {
-     min-width: 25%;
-   }
-   .PublicProfiletopdiv>p{
-    font-size: 6vw;
-    color: white;
-   }
-
-.PublicProfilemiddiv > button {
-  width: 16%;
-}
-.PublicProfilemiddiv>p{
-  font-size: 6vw;
-  color: white;
-}
-
-.publicprofileicon{
-  font-size: 7vw;
-}
-
-
-.PublicProfilebiodiv {
- font-size: 5vw;
- color: white;
-}
-
-.PublicProfiledowndiv > p {
- font-size: 5vw;
- color: white;
-}
-.editpublicprofilename {
-  font-size: 5vw;
-}
 
 .editpublicprofileemail,
 .editpublicprofilemobile {
- font-size: 5vw;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.97);
+  padding: 2%;
+  border: 1px solid rgba(74, 22, 171, 0.2);
+  outline: none;
+  margin-bottom: 3%;
+  align-content: center;
+  font-size: 1rem;
+  color: #2d1a5b;
+  font-family: "Open Sans", sans-serif;
 }
 
 .editpublicprofilebio {
-font-size: 5vw;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.97);
+  padding: 5%;
+  border: 1px solid rgba(74, 22, 171, 0.2);
+  outline: none;
+  font-size: 1rem;
+  color: #2d1a5b;
+  font-family: "Open Sans", sans-serif;
 }
 
 .editprofilesavebutton {
- font-size: 5vw;
+  width: 100%;
+  padding: 0.75rem;
+  background: #28a745;
+  border: none;
+  border-radius: 5px;
+  align-self: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.editprofilesavebutton:hover {
+  background: #218838;
 }
 
 .editprofileeditbutton,
 .blockuserbutton {
- font-size: 5vw;
+  width: 100%;
+  padding: 0.75rem;
+  background: #de622e;
+  border: none;
+  border-radius: 5px;
+  align-self: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
+.editprofileeditbutton:hover,
+.blockuserbutton:hover {
+  background: #c55527;
+}
 
-/* Add Contact Button */
 .add-contact-button {
-  font-size: 4vw;
-
+  background: transparent;
+  color: #4a16ab;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: "Open Sans", sans-serif;
+  transition: all 0.3s ease;
 }
 
 .add-contact-button:hover {
-  color: #218838;
+  color: #5e29d1;
+  text-decoration: underline;
 }
 
+.PublicProfilecommomgroup {
+  width: 95%;
+  margin-top: 2%;
+}
 
+.PublicProfilecommomgroup h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2d1a5b;
+}
 
+/* Responsive for Mobile Screens */
+@media (max-width: 768px) {
+  .PublicProilemaindiv {
+    position: static;
+    width: 100vw;
+    height: 100vh;
+  }
 
+  .PublicProfiletopdiv {
+    height: fit-content;
+    justify-content: space-evenly;
+    padding: 1rem 0;
+  }
+
+  .PublicProfiletopdiv > img {
+    min-width: 20%;
+  }
+
+  .PublicProfiletopdiv > p {
+    font-size: 1.5rem;
+  }
+
+  .PublicProfilemiddiv {
+    height: 12%;
+    padding: 0.5rem 0;
+  }
+
+  .PublicProfilemiddiv > button {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .publicprofileicon {
+    font-size: 1.25rem;
+  }
+
+  .PublicProfilebiodiv {
+    margin-top: 0.5rem;
+  }
+
+  .PublicProfilebiodiv > p {
+    font-size: 0.95rem;
+  }
+
+  .PublicProfiledowndiv {
+    margin-top: 1rem;
+  }
+
+  .PublicProfiledowndiv > p {
+    font-size: 0.95rem;
+    margin: 1% 0;
+  }
+
+  .editpublicprofilename {
+    font-size: 1.25rem;
+    padding: 0.5rem;
+  }
+
+  .editpublicprofileemail,
+  .editpublicprofilemobile {
+    font-size: 0.95rem;
+    padding: 0.5rem;
+    margin-bottom: 1.5%;
+  }
+
+  .editpublicprofilebio {
+    font-size: 0.95rem;
+    padding: 0.5rem;
+  }
+
+  .editprofilesavebutton {
+    font-size: 0.95rem;
+    padding: 0.75rem;
+  }
+
+  .editprofileeditbutton,
+  .blockuserbutton {
+    font-size: 0.95rem;
+    padding: 0.75rem;
+  }
+
+  .add-contact-button {
+    font-size: 0.95rem;
+  }
+
+  .PublicProfilecommomgroup {
+    margin-top: 1rem;
+  }
+
+  .PublicProfilecommomgroup h2 {
+    font-size: 1.5rem;
+  }
+
+  .otp-popup-content {
+    padding: 15px;
+    max-width: 90%;
+  }
+
+  .otp-popup-content h3 {
+    font-size: 1.25rem;
+  }
+
+  .otp-popup-content p {
+    font-size: 0.95rem;
+  }
+
+  .otp-popup-content input {
+    font-size: 0.95rem;
+    padding: 8px;
+  }
+
+  .otp-popup-content button {
+    font-size: 0.95rem;
+    padding: 8px 16px;
+  }
 }

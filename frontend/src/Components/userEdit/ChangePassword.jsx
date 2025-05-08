@@ -72,9 +72,6 @@ const ChangePassword = () => {
   return (
     <div
       className="change-password-main-div"
-      style={{
-        background: `url('Login.jpg') center/cover no-repeat`,
-      }}
     >
       <form onSubmit={handleSubmit}>
         <h2>{token ? "Change Password" : "Forgot Password"}</h2>

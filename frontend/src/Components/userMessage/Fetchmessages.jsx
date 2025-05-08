@@ -192,7 +192,6 @@ const FetchMessages = () => {
         <div className="Chatapprightdiv">
           <UserStatus />
           <div
-            style={{ background: `url('/background.jpg')` }}
             className="Chatapprightdivdowndiv"
           >
             {loading && !messages.length ? (

@@ -6,6 +6,8 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  background-image: linear-gradient(135deg, rgba(74, 22, 171, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
 }
 
 @media (max-width: 768px) {
@@ -17,14 +19,14 @@
 
 /* Top section with user status */
 .Chatapprightdivtopdiv {
-  height: 7%;
+  height: 8%;
   width: 100%;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   padding: 10px;
-  background-color: #f0f0f0;
-  border: 2px solid green;
+  background: transparent;
+  border-bottom: 1px solid purple;
 }
 
 @media (max-width: 768px) {
@@ -40,6 +42,7 @@
 .user-status-container {
   position: relative;
   display: inline-block;
+  /* border: 2px solid red; */
 }
 
 .user-avatar {
@@ -48,6 +51,7 @@
   border-radius: 50%;
   cursor: pointer;
   margin-right: 10px;
+  /* border: 2px solid red; */
 }
 
 @media (max-width: 768px) {
@@ -71,6 +75,8 @@
 .user-info {
   display: flex;
   flex-direction: column;
+  /* border: 2px solid red; */
+  margin-left: 5px;
 }
 
 .status-text {
@@ -108,8 +114,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgb(45, 44, 44);
+  background: rgba(255, 255, 255, 0.97);
+  background-image: linear-gradient(135deg, rgba(74, 22, 171, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
   padding: 0 10px;
+  border-top: 1px solid rgba(74, 22, 171, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  font-family: "Open Sans", sans-serif;
 }
 
 .Attachfile {
@@ -118,26 +128,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #fff;
+  color: #4a16ab;
   font-size: 1.5rem;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-@media (max-width: 768px) {
-  .Attachfile {
-    font-size: 1rem;
-  }
+.Attachfile:hover {
+  color: #5e29d1;
 }
 
 .Chatapprightdivmessagediv input {
   width: 70%;
   height: 50%;
   border-radius: 10px;
-  border: none;
+  border: 1px solid rgba(74, 22, 171, 0.2);
   padding: 0 10px;
   font-size: 1rem;
-  background-color: #fff;
-  color: #000;
+  background: rgba(255, 255, 255, 0.95);
+  color: #2d1a5b;
+  font-family: "Open Sans", sans-serif;
+  outline: none;
 }
 
 .sendmessage {
@@ -149,7 +160,12 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #fff;
+  color: #4a16ab;
+  transition: all 0.3s ease;
+}
+
+.sendmessage:hover {
+  color: #5e29d1;
 }
 
 /* Loader styles */
@@ -201,4 +217,67 @@
   background-color: rgb(70, 69, 69);
   width: 100%;
   height: 100%;
+}
+
+/* Responsive for Mobile Screens */
+@media (max-width: 768px) {
+  .Chatapprightdivmessagediv {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.97);
+    background-image: linear-gradient(135deg, rgba(74, 22, 171, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+    padding: 0 10px;
+    border-top: 1px solid rgba(74, 22, 171, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    font-family: "Open Sans", sans-serif;
+  }
+
+  .Attachfile {
+    width: 5%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #4a16ab;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .Attachfile:hover {
+    color: #5e29d1;
+  }
+
+  .Chatapprightdivmessagediv input {
+    width: 70%;
+    height: 50%;
+    border-radius: 10px;
+    border: 1px solid rgba(74, 22, 171, 0.2);
+    padding: 0 10px;
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.95);
+    color: #2d1a5b;
+    font-family: "Open Sans", sans-serif;
+    outline: none;
+  }
+
+  .sendmessage {
+    width: 5%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    color: #4a16ab;
+    transition: all 0.3s ease;
+  }
+
+  .sendmessage:hover {
+    color: #5e29d1;
+  }
 }

@@ -221,9 +221,6 @@ const Login = () => {
   return (
     <div
       className="login-main-div"
-      style={{
-        background: `url('Login.jpg') center/cover no-repeat`,
-      }}
     >
       <form onSubmit={handleSubmit}>
         <h2>Login</h2>

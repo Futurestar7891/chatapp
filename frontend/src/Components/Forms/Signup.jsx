@@ -106,9 +106,6 @@ const Signup = () => {
   return (
     <div
       className="signup-main-div"
-      style={{
-        background: `url('Login.jpg') center/cover no-repeat`,
-      }}
     >
       <form onSubmit={handleSubmit}>
         <h2>Signup</h2>
