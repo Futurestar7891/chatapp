@@ -9,7 +9,7 @@ const fetchChatlist = async (req, res) => {
     const sender = await UserSchema.findById(userId)
       .populate(
         "ChatList.userId",
-        "Name Photo Mobile Bio Email status lastSeen privacySettings BlockedUsers Contacts"
+        "Name Photo Mobile Bio Email lastSeen privacySettings BlockedUsers Contacts"
       )
       .populate("Contacts.userId");
 
@@ -67,17 +67,26 @@ const fetchChatlist = async (req, res) => {
           return false;
         };
 
+        console.log(
+          `User: ${receiver.Name}, Photo: ${
+            receiver.Photo
+          }, canSeeProfile: ${canSeeProfile()}, isBlockedByReceiver: ${isBlockedByReceiver}, profileVisibility: ${
+            receiver.privacySettings.profileVisibility
+          }, isSenderInReceiverContacts: ${isSenderInReceiverContacts}`
+        );
+
         return {
           _id: receiver._id,
           Name: contactEntry ? contactEntry.contactname : receiver.Name,
           Photo:
-            canSeeProfile() && !isBlockedByReceiver ? receiver.Photo : null,
+            canSeeProfile() && !isBlockedByReceiver
+              ? receiver.Photo || null
+              : null,
           Bio: canSeeBio() && !isBlockedByReceiver ? receiver.Bio : null,
           Email: receiver.Email,
           Mobile: receiver.Mobile,
           lastMessageTime: chat.lastMessageTime,
-          status:
-            canSeeLastSeen() && !isBlockedByReceiver ? receiver.status : null,
+          status: canSeeLastSeen() && !isBlockedByReceiver,
           lastSeen:
             canSeeLastSeen() && !isBlockedByReceiver ? receiver.lastSeen : null,
           isBlockedBySender,
@@ -181,6 +190,15 @@ const fetchMessage = async (req, res) => {
     const filteredMessages = conversation
       ? conversation.messages
           .filter((msg) => {
+            // 🔁 Skip messages deleted for the current user
+            if (
+              msg.deletedFor?.some(
+                (id) => id.toString() === senderid.toString()
+              )
+            )
+              return false;
+
+            // ⛔ Skip messages blocked by receiver
             if (msg.senderId.equals(senderid)) return true;
             if (
               msg.blockedId &&
@@ -188,10 +206,30 @@ const fetchMessage = async (req, res) => {
               msg.receiverId.equals(senderid)
             )
               return false;
+
             return true;
+          })
+          .map((msg) => {
+            const updatedFiles =
+              msg.files?.map((file) => {
+                const isDeleted =
+                  file.deletedFor?.some(
+                    (id) => id.toString() === senderid.toString()
+                  ) || false;
+                return {
+                  ...(file.toObject?.() ?? file),
+                  isDeletedForMe: isDeleted,
+                };
+              }) || [];
+
+            return {
+              ...msg.toObject(),
+              files: updatedFiles,
+            };
           })
           .sort((a, b) => new Date(a.sentTime) - new Date(b.sentTime))
       : [];
+
 
     return res.status(200).json({
       success: true,
@@ -208,6 +246,7 @@ const fetchMessage = async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 };
+
 
 const chattingRoom = async (req, res) => {
   try {
@@ -286,4 +325,175 @@ const message = async (req, res) => {
   }
 };
 
-module.exports = { fetchChatlist, fetchMessage, chattingRoom, message };
+
+const DeleteForMe = async (req, res) => {
+  try {
+    const { senderid, receiverId, Message, fileindex } = req.body;
+
+    if (!senderid || !receiverId || !Message || !Message._id) {
+      return res.status(400).json({ error: "Missing or invalid fields" });
+    }
+
+    const messageDoc = await MessageSchema.findOne({
+      participants: {
+        $all: [
+          new mongoose.Types.ObjectId(senderid),
+          new mongoose.Types.ObjectId(receiverId),
+        ],
+      },
+    });
+
+    if (!messageDoc) {
+      return res.status(404).json({ error: "Message document not found" });
+    }
+
+    const message = messageDoc.messages.find(
+      (msg) => msg._id.toString() === Message._id
+    );
+
+    if (!message) {
+      return res.status(404).json({ error: "Message not found inside array" });
+    }
+
+    const objectSenderId = new mongoose.Types.ObjectId(senderid);
+
+    // Case 1: If fileindex === "text" or "all", delete entire message for this user
+    if (fileindex === "text" || fileindex === "all") {
+      if (!message.deletedFor) message.deletedFor = [];
+      if (
+        !message.deletedFor.some(
+          (id) => id.toString() === objectSenderId.toString()
+        )
+      ) {
+        message.deletedFor.push(objectSenderId);
+      }
+
+      await messageDoc.save();
+      return res
+        .status(200)
+        .json({ success: true, message: "Entire message deleted." });
+    }
+
+    // Case 2: If fileindex is a valid number
+    if (typeof fileindex === "number" && fileindex >= 0) {
+      const file = message.files[fileindex];
+      if (!file) {
+        return res.status(404).json({ error: "Invalid file index" });
+      }
+
+      if (!file.deletedFor) file.deletedFor = [];
+
+      const alreadyDeleted = file.deletedFor.some(
+        (id) => id.toString() === objectSenderId.toString()
+      );
+
+      if (!alreadyDeleted) {
+        file.deletedFor.push(objectSenderId);
+      }
+
+      // Check if all files are deleted for this user and no text
+      const remainingFiles = message.files.filter(
+        (f) =>
+          !f.deletedFor?.some(
+            (id) => id.toString() === objectSenderId.toString()
+          )
+      );
+
+      const hasText = !!message.text?.trim();
+
+      if (remainingFiles.length === 0 && !hasText) {
+        if (!message.deletedFor) message.deletedFor = [];
+        if (
+          !message.deletedFor.some(
+            (id) => id.toString() === objectSenderId.toString()
+          )
+        ) {
+          message.deletedFor.push(objectSenderId);
+        }
+      }
+
+      await messageDoc.save();
+
+      
+      return res
+        .status(200)
+        .json({ success: true, message: "File deleted for sender." });
+    }
+
+    return res.status(400).json({ error: "Invalid fileindex type" });
+  } catch (error) {
+    console.error("❌ DeleteForMe Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const DeleteForEveryone = async (req, res) => {
+  try {
+    const { senderid, receiverId, Message, fileindex } = req.body;
+
+    if (
+      !senderid ||
+      !receiverId ||
+      !Message ||
+      !Message._id ||
+      (fileindex !== "all" && (isNaN(fileindex) || fileindex < 0))
+    ) {
+      return res.status(400).json({ error: "Missing or invalid fields" });
+    }
+
+    const messageDoc = await MessageSchema.findOne({
+      participants: {
+        $all: [
+          new mongoose.Types.ObjectId(senderid),
+          new mongoose.Types.ObjectId(receiverId),
+        ],
+      },
+    });
+
+    if (!messageDoc) {
+      return res.status(404).json({ error: "Message document not found" });
+    }
+
+    const msgIndex = messageDoc.messages.findIndex(
+      (msg) => msg._id.toString() === Message._id
+    );
+
+    if (msgIndex === -1) {
+      return res.status(404).json({ error: "Message not found inside array" });
+    }
+
+    const msg = messageDoc.messages[msgIndex];
+
+    if (fileindex === "all") {
+      // delete the whole message
+      messageDoc.messages.splice(msgIndex, 1);
+    } else {
+      // delete just the specific file
+      if (!msg.files || msg.files.length <= fileindex) {
+        return res.status(404).json({ error: "Invalid file index" });
+      }
+
+      msg.files.splice(fileindex, 1);
+
+      // If no files and no text left, remove the whole message
+      if (msg.files.length === 0 && !msg.text?.trim()) {
+        messageDoc.messages.splice(msgIndex, 1);
+      }
+    }
+
+    await messageDoc.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Deleted for everyone" });
+  } catch (error) {
+    console.error("❌ DeleteForEveryone Error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+
+
+
+module.exports = { fetchChatlist, fetchMessage, chattingRoom, message,DeleteForMe,DeleteForEveryone };

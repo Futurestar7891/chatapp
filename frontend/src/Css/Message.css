@@ -1,10 +1,12 @@
 /* src/Css/Message.css */
 .message {
+ position: relative;
   width: 30%;
   display: flex;
   justify-content: space-between;
   margin-top: 3vh;
    background: rgba(255, 255, 255, 0.95);
+   /* border: 2px solid green; */
   /* background-image: linear-gradient(135deg, rgba(74, 22, 171, 0.05) 0%, rgba(255, 255, 255, 1) 100%); */
 }
 
@@ -19,6 +21,7 @@
 }
 
 .sent {
+  
   background-color: transparent;
   align-self: flex-end;
   margin-right: 1vw;
@@ -27,6 +30,7 @@
 }
 
 .received {
+
   background-color: transparent;
   align-self: flex-start;
   margin-left: 1vw;
@@ -71,6 +75,7 @@
   width: 100%;
   border-radius: 2%;
   margin-top: 1vh;
+  position:relative
 }
 
 .message-media > audio {
@@ -209,3 +214,26 @@
   text-align: center;
   padding: 10px;
 }
+
+.messagetextdiv {
+  width: 100%;
+  cursor: context-menu;
+  user-select: text;
+  position: relative;
+}
+
+.messagetextdiv:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.message-notification {
+  position: fixed;
+  left: 55%;
+  top: 15%;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+

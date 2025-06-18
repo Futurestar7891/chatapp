@@ -36,6 +36,7 @@ export const StateProvider = ({ children }) => {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [socket, setSocket] = useState(null);
   
+  
   // Initialize socket connection
   useEffect(() => {
     if (token) {

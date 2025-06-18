@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { StateContext } from "../../main";
 import "../../Css/Fetchmessages.css";
 import { useNavigate } from "react-router-dom";
@@ -9,24 +9,35 @@ const formatLastSeen = (lastSeen) => {
   const now = new Date();
   const lastSeenDate = new Date(lastSeen);
   const diffInMilliseconds = now - lastSeenDate;
-  const diffInHours = diffInMilliseconds / (1000 * 60 * 60);
-  const diffInDays = diffInHours / 24;
+  const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  const diffInHours = Math.floor(diffInMinutes / 60);
 
-  if (diffInHours < 48) {
-    if (diffInHours < 1) {
-      return "Last seen just now";
-    } else if (diffInHours < 24) {
-      return `Last seen ${Math.floor(diffInHours)} hour${
-        Math.floor(diffInHours) === 1 ? "" : "s"
-      } ago`;
-    } else {
-      return `Last seen at ${lastSeenDate.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`;
-    }
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} second${diffInSeconds === 1 ? "" : "s"} ago`;
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes} min${diffInMinutes === 1 ? "" : ""} ago`;
+  } else if (diffInHours < 41) {
+    return `${diffInHours} hour${diffInHours === 1 ? "" : "s"} ago`;
   } else {
-    return `Last seen on ${lastSeenDate.toLocaleDateString()}`;
+    const isSameDay =
+      now.getDate() === lastSeenDate.getDate() &&
+      now.getMonth() === lastSeenDate.getMonth() &&
+      now.getFullYear() === lastSeenDate.getFullYear();
+
+    if (isSameDay) {
+      return lastSeenDate.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    } else {
+      return lastSeenDate.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
   }
 };
 
@@ -38,7 +49,7 @@ const UserStatus = () => {
     setShowPublicProfile,
     showpublicprofile,
     isMobile,
-    // isBlocked, // Not used here; we'll use selectedUser.isBlockedByReceiver
+    onlineUsers,
   } = useContext(StateContext);
 
   const handleImageClick = (e) => {
@@ -53,7 +64,11 @@ const UserStatus = () => {
       e.stopPropagation();
     }
   };
+
   const displayName = selectedUser?.Name || "Unknown";
+  const isOnline = selectedUser?._id && onlineUsers.includes(selectedUser._id);
+  const canSeeStatus =
+    selectedUser?.status && !selectedUser?.isBlockedByReceiver;
 
   return (
     <div className="Chatapprightdivtopdiv">
@@ -81,23 +96,19 @@ const UserStatus = () => {
               cursor: "pointer",
             }}
           >
-            {displayName[0]} {/* Show initial if no photo */}
+            {displayName[0]}
           </div>
         )}
-        {selectedUser?.status === "online" &&
-          !selectedUser?.isBlockedByReceiver && (
-            <span className="online-indicator"></span>
-          )}
+        {canSeeStatus && isOnline && <span className="online-indicator"></span>}
       </div>
-      
+
       <div className="user-info">
-        <h2>{selectedUser?.Name || ""}</h2>
-        {selectedUser && (
+        <h2>{displayName}</h2>
+        {selectedUser && canSeeStatus && (
           <p className="status-text">
-            {selectedUser.status === "online" &&
-            !selectedUser.isBlockedByReceiver
+            {isOnline
               ? "Online"
-              : !selectedUser.isBlockedByReceiver && selectedUser.lastSeen
+              : selectedUser.lastSeen
               ? formatLastSeen(selectedUser.lastSeen)
               : ""}
           </p>

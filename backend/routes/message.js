@@ -7,11 +7,15 @@ const {
   fetchMessage,
   chattingRoom,
   message,
+  DeleteForMe,
+  DeleteForEveryone,
 } = require("../controllers/userMessaging/message");
 
 router.post("/search-chatlist", authenticateToken, fetchChatlist);
 router.post("/fetch-messages", conversationvalidation, fetchMessage);
 router.post("/chat-list", chattingRoom);
+router.post("/delete-for-me",authenticateToken,DeleteForMe);
+router.post("/delete-for-everyone",authenticateToken,DeleteForEveryone);
 
 module.exports = (io) => {
   router.post(

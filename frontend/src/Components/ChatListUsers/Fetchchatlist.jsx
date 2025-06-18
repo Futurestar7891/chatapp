@@ -162,11 +162,7 @@ const Fetchchatlist = () => {
         className="Filteredusermaindiv"
       >
         <FilteredUsers
-          user={{
-            ...user,
-            status: onlineUsers.includes(user._id) ? "online" : "offline",
-            lastSeen: onlineUsers.includes(user._id) ? null : new Date(),
-          }}
+          user={user}
         />
       </div>
     ));
@@ -180,11 +176,7 @@ const Fetchchatlist = () => {
         className="Filteredusermaindiv"
       >
         <FilteredUsers
-          user={{
-            ...contact,
-            status: onlineUsers.includes(contact._id) ? "online" : "offline",
-            lastSeen: onlineUsers.includes(contact._id) ? null : new Date(),
-          }}
+          user={contact}
         />
       </div>
     ));

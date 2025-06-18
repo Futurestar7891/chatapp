@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const Message=require("./models/message");
+const UserSchema=require("./models/user");
 const {userRoomMap,userSocketMap}=require("./utils/socketMap");
 
  
@@ -27,7 +28,7 @@ const setupSocketIO = (server) => {
 
 
   io.on("connection", (socket) => {
-    console.log(`New client connected: ${socket.id}`);
+    // console.log(`New client connected: ${socket.id}`);
 
     const token = socket.handshake.query.token;
     if (!token) {
@@ -44,7 +45,7 @@ const setupSocketIO = (server) => {
       const onlineUsers = Array.from(userSocketMap.keys());
 
       io.emit("onlineUsers", onlineUsers);
-      console.log(`Emitted online users: ${onlineUsers.join(", ")}`);
+      // console.log(`Emitted online users: ${onlineUsers.join(", ")}`);
     } catch (error) {
       socket.disconnect(true);
       return;
@@ -52,8 +53,8 @@ const setupSocketIO = (server) => {
 socket.on("joinRoom", async ({ roomId }) => {
   socket.join(roomId);
   userRoomMap.set(socket.userId, roomId);
-  console.log(userRoomMap);
-  console.log(`User ${socket.userId} joined room ${roomId}`);
+  // console.log(userRoomMap);
+  // console.log(`User ${socket.userId} joined room ${roomId}`);
 
   // Split roomId to get both user IDs
   const [user1, user2] = roomId.split("-");
@@ -109,25 +110,38 @@ socket.on("joinRoom", async ({ roomId }) => {
       const roomId = userRoomMap.get(socket.userId);
       socket.leave(roomId);
       userRoomMap.delete(socket.userId);
-      console.log(`User ${socket.userId} left room ${roomId}`);
+      // console.log(`User ${socket.userId} left room ${roomId}`);
 
     });
 
-    socket.on("disconnect", () => {
-      console.log(`Client disconnected: ${socket.id}`);
+    socket.on("disconnect", async () => {
+      // console.log(`Client disconnected: ${socket.id}`);
       if (socket.userId) {
         const roomId = userRoomMap.get(socket.userId);
         if (roomId) {
           socket.leave(roomId);
           userRoomMap.delete(socket.userId);
-          console.log(
-            `User ${socket.userId} left room ${roomId} on disconnect`
+          // console.log(
+          //   `User ${socket.userId} left room ${roomId} on disconnect`
+          // );
+        }
+
+        try {
+          await UserSchema.findByIdAndUpdate(socket.userId, {
+            lastSeen: new Date(),
+          });
+          // console.log(`Updated lastSeen for user ${socket.userId}`);
+        } catch (err) {
+          console.error(
+            `Error updating lastSeen for user ${socket.userId}:`,
+            err
           );
         }
+
         userSocketMap.delete(socket.userId);
         const onlineUsers = Array.from(userSocketMap.keys());
         io.emit("onlineUsers", onlineUsers);
-        console.log(`Emitted online users`);
+        // console.log(`Emitted online users`);
       }
     });
   });

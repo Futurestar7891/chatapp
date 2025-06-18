@@ -32,6 +32,12 @@ const MessageSchema = new mongoose.Schema({
           name: { type: String, required: true },
           type: { type: String, required: true },
           url: { type: String, required: true },
+          deletedFor: [
+            {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "User",
+            },
+          ],
         },
       ],
       sentTime: {
@@ -42,8 +48,8 @@ const MessageSchema = new mongoose.Schema({
         type: Date,
         default: null,
       },
-      seenTime:{
-         type: Date,
+      seenTime: {
+        type: Date,
         default: null,
       },
       blockedId: {
@@ -51,6 +57,14 @@ const MessageSchema = new mongoose.Schema({
         ref: "User",
         default: null,
       },
+
+      // ✅ New field for tracking full message deletion per user
+      deletedFor: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
     },
   ],
 });
@@ -180,7 +194,7 @@ MessageSchema.statics.sendMessage = async function (
           ? savedMessage.seenTime.toISOString()
           : null,
       });
-      console.log(`Emitted message to room ${roomId}`);
+      // console.log(`Emitted message to room ${roomId}`);
     } else {
       console.log("Message not emitted: Receiver has blocked sender");
     }

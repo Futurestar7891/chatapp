@@ -14,16 +14,17 @@ const FetchMessages = () => {
   const senderphoto = localStorage.getItem("Photo") || "/default-avatar.png";
   const {
     selectedUser,
-    setSelectedUser,
     setMessages,
     setIsBlocked,
     showAttachmentPopup,
     setShowAttachmentPopup,
     messages,
     onlineUsers,
-    socket // Access onlineUsers from StateContext
+    socket,
   } = useContext(StateContext);
   const receiverId = selectedUser?._id || null;
+
+  
 
   const fetchMessagesFromApi = useCallback(async () => {
     if (!senderId || !receiverId) return null;
@@ -81,7 +82,7 @@ const FetchMessages = () => {
             updatedMessages[latestMessageIndex] = {
               ...updatedMessages[latestMessageIndex],
               receivedTime: newMessage.receivedTime,
-              seenTime:newMessage.seenTime,
+              seenTime: newMessage.seenTime,
             };
           }
           updatedMessages.sort(
@@ -116,20 +117,14 @@ const FetchMessages = () => {
         setMessages(freshData.messages);
         setRecieverPhoto(freshData.userphoto);
         setIsBlocked(freshData.isBlocked);
-        setSelectedUser((prev) => ({
-          ...prev,
-          Photo: freshData.userphoto,
-          status: onlineUsers.includes(receiverId) ? "online" : "offline",
-          lastSeen: onlineUsers.includes(receiverId) ? null : new Date(),
-        }));
       }
 
       setLoading(false);
     };
 
     fetchInitialData();
-    const roomId=[senderId,receiverId].sort().join("-");
-    socket.emit("joinRoom",{roomId,senderId});
+    const roomId = [senderId, receiverId].sort().join("-");
+    socket.emit("joinRoom", { roomId, senderId });
     socket.on("receiveMessage", handleReceiveMessage);
 
     socket.on(
@@ -149,8 +144,8 @@ const FetchMessages = () => {
 
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
-      socket.off("messageSeen");
-       socket.emit("leaveRoom");
+      socket.off("messagesSeen");
+      socket.emit("leaveRoom");
     };
   }, [
     senderId,
@@ -159,9 +154,8 @@ const FetchMessages = () => {
     fetchMessagesFromApi,
     setMessages,
     setIsBlocked,
-    setSelectedUser,
     handleReceiveMessage,
-    onlineUsers, // Depend on onlineUsers
+    onlineUsers,
   ]);
 
   const handleAttachmentClick = useCallback(() => {
@@ -181,6 +175,7 @@ const FetchMessages = () => {
           key={msg._id || index}
           message={{ ...msg, timestamp: displayTime }}
           isSent={isSent}
+          receiverId={receiverId}
         />
       );
     });
@@ -191,9 +186,7 @@ const FetchMessages = () => {
       {receiverId ? (
         <div className="Chatapprightdiv">
           <UserStatus />
-          <div
-            className="Chatapprightdivdowndiv"
-          >
+          <div className="Chatapprightdivdowndiv">
             {loading && !messages.length ? (
               <div className="loader-container">
                 <div className="loader"></div>
