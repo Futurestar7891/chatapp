@@ -10,15 +10,24 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Prevent selection globally */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
+
 * {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
   text-decoration: none;
   font-family: "Open Sans", sans-serif;
-}
 
+  /* Inherit from root */
+  user-select: inherit;
+}
 body, html {
   height: 100%;
   margin: 0;

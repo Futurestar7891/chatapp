@@ -1,5 +1,6 @@
 /* src/Css/Message.css */
 .message {
+
  position: relative;
   width: 30%;
   display: flex;
@@ -96,6 +97,10 @@
 
 .messagetextdiv {
   width: 100%;
+  user-select: none; /* Standard syntax */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE/Edge */
 }
 
 .messagetextdiv > p {

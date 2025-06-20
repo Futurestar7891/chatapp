@@ -24,8 +24,6 @@ const FetchMessages = () => {
   } = useContext(StateContext);
   const receiverId = selectedUser?._id || null;
 
-  
-
   const fetchMessagesFromApi = useCallback(async () => {
     if (!senderId || !receiverId) return null;
 
@@ -45,8 +43,16 @@ const FetchMessages = () => {
 
       const data = await response.json();
       if (data.success) {
+        // Add isDeletedForMe flag to files based on deletedFor
+        const messagesWithFlags = data.messages.map((msg) => ({
+          ...msg,
+          files: msg.files.map((file) => ({
+            ...file,
+            isDeletedForMe: file.deletedFor?.includes(senderId) || false,
+          })),
+        }));
         return {
-          messages: data.messages || [],
+          messages: messagesWithFlags,
           userphoto: data.userphoto,
           isBlocked: data.isBlocked,
         };
@@ -69,9 +75,16 @@ const FetchMessages = () => {
         setMessages((prev) => {
           if (prev.some((msg) => msg._id === newMessage._id)) return prev;
 
-          const updatedMessages = [...prev, newMessage].sort(
-            (a, b) => new Date(a.sentTime) - new Date(b.sentTime)
-          );
+          const updatedMessages = [
+            ...prev,
+            {
+              ...newMessage,
+              files: newMessage.files.map((file) => ({
+                ...file,
+                isDeletedForMe: file.deletedFor?.includes(senderId) || false,
+              })),
+            },
+          ].sort((a, b) => new Date(a.sentTime) - new Date(b.sentTime));
           return updatedMessages;
         });
       } else {
@@ -94,6 +107,74 @@ const FetchMessages = () => {
       }
     },
     [receiverId, senderId, setMessages]
+  );
+
+  const handleDeleteForMe = useCallback(
+    ({ senderId: eventSenderId, messageId, fileIndex }) => {
+      if (eventSenderId !== senderId) return; // Only update for the user who deleted
+
+      setMessages((prevMessages) => {
+        const updatedMessages = prevMessages.map((msg) => {
+          if (msg._id === messageId) {
+            if (fileIndex === "text" || fileIndex === "all") {
+              return {
+                ...msg,
+                deletedFor: [...(msg.deletedFor || []), senderId],
+              };
+            } else if (
+              typeof fileIndex === "number" &&
+              msg.files?.[fileIndex]
+            ) {
+              const updatedFiles = msg.files.map((file, index) =>
+                index === fileIndex
+                  ? {
+                      ...file,
+                      deletedFor: [...(file.deletedFor || []), senderId],
+                      isDeletedForMe: true,
+                    }
+                  : file
+              );
+              return { ...msg, files: updatedFiles };
+            }
+          }
+          return msg;
+        });
+
+        return updatedMessages.filter(
+          (msg) =>
+            !msg.deletedFor?.includes(senderId) ||
+            (msg.files?.some((file) => !file.deletedFor?.includes(senderId)) &&
+              msg.text?.trim())
+        );
+      });
+    },
+    [senderId, setMessages]
+  );
+
+  const handleDeleteForEveryone = useCallback(
+    ({ messageId, fileIndex }) => {
+      setMessages((prevMessages) => {
+        if (fileIndex === "all") {
+          return prevMessages.filter((msg) => msg._id !== messageId);
+        } else if (typeof fileIndex === "number") {
+          const updatedMessages = prevMessages.map((msg) => {
+            if (msg._id === messageId && msg.files?.[fileIndex]) {
+              const updatedFiles = msg.files.filter(
+                (_, index) => index !== fileIndex
+              );
+              if (updatedFiles.length === 0 && !msg.text?.trim()) {
+                return null;
+              }
+              return { ...msg, files: updatedFiles };
+            }
+            return msg;
+          });
+          return updatedMessages.filter((msg) => msg !== null);
+        }
+        return prevMessages;
+      });
+    },
+    [setMessages]
   );
 
   useEffect(() => {
@@ -126,6 +207,8 @@ const FetchMessages = () => {
     const roomId = [senderId, receiverId].sort().join("-");
     socket.emit("joinRoom", { roomId, senderId });
     socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("messageDeletedForMe", handleDeleteForMe);
+    socket.on("messageDeletedForEveryone", handleDeleteForEveryone);
 
     socket.on(
       "messagesSeen",
@@ -144,6 +227,8 @@ const FetchMessages = () => {
 
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("messageDeletedForMe", handleDeleteForMe);
+      socket.off("messageDeletedForEveryone", handleDeleteForEveryone);
       socket.off("messagesSeen");
       socket.emit("leaveRoom");
     };
@@ -155,6 +240,8 @@ const FetchMessages = () => {
     setMessages,
     setIsBlocked,
     handleReceiveMessage,
+    handleDeleteForMe,
+    handleDeleteForEveryone,
     onlineUsers,
   ]);
 

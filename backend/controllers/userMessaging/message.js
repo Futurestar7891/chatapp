@@ -327,6 +327,7 @@ const message = async (req, res) => {
 
 
 const DeleteForMe = async (req, res) => {
+  const io = req.io;
   try {
     const { senderid, receiverId, Message, fileindex } = req.body;
 
@@ -369,6 +370,16 @@ const DeleteForMe = async (req, res) => {
       }
 
       await messageDoc.save();
+
+      // Emit socket event for real-time update
+      const roomId = [senderid, receiverId].sort().join("-");
+      io.to(roomId).emit("messageDeletedForMe", {
+        senderId: senderid,
+        receiverId,
+        messageId: Message._id,
+        fileIndex: fileindex,
+      });
+
       return res
         .status(200)
         .json({ success: true, message: "Entire message deleted." });
@@ -414,7 +425,15 @@ const DeleteForMe = async (req, res) => {
 
       await messageDoc.save();
 
-      
+      // Emit socket event for real-time update
+      const roomId = [senderid, receiverId].sort().join("-");
+      io.to(roomId).emit("messageDeletedForMe", {
+        senderId: senderid,
+        receiverId,
+        messageId: Message._id,
+        fileIndex: fileindex,
+      });
+
       return res
         .status(200)
         .json({ success: true, message: "File deleted for sender." });
@@ -426,8 +445,8 @@ const DeleteForMe = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 const DeleteForEveryone = async (req, res) => {
+  const io = req.io;
   try {
     const { senderid, receiverId, Message, fileindex } = req.body;
 
@@ -465,10 +484,10 @@ const DeleteForEveryone = async (req, res) => {
     const msg = messageDoc.messages[msgIndex];
 
     if (fileindex === "all") {
-      // delete the whole message
+      // Delete the whole message
       messageDoc.messages.splice(msgIndex, 1);
     } else {
-      // delete just the specific file
+      // Delete just the specific file
       if (!msg.files || msg.files.length <= fileindex) {
         return res.status(404).json({ error: "Invalid file index" });
       }
@@ -483,6 +502,15 @@ const DeleteForEveryone = async (req, res) => {
 
     await messageDoc.save();
 
+    // Emit socket event for real-time update
+    const roomId = [senderid, receiverId].sort().join("-");
+    io.to(roomId).emit("messageDeletedForEveryone", {
+      senderId: senderid,
+      receiverId,
+      messageId: Message._id,
+      fileIndex: fileindex,
+    });
+
     return res
       .status(200)
       .json({ success: true, message: "Deleted for everyone" });
@@ -491,7 +519,6 @@ const DeleteForEveryone = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 
 
 

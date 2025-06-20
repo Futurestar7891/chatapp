@@ -17,7 +17,7 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
     message: "",
   });
   const [showInfo, setShowInfo] = useState(false);
-  const { selectedUser } = useContext(StateContext);
+  const { selectedUser, setMessages } = useContext(StateContext);
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
@@ -39,19 +39,80 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
     let messageText = "";
     if (action === "copy") messageText = "Message copied to clipboard";
     else if (action === "save") messageText = "File download started";
-    else if(action==="DFM")messageText="The Message is deleted for you";
-    else if(action==="DFE")messageText="The Message is deleted for everyone";
+    else if (action === "DFM") messageText = "The message is deleted for you";
+    else if (action === "DFE")
+      messageText = "The message is deleted for everyone";
+    else if (action === "DFM-loading") messageText = "Deleting...";
+    else if (action === "DFE-loading") messageText = "Deleting...";
 
     if (messageText) {
       setShowMessage({ show: true, message: messageText });
     }
   };
 
+  const handleDelete = ({ type, messageId, fileIndex, senderId }) => {
+    setMessages((prevMessages) => {
+      if (type === "DFM") {
+        const updatedMessages = prevMessages.map((msg) => {
+          if (msg._id === messageId) {
+            if (fileIndex === "text" || fileIndex === "all") {
+              return {
+                ...msg,
+                deletedFor: [...(msg.deletedFor || []), senderId],
+              };
+            } else if (
+              typeof fileIndex === "number" &&
+              msg.files?.[fileIndex]
+            ) {
+              const updatedFiles = msg.files.map((file, index) =>
+                index === fileIndex
+                  ? {
+                      ...file,
+                      deletedFor: [...(file.deletedFor || []), senderId],
+                      isDeletedForMe: true,
+                    }
+                  : file
+              );
+              return { ...msg, files: updatedFiles };
+            }
+          }
+          return msg;
+        });
+
+        return updatedMessages.filter(
+          (msg) =>
+            !msg.deletedFor?.includes(senderId) ||
+            (msg.files?.some((file) => !file.deletedFor?.includes(senderId)) &&
+              msg.text?.trim())
+        );
+      } else if (type === "DFE") {
+        if (fileIndex === "all") {
+          return prevMessages.filter((msg) => msg._id !== messageId);
+        } else if (typeof fileIndex === "number") {
+          const updatedMessages = prevMessages.map((msg) => {
+            if (msg._id === messageId && msg.files?.[fileIndex]) {
+              const updatedFiles = msg.files.filter(
+                (_, index) => index !== fileIndex
+              );
+              if (updatedFiles.length === 0 && !msg.text?.trim()) {
+                return null;
+              }
+              return { ...msg, files: updatedFiles };
+            }
+            return msg;
+          });
+          return updatedMessages.filter((msg) => msg !== null);
+        }
+      }
+      return prevMessages;
+    });
+  };
+
   const touchTimer = useRef(null);
   const contextMenuRef = useRef(null);
   const textRef = useRef(null);
 
-  const hasText = !!message.text;
+  const hasText = !!message.text?.trim();
   const hasMedia = message.files && message.files.length > 0;
 
   const menuOptions = {
@@ -126,11 +187,13 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "Unknown Time";
     const date = new Date(timestamp);
-    return isNaN(date.getTime()) ? "Invalid Date" : date.toLocaleTimeString();
+    return isNaN(date.getTime())
+      ? "Invalid Date"
+      : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   const renderFile = (file, index) => {
-    if (file.isDeletedForMe) return null; // ✅ skip deleted file
+    if (file.isDeletedForMe) return null;
 
     if (file.url.startsWith("data:")) {
       if (file.type.startsWith("image")) {
@@ -139,7 +202,7 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
         );
       } else if (file.type.startsWith("video")) {
         return (
-          <video controls>
+          <video controls style={{ maxWidth: "100%" }}>
             <source src={file.url} type={file.type} />
           </video>
         );
@@ -168,7 +231,7 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
           <img src={file.url} alt={file.name} style={{ maxWidth: "100%" }} />
         );
       } else if (file.type.startsWith("video")) {
-        return <video controls src={file.url} />;
+        return <video controls src={file.url} style={{ maxWidth: "100%" }} />;
       } else if (file.type.startsWith("audio")) {
         return <audio controls src={file.url} />;
       } else if (
@@ -248,7 +311,7 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
       <div className={`messagesdiv ${isSent ? "sendermsg" : "receivermsg"}`}>
         {hasMedia &&
           message.files.map((file, index) => {
-            if (file.isDeletedForMe) return null; // ✅ Don't render deleted
+            if (file.isDeletedForMe) return null;
             return (
               <div
                 key={index}
@@ -279,6 +342,7 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
                           target: null,
                         })
                       }
+                      onDelete={handleDelete}
                     />
                   </div>
                 )}
@@ -295,11 +359,12 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
               y={contextMenu.y}
               isSent={isSent}
               message={message}
-              fileindex={"text"} // 👈 mark it as text
+              fileindex="text"
               receiverId={receiverId}
               options={menuOptions}
               setShowInfo={setShowInfo}
               onAction={handleContextMenuAction}
+              onDelete={handleDelete}
               onClose={() =>
                 setContextMenu({ visible: false, x: 0, y: 0, target: null })
               }
@@ -312,7 +377,11 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
         <div className="message-notification">{showMessage.message}</div>
       )}
       {showInfo && (
-        <MessageInfo isSent={isSent} message={message} onClose={() => setShowInfo(false)} />
+        <MessageInfo
+          isSent={isSent}
+          message={message}
+          onClose={() => setShowInfo(false)}
+        />
       )}
     </div>
   );

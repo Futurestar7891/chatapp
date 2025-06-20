@@ -12,12 +12,15 @@ const MessageContextMenu = ({
   options,
   setShowInfo,
   onClose,
-  onAction, // Add this prop
+  onAction,
+  onDelete,
 }) => {
+  const senderId = localStorage.getItem("id");
+
   const handleCopy = () => {
     if (message.text) {
       navigator.clipboard.writeText(message.text);
-      onAction("copy"); // Notify parent about the action
+      onAction("copy");
     }
     onClose();
   };
@@ -48,7 +51,7 @@ const MessageContextMenu = ({
       link.click();
       document.body.removeChild(link);
 
-      onAction("save"); // Notify parent about the action
+      onAction("save");
     } catch (error) {
       console.error("Download failed:", error);
     }
@@ -76,7 +79,6 @@ const MessageContextMenu = ({
       let deleteWholeMessage = false;
 
       if (fileindex === "text") {
-        // Text was targeted for deletion
         deleteWholeMessage = true;
       } else {
         const mediaCount = message.files.filter(
@@ -85,16 +87,23 @@ const MessageContextMenu = ({
         const hasText = !!message.text?.trim();
 
         if (mediaCount === 1 && !hasText) {
-          // Only one media exists (and no text), so delete the whole message
           deleteWholeMessage = true;
         } else if (mediaCount === 1 && hasText) {
-          // One media left + text, deleting this media deletes entire message
           deleteWholeMessage = true;
         } else {
-          // Delete just the media
           deleteWholeMessage = false;
         }
       }
+
+      onAction("DFM-loading");
+
+      onDelete({
+        type: "DFM",
+        messageId: message._id,
+        fileIndex: deleteWholeMessage ? "all" : Number(fileindex),
+        senderId,
+        receiverId,
+      });
 
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/delete-for-me`,
@@ -105,8 +114,8 @@ const MessageContextMenu = ({
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
-            senderid: localStorage.getItem("id"),
-            receiverId: receiverId,
+            senderid: senderId,
+            receiverId,
             Message: message,
             fileindex: deleteWholeMessage ? "all" : Number(fileindex),
           }),
@@ -118,18 +127,17 @@ const MessageContextMenu = ({
         onAction("DFM");
       } else {
         console.error("❌ Delete failed:", data.error);
-       
       }
     } catch (err) {
       console.error("❌ Network or server error:", err);
-      
     }
 
     onClose();
   };
-  
-  
+
   const handleDeleteForEveryone = async () => {
+    if (!isSent) return;
+
     try {
       let deleteWholeMessage = false;
 
@@ -150,6 +158,16 @@ const MessageContextMenu = ({
         }
       }
 
+      onAction("DFE-loading");
+
+      onDelete({
+        type: "DFE",
+        messageId: message._id,
+        fileIndex: deleteWholeMessage ? "all" : Number(fileindex),
+        senderId,
+        receiverId,
+      });
+
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/delete-for-everyone`,
         {
@@ -159,8 +177,8 @@ const MessageContextMenu = ({
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
-            senderid: localStorage.getItem("id"),
-            receiverId: receiverId,
+            senderid: senderId,
+            receiverId,
             Message: message,
             fileindex: deleteWholeMessage ? "all" : Number(fileindex),
           }),
@@ -172,16 +190,13 @@ const MessageContextMenu = ({
         onAction("DFE");
       } else {
         console.error("❌ Delete failed:", data.error);
-       
       }
     } catch (err) {
       console.error("❌ Network or server error:", err);
-     
     }
 
     onClose();
   };
-  
 
   return (
     <div
