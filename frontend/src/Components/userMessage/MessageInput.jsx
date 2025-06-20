@@ -50,6 +50,10 @@ const MessageInput = ({ handleAttachmentClick }) => {
         return;
       }
 
+      const tempId = `local_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      const sentTime = new Date().toISOString();
       const filesWithData = await Promise.all(
         selectedFiles.map(async (file) => {
           if (!file.data) {
@@ -76,9 +80,8 @@ const MessageInput = ({ handleAttachmentClick }) => {
         })
       );
 
-      const sentTime = new Date().toISOString();
       const localMessage = {
-        _id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        _id: tempId,
         senderId,
         receiverId,
         text: messageInput,
@@ -88,11 +91,14 @@ const MessageInput = ({ handleAttachmentClick }) => {
           url: file.data.startsWith("data:")
             ? file.data
             : `data:${file.type};base64,${file.data}`,
+          isDeletedForMe: false,
         })),
         sentTime,
         receivedTime: null,
+        seenTime: null,
       };
 
+      // Add optimistic message
       setMessages((prev) =>
         [...prev, localMessage].sort(
           (a, b) => new Date(a.sentTime) - new Date(b.sentTime)
@@ -127,12 +133,31 @@ const MessageInput = ({ handleAttachmentClick }) => {
         );
 
         const data = await response.json();
-        if (!data.success) {
+        if (data.success) {
+          // Update optimistic message with server message ID
+          setMessages((prev) =>
+            prev
+              .map((msg) =>
+                msg._id === tempId
+                  ? {
+                      ...msg,
+                      _id: data.savedMessageId,
+                      files: msg.files.map((file) => ({
+                        ...file,
+                        isDeletedForMe: false,
+                      })),
+                    }
+                  : msg
+              )
+              .sort((a, b) => new Date(a.sentTime) - new Date(b.sentTime))
+          );
+        } else {
           throw new Error(data.message || "Failed to send message");
         }
       } catch (error) {
         console.error("Error sending message:", error);
-        setMessages((prev) => prev.filter((m) => m._id !== localMessage._id));
+        // Remove optimistic message on failure
+        setMessages((prev) => prev.filter((m) => m._id !== tempId));
       }
     },
     [

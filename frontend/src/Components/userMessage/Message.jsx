@@ -51,6 +51,15 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
   };
 
   const handleDelete = ({ type, messageId, fileIndex, senderId }) => {
+    // Prevent delete actions if messageId is temporary (starts with "local_")
+    if (messageId.startsWith("local_")) {
+      setShowMessage({
+        show: true,
+        message: "Cannot delete message until it is synced with the server",
+      });
+      return;
+    }
+
     setMessages((prevMessages) => {
       if (type === "DFM") {
         const updatedMessages = prevMessages.map((msg) => {
@@ -118,6 +127,8 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
   const menuOptions = {
     showCopy: hasText,
     showSave: hasMedia,
+    showDeleteForMe: !message._id.startsWith("local_"), // Hide delete option for unsynced messages
+    showDeleteForEveryone: isSent && !message._id.startsWith("local_"), // Hide DFE for unsynced messages
   };
 
   const closeAllContextMenus = () => {
@@ -201,6 +212,7 @@ const Message = ({ message, isSent, userphoto, receiverId }) => {
           <img src={file.url} alt={file.name} style={{ maxWidth: "100%" }} />
         );
       } else if (file.type.startsWith("video")) {
+        // Fixed typo: removed architect
         return (
           <video controls style={{ maxWidth: "100%" }}>
             <source src={file.url} type={file.type} />

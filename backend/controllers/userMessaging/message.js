@@ -310,10 +310,18 @@ const message = async (req, res) => {
       message
     );
 
+    if (!conversation.success) {
+      return res.status(500).json({
+        success: false,
+        message: conversation.message,
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: "Message sent successfully",
       messages: conversation.messages,
+      savedMessageId: conversation.savedMessageId, // Include savedMessageId
     });
   } catch (error) {
     console.error("Error in /send-receive:", error.message);
@@ -325,11 +333,17 @@ const message = async (req, res) => {
   }
 };
 
-
 const DeleteForMe = async (req, res) => {
   const io = req.io;
   try {
     const { senderid, receiverId, Message, fileindex } = req.body;
+
+    console.log("DeleteForMe Request:", {
+      senderid,
+      receiverId,
+      MessageId: Message._id,
+      fileindex,
+    });
 
     if (!senderid || !receiverId || !Message || !Message._id) {
       return res.status(400).json({ error: "Missing or invalid fields" });
@@ -345,6 +359,10 @@ const DeleteForMe = async (req, res) => {
     });
 
     if (!messageDoc) {
+      console.log("Message document not found for participants:", {
+        senderid,
+        receiverId,
+      });
       return res.status(404).json({ error: "Message document not found" });
     }
 
@@ -353,6 +371,11 @@ const DeleteForMe = async (req, res) => {
     );
 
     if (!message) {
+      console.log("Message not found in array, provided ID:", Message._id);
+      console.log(
+        "Available message IDs:",
+        messageDoc.messages.map((msg) => msg._id.toString())
+      );
       return res.status(404).json({ error: "Message not found inside array" });
     }
 
@@ -445,10 +468,18 @@ const DeleteForMe = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 const DeleteForEveryone = async (req, res) => {
   const io = req.io;
   try {
     const { senderid, receiverId, Message, fileindex } = req.body;
+
+    console.log("DeleteForEveryone Request:", {
+      senderid,
+      receiverId,
+      MessageId: Message._id,
+      fileindex,
+    });
 
     if (
       !senderid ||
@@ -470,6 +501,10 @@ const DeleteForEveryone = async (req, res) => {
     });
 
     if (!messageDoc) {
+      console.log("Message document not found for participants:", {
+        senderid,
+        receiverId,
+      });
       return res.status(404).json({ error: "Message document not found" });
     }
 
@@ -478,6 +513,11 @@ const DeleteForEveryone = async (req, res) => {
     );
 
     if (msgIndex === -1) {
+      console.log("Message not found in array, provided ID:", Message._id);
+      console.log(
+        "Available message IDs:",
+        messageDoc.messages.map((msg) => msg._id.toString())
+      );
       return res.status(404).json({ error: "Message not found inside array" });
     }
 
@@ -519,6 +559,7 @@ const DeleteForEveryone = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 
 

@@ -49,6 +49,7 @@ const MessageSchema = new mongoose.Schema({
         default: null,
       },
       seenTime: {
+        // Corrected from seentTime
         type: Date,
         default: null,
       },
@@ -57,8 +58,6 @@ const MessageSchema = new mongoose.Schema({
         ref: "User",
         default: null,
       },
-
-      // ✅ New field for tracking full message deletion per user
       deletedFor: [
         {
           type: mongoose.Schema.Types.ObjectId,
@@ -124,8 +123,8 @@ MessageSchema.statics.sendMessage = async function (
       files: uploadedFiles,
       sentTime: new Date(message.sentTime || Date.now()),
       receivedTime: null,
-      seentTime:null,
-      blockedId: isBlockedByReceiver ? senderObjectId : null, // Set blockedId if blocked by receiver
+      seenTime: null,
+      blockedId: isBlockedByReceiver ? senderObjectId : null,
     };
 
     if (!conversation) {
@@ -171,16 +170,15 @@ MessageSchema.statics.sendMessage = async function (
     // Only update receiver's ChatList if not blocked
     if (!isBlockedByReceiver) {
       const reciverRoom = userRoomMap.get(receiverId);
-      const RoomId=[senderId,receiverId].sort().join("-");
+      const RoomId = [senderId, receiverId].sort().join("-");
 
-      if(reciverRoom===RoomId){
+      if (reciverRoom === RoomId) {
         savedMessage.seenTime = new Date();
       }
       savedMessage.receivedTime = new Date();
       await conversation.save();
       await updateChatList(receiverId, senderId, savedMessage.receivedTime);
     }
-
 
     if (!isBlockedByReceiver) {
       const roomId = [senderId, receiverId].sort().join("-");
@@ -194,7 +192,7 @@ MessageSchema.statics.sendMessage = async function (
           ? savedMessage.seenTime.toISOString()
           : null,
       });
-      // console.log(`Emitted message to room ${roomId}`);
+      console.log(`Emitted message to room ${roomId}:`, savedMessage._id);
     } else {
       console.log("Message not emitted: Receiver has blocked sender");
     }
@@ -202,6 +200,7 @@ MessageSchema.statics.sendMessage = async function (
     return {
       success: true,
       messages: conversation.messages,
+      savedMessageId: savedMessage._id, // Return the saved message ID
     };
   } catch (error) {
     console.error("Error sending message:", error.message);

@@ -68,11 +68,36 @@ const FetchMessages = () => {
   const handleReceiveMessage = useCallback(
     (newMessage) => {
       console.log("Received message on client:", newMessage);
-      if (
-        newMessage.senderId.toString() === receiverId &&
-        newMessage.receiverId.toString() === senderId
-      ) {
-        setMessages((prev) => {
+      setMessages((prev) => {
+        // Check if this is an update for an optimistic message
+        const optimisticMessageIndex = prev.findIndex(
+          (msg) =>
+            msg._id.startsWith("local_") &&
+            msg.senderId === newMessage.senderId &&
+            msg.receiverId === newMessage.receiverId &&
+            msg.sentTime === newMessage.sentTime
+        );
+
+        if (optimisticMessageIndex !== -1) {
+          // Replace optimistic message with server message
+          const updatedMessages = [...prev];
+          updatedMessages[optimisticMessageIndex] = {
+            ...newMessage,
+            files: newMessage.files.map((file) => ({
+              ...file,
+              isDeletedForMe: file.deletedFor?.includes(senderId) || false,
+            })),
+          };
+          return updatedMessages.sort(
+            (a, b) => new Date(a.sentTime) - new Date(b.sentTime)
+          );
+        }
+
+        // Handle incoming message from receiver
+        if (
+          newMessage.senderId.toString() === receiverId &&
+          newMessage.receiverId.toString() === senderId
+        ) {
           if (prev.some((msg) => msg._id === newMessage._id)) return prev;
 
           const updatedMessages = [
@@ -86,25 +111,27 @@ const FetchMessages = () => {
             },
           ].sort((a, b) => new Date(a.sentTime) - new Date(b.sentTime));
           return updatedMessages;
-        });
-      } else {
-        setMessages((prev) => {
-          const updatedMessages = [...prev];
-          if (updatedMessages.length > 0) {
-            const latestMessageIndex = updatedMessages.length - 1;
-            updatedMessages[latestMessageIndex] = {
-              ...updatedMessages[latestMessageIndex],
-              receivedTime: newMessage.receivedTime,
-              seenTime: newMessage.seenTime,
-            };
-          }
-          updatedMessages.sort(
-            (a, b) => new Date(a.sentTime) - new Date(b.sentTime)
-          );
-          console.log("Updated messages with received time:", newMessage);
-          return updatedMessages;
-        });
-      }
+        }
+
+        // Update receivedTime or seenTime for sent messages
+        const updatedMessages = [...prev];
+        const messageIndex = updatedMessages.findIndex(
+          (msg) => msg._id === newMessage._id
+        );
+        if (messageIndex !== -1) {
+          updatedMessages[messageIndex] = {
+            ...updatedMessages[messageIndex],
+            receivedTime:
+              newMessage.receivedTime ||
+              updatedMessages[messageIndex].receivedTime,
+            seenTime:
+              newMessage.seenTime || updatedMessages[messageIndex].seenTime,
+          };
+        }
+        return updatedMessages.sort(
+          (a, b) => new Date(a.sentTime) - new Date(b.sentTime)
+        );
+      });
     },
     [receiverId, senderId, setMessages]
   );
