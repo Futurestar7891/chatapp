@@ -179,31 +179,61 @@ const FetchMessages = () => {
   );
 
   const handleDeleteForEveryone = useCallback(
-    ({ messageId, fileIndex }) => {
+    ({ messageId, fileIndex, updatedMessage }) => {
       setMessages((prevMessages) => {
-        if (fileIndex === "all") {
-          return prevMessages.filter((msg) => msg._id !== messageId);
-        } else if (typeof fileIndex === "number") {
-          const updatedMessages = prevMessages.map((msg) => {
-            if (msg._id === messageId && msg.files?.[fileIndex]) {
-              const updatedFiles = msg.files.filter(
-                (_, index) => index !== fileIndex
-              );
-              if (updatedFiles.length === 0 && !msg.text?.trim()) {
-                return null;
-              }
-              return { ...msg, files: updatedFiles };
+        return prevMessages.map((msg) => {
+          if (msg._id === messageId) {
+            // If we have the updated message from server, use that
+            if (updatedMessage) {
+              return {
+                ...updatedMessage,
+                files: updatedMessage.files.map((file) => ({
+                  ...file,
+                  isDeletedForMe: file.deletedFor?.includes(senderId) || false,
+                })),
+              };
             }
-            return msg;
-          });
-          return updatedMessages.filter((msg) => msg !== null);
-        }
-        return prevMessages;
+
+            // Fallback to local update if no server message
+            if (fileIndex === "all") {
+              return {
+                ...msg,
+                deletedFor: [
+                  ...new Set([...(msg.deletedFor || []), senderId, receiverId]),
+                ],
+              };
+            } else if (
+              typeof fileIndex === "number" &&
+              msg.files?.[fileIndex]
+            ) {
+              const updatedFiles = msg.files.map((file, idx) =>
+                idx === fileIndex
+                  ? {
+                      ...file,
+                      deletedFor: [
+                        ...new Set([
+                          ...(file.deletedFor || []),
+                          senderId,
+                          receiverId,
+                        ]),
+                      ],
+                      isDeletedForMe: true,
+                    }
+                  : file
+              );
+
+              return {
+                ...msg,
+                files: updatedFiles,
+              };
+            }
+          }
+          return msg;
+        });
       });
     },
-    [setMessages]
+    [senderId, receiverId, setMessages]
   );
-
   useEffect(() => {
     if (!senderId || !socket || !receiverId) {
       setError(
@@ -235,7 +265,13 @@ const FetchMessages = () => {
     socket.emit("joinRoom", { roomId, senderId });
     socket.on("receiveMessage", handleReceiveMessage);
     socket.on("messageDeletedForMe", handleDeleteForMe);
-    socket.on("messageDeletedForEveryone", handleDeleteForEveryone);
+    socket.on("messageDeletedForEveryone", (data) => {
+      handleDeleteForEveryone({
+        messageId: data.messageId,
+        fileIndex: data.fileIndex,
+        updatedMessage: data.updatedMessage,
+      });
+    });
 
     socket.on(
       "messagesSeen",

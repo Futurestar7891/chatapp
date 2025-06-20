@@ -49,7 +49,6 @@ const MessageSchema = new mongoose.Schema({
         default: null,
       },
       seenTime: {
-        // Corrected from seentTime
         type: Date,
         default: null,
       },

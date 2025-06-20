@@ -190,7 +190,10 @@ const fetchMessage = async (req, res) => {
     const filteredMessages = conversation
       ? conversation.messages
           .filter((msg) => {
-            // 🔁 Skip messages deleted for the current user
+            // Skip messages where both users have deleted it
+            if (msg.deletedFor?.length === 2) return false;
+
+            // Skip messages deleted for the current user
             if (
               msg.deletedFor?.some(
                 (id) => id.toString() === senderid.toString()
@@ -198,7 +201,7 @@ const fetchMessage = async (req, res) => {
             )
               return false;
 
-            // ⛔ Skip messages blocked by receiver
+            // Skip messages blocked by receiver
             if (msg.senderId.equals(senderid)) return true;
             if (
               msg.blockedId &&
@@ -230,7 +233,6 @@ const fetchMessage = async (req, res) => {
           .sort((a, b) => new Date(a.sentTime) - new Date(b.sentTime))
       : [];
 
-
     return res.status(200).json({
       success: true,
       messages: filteredMessages,
@@ -246,7 +248,6 @@ const fetchMessage = async (req, res) => {
     return res.status(500).json({ success: false, error: error.message });
   }
 };
-
 
 const chattingRoom = async (req, res) => {
   try {
@@ -474,21 +475,9 @@ const DeleteForEveryone = async (req, res) => {
   try {
     const { senderid, receiverId, Message, fileindex } = req.body;
 
-    console.log("DeleteForEveryone Request:", {
-      senderid,
-      receiverId,
-      MessageId: Message._id,
-      fileindex,
-    });
-
-    if (
-      !senderid ||
-      !receiverId ||
-      !Message ||
-      !Message._id ||
-      (fileindex !== "all" && (isNaN(fileindex) || fileindex < 0))
-    ) {
-      return res.status(400).json({ error: "Missing or invalid fields" });
+    // Input validation
+    if (!senderid || !receiverId || !Message || !Message._id) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     const messageDoc = await MessageSchema.findOne({
@@ -501,67 +490,73 @@ const DeleteForEveryone = async (req, res) => {
     });
 
     if (!messageDoc) {
-      console.log("Message document not found for participants:", {
-        senderid,
-        receiverId,
-      });
-      return res.status(404).json({ error: "Message document not found" });
+      return res.status(404).json({ error: "Conversation not found" });
     }
 
-    const msgIndex = messageDoc.messages.findIndex(
+    const message = messageDoc.messages.find(
       (msg) => msg._id.toString() === Message._id
     );
 
-    if (msgIndex === -1) {
-      console.log("Message not found in array, provided ID:", Message._id);
-      console.log(
-        "Available message IDs:",
-        messageDoc.messages.map((msg) => msg._id.toString())
-      );
-      return res.status(404).json({ error: "Message not found inside array" });
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
     }
 
-    const msg = messageDoc.messages[msgIndex];
+    // Mark for deletion for both users
+    const objectSenderId = new mongoose.Types.ObjectId(senderid);
+    const objectReceiverId = new mongoose.Types.ObjectId(receiverId);
 
+    // For entire message
     if (fileindex === "all") {
-      // Delete the whole message
-      messageDoc.messages.splice(msgIndex, 1);
-    } else {
-      // Delete just the specific file
-      if (!msg.files || msg.files.length <= fileindex) {
-        return res.status(404).json({ error: "Invalid file index" });
+      if (!message.deletedFor) message.deletedFor = [];
+
+      // Add both users if not already present
+      if (!message.deletedFor.some((id) => id.equals(objectSenderId))) {
+        message.deletedFor.push(objectSenderId);
       }
+      if (!message.deletedFor.some((id) => id.equals(objectReceiverId))) {
+        message.deletedFor.push(objectReceiverId);
+      }
+    }
+    // For specific file
+    else if (typeof fileindex === "number" && message.files?.[fileindex]) {
+      const file = message.files[fileindex];
+      if (!file.deletedFor) file.deletedFor = [];
 
-      msg.files.splice(fileindex, 1);
-
-      // If no files and no text left, remove the whole message
-      if (msg.files.length === 0 && !msg.text?.trim()) {
-        messageDoc.messages.splice(msgIndex, 1);
+      // Add both users if not already present
+      if (!file.deletedFor.some((id) => id.equals(objectSenderId))) {
+        file.deletedFor.push(objectSenderId);
+      }
+      if (!file.deletedFor.some((id) => id.equals(objectReceiverId))) {
+        file.deletedFor.push(objectReceiverId);
       }
     }
 
     await messageDoc.save();
 
-    // Emit socket event for real-time update
+    // Emit to both users with complete message data
     const roomId = [senderid, receiverId].sort().join("-");
     io.to(roomId).emit("messageDeletedForEveryone", {
       senderId: senderid,
       receiverId,
       messageId: Message._id,
       fileIndex: fileindex,
+      updatedMessage: message.toObject(), // Send the complete updated message
     });
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Deleted for everyone" });
+    return res.status(200).json({
+      success: true,
+      message: "Message deleted for everyone",
+    });
   } catch (error) {
-    console.error("❌ DeleteForEveryone Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error("DeleteForEveryone Error:", error);
+    return res.status(500).json({ error: "Server error" });
   }
 };
-
-
-
-
-
-module.exports = { fetchChatlist, fetchMessage, chattingRoom, message,DeleteForMe,DeleteForEveryone };
+module.exports = {
+  fetchChatlist,
+  fetchMessage,
+  chattingRoom,
+  message,
+  DeleteForMe,
+  DeleteForEveryone,
+};
