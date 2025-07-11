@@ -27,6 +27,7 @@
   padding-left: 10px;
   background: transparent;
   border-bottom: 1px solid purple;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
@@ -110,6 +111,9 @@
 /* Bottom section for message input */
 .Chatapprightdivmessagediv {
   width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
   height: 10%;
   display: flex;
   justify-content: space-between;
