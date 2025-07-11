@@ -2,7 +2,7 @@
   /* border: 2px solid blue; */
   position: relative;
   width: 100vw;
-  height: 100dvh;
+  max-height: 100vh;
   display: flex;
   justify-content: space-between;
   background-color: #ffffff;
