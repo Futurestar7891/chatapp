@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useContext } from "react";
 import Message from "./Message";
 import { StateContext } from "../../main";
-import UserStatus from "./userStatus";
+import UserStatus from "./UserStatus";
 import MessageInput from "./MessageInput";
 import "../../Css/Fetchmessages.css";
 
@@ -10,6 +10,7 @@ const FetchMessages = () => {
   const [recieverphoto, setRecieverPhoto] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
 
   const senderphoto = localStorage.getItem("Photo") || "/default-avatar.png";
   const {
@@ -19,8 +20,8 @@ const FetchMessages = () => {
     showAttachmentPopup,
     setShowAttachmentPopup,
     messages,
-    onlineUsers,
     socket,
+    onlineUsers,
   } = useContext(StateContext);
   const receiverId = selectedUser?._id || null;
 
@@ -43,7 +44,6 @@ const FetchMessages = () => {
 
       const data = await response.json();
       if (data.success) {
-        // Add isDeletedForMe flag to files based on deletedFor
         const messagesWithFlags = data.messages.map((msg) => ({
           ...msg,
           files: msg.files.map((file) => ({
@@ -67,9 +67,7 @@ const FetchMessages = () => {
 
   const handleReceiveMessage = useCallback(
     (newMessage) => {
-      console.log("Received message on client:", newMessage);
       setMessages((prev) => {
-        // Check if this is an update for an optimistic message
         const optimisticMessageIndex = prev.findIndex(
           (msg) =>
             msg._id.startsWith("local_") &&
@@ -79,7 +77,6 @@ const FetchMessages = () => {
         );
 
         if (optimisticMessageIndex !== -1) {
-          // Replace optimistic message with server message
           const updatedMessages = [...prev];
           updatedMessages[optimisticMessageIndex] = {
             ...newMessage,
@@ -93,7 +90,6 @@ const FetchMessages = () => {
           );
         }
 
-        // Handle incoming message from receiver
         if (
           newMessage.senderId.toString() === receiverId &&
           newMessage.receiverId.toString() === senderId
@@ -113,7 +109,6 @@ const FetchMessages = () => {
           return updatedMessages;
         }
 
-        // Update receivedTime or seenTime for sent messages
         const updatedMessages = [...prev];
         const messageIndex = updatedMessages.findIndex(
           (msg) => msg._id === newMessage._id
@@ -138,7 +133,7 @@ const FetchMessages = () => {
 
   const handleDeleteForMe = useCallback(
     ({ senderId: eventSenderId, messageId, fileIndex }) => {
-      if (eventSenderId !== senderId) return; // Only update for the user who deleted
+      if (eventSenderId !== senderId) return;
 
       setMessages((prevMessages) => {
         const updatedMessages = prevMessages.map((msg) => {
@@ -183,7 +178,6 @@ const FetchMessages = () => {
       setMessages((prevMessages) => {
         return prevMessages.map((msg) => {
           if (msg._id === messageId) {
-            // If we have the updated message from server, use that
             if (updatedMessage) {
               return {
                 ...updatedMessage,
@@ -194,7 +188,6 @@ const FetchMessages = () => {
               };
             }
 
-            // Fallback to local update if no server message
             if (fileIndex === "all") {
               return {
                 ...msg,
@@ -206,7 +199,7 @@ const FetchMessages = () => {
               typeof fileIndex === "number" &&
               msg.files?.[fileIndex]
             ) {
-              const updatedFiles = msg.files.map((file, idx) =>
+              const updatedFiles = msg.files.map((idx) =>
                 idx === fileIndex
                   ? {
                       ...file,
@@ -234,6 +227,7 @@ const FetchMessages = () => {
     },
     [senderId, receiverId, setMessages]
   );
+
   useEffect(() => {
     if (!senderId || !socket || !receiverId) {
       setError(
@@ -248,15 +242,12 @@ const FetchMessages = () => {
 
     const fetchInitialData = async () => {
       setLoading(true);
-
       const freshData = await fetchMessagesFromApi();
       if (freshData) {
-        console.log("Fetched fresh data:", freshData);
         setMessages(freshData.messages);
         setRecieverPhoto(freshData.userphoto);
         setIsBlocked(freshData.isBlocked);
       }
-
       setLoading(false);
     };
 
@@ -305,7 +296,6 @@ const FetchMessages = () => {
     handleReceiveMessage,
     handleDeleteForMe,
     handleDeleteForEveryone,
-    onlineUsers,
   ]);
 
   const handleAttachmentClick = useCallback(() => {

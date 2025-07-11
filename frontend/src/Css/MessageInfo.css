@@ -1,7 +1,8 @@
 /* Common styles */
 .message-info-box {
-    position: absolute;
-    top: 20%;
+    position: fixed;
+    top: 40%;
+    
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -13,14 +14,14 @@
   
   /* Center-left for sender */
   .senderinfo {
-    left: 35%;
+    left: 80%;
     transform: translate(-150%, -40%);
     border-left: 4px solid #007bff;
   }
   
   /* Center-right for receiver */
   .receiverinfo {
-    left: 65%;
+    left: 40%;
     transform: translate(50%, -50%);
     border-left: 4px solid #28a745;
   }
@@ -44,5 +45,20 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
+  }
+  @media screen and (max-width:484px){
+    .senderinfo {
+      left: 135%;
+      right: 0%;
+  
+    }
+    
+    /* Center-right for receiver */
+    .receiverinfo {
+      left: -32%;
+      
+     
+    }
+    
   }
   

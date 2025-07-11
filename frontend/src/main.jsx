@@ -1,6 +1,7 @@
-import { useState, createContext, useMemo, useEffect } from "react";
+import { useState, createContext, useMemo, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { io } from "socket.io-client"; // Import socket.io-client
+import { io } from "socket.io-client";
+import { throttle } from "lodash";
 import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
@@ -35,8 +36,8 @@ export const StateProvider = ({ children }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [socket, setSocket] = useState(null);
-  
-  
+  const onlineUsersRef = useRef([]);
+
   // Initialize socket connection
   useEffect(() => {
     if (token) {
@@ -45,10 +46,16 @@ export const StateProvider = ({ children }) => {
         transports: ["websocket", "polling"],
         autoConnect: true,
         query: { token },
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
+
+      newSocket.on("connect", () => {
+        console.log("✅ Connected to socket server");
       });
 
       newSocket.on("disconnect", () => {
-        console.log("❌ Disconnected from server");
+        console.log("❌ Disconnected from socket server");
       });
 
       newSocket.on("connect_error", (err) => {
@@ -66,22 +73,41 @@ export const StateProvider = ({ children }) => {
     }
   }, [token]);
 
-  // Listen for onlineUsers event
+  // Handle online users and activity
   useEffect(() => {
     if (!socket) return;
 
     const handleOnlineUsers = (userIds) => {
-      console.log("Online users (main.jsx):", userIds);
+      console.log("Online users update:", userIds);
       setOnlineUsers(userIds);
+      onlineUsersRef.current = userIds;
     };
+
+    const handleUserActivity = throttle(() => {
+      if (socket.connected) {
+        socket.emit("userActivity");
+      }
+    }, 5000);
 
     socket.on("onlineUsers", handleOnlineUsers);
 
+    // Set up activity detectors
+    window.addEventListener("focus", handleUserActivity);
+    window.addEventListener("mousemove", handleUserActivity);
+    window.addEventListener("keydown", handleUserActivity);
+
+    // Initial activity ping
+    handleUserActivity();
+
     return () => {
       socket.off("onlineUsers", handleOnlineUsers);
+      window.removeEventListener("focus", handleUserActivity);
+      window.removeEventListener("mousemove", handleUserActivity);
+      window.removeEventListener("keydown", handleUserActivity);
     };
   }, [socket]);
 
+  // Persist state to sessionStorage
   useEffect(() => {
     sessionStorage.setItem("selectedUser", JSON.stringify(selectedUser));
   }, [selectedUser]);
@@ -93,6 +119,7 @@ export const StateProvider = ({ children }) => {
     );
   }, [showuserpublicprofiledata]);
 
+  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
       const newIsMobile = window.innerWidth <= 768;

@@ -28,8 +28,14 @@ const setupSocketIO = (server) => {
     },
   });
 
-  // Track connection attempts
-  const connectionAttempts = new Map();
+  // Track active connections
+  const activeConnections = new Map();
+
+  const updateOnlineUsers = () => {
+    const onlineUsers = Array.from(activeConnections.keys());
+    io.emit("onlineUsers", onlineUsers);
+    console.log("Updated online users:", onlineUsers);
+  };
 
   io.on("connection", (socket) => {
     const token = socket.handshake.query.token;
@@ -42,16 +48,21 @@ const setupSocketIO = (server) => {
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
       const userId = decoded.id;
 
-      // Clear any previous connection attempts
-      connectionAttempts.delete(userId);
+      // Remove any existing connection for this user
+      if (activeConnections.has(userId)) {
+        const oldSocketId = activeConnections.get(userId);
+        io.to(oldSocketId).disconnectSockets(true);
+      }
 
+      // Store new connection
+      activeConnections.set(userId, socket.id);
       socket.userId = userId;
       userSocketMap.set(userId, socket.id);
 
-      const onlineUsers = Array.from(userSocketMap.keys());
-      io.emit("onlineUsers", onlineUsers);
+      // Initial online users update
+      updateOnlineUsers();
 
-      // Heartbeat to check connection status
+      // Heartbeat for connection health
       const heartbeatInterval = setInterval(() => {
         if (!socket.connected) {
           clearInterval(heartbeatInterval);
@@ -62,6 +73,11 @@ const setupSocketIO = (server) => {
 
       socket.on("pong", () => {
         // Connection is healthy
+      });
+
+      // Handle user activity updates
+      socket.on("userActivity", () => {
+        updateOnlineUsers();
       });
 
       socket.on("joinRoom", async ({ roomId }) => {
@@ -122,46 +138,26 @@ const setupSocketIO = (server) => {
 
       socket.on("disconnect", async () => {
         clearInterval(heartbeatInterval);
+        activeConnections.delete(userId);
+        userSocketMap.delete(userId);
+        updateOnlineUsers();
 
-        if (socket.userId) {
-          const roomId = userRoomMap.get(socket.userId);
-          if (roomId) {
-            socket.leave(roomId);
-            userRoomMap.delete(socket.userId);
-          }
-
-          try {
-            await UserSchema.findByIdAndUpdate(socket.userId, {
-              lastSeen: new Date(),
-            });
-          } catch (err) {
-            console.error(`Error updating lastSeen:`, err);
-          }
-
-          // Delay removal to allow for reconnection
-          setTimeout(() => {
-            if (!userSocketMap.get(socket.userId)) {
-              userSocketMap.delete(socket.userId);
-              const onlineUsers = Array.from(userSocketMap.keys());
-              io.emit("onlineUsers", onlineUsers);
-            }
-          }, 5000); // 5 second grace period
+        const roomId = userRoomMap.get(userId);
+        if (roomId) {
+          socket.leave(roomId);
+          userRoomMap.delete(userId);
         }
-      });
 
-      socket.on("error", (err) => {
-        console.error("Socket error:", err);
+        try {
+          await UserSchema.findByIdAndUpdate(userId, {
+            lastSeen: new Date(),
+          });
+        } catch (err) {
+          console.error(`Error updating lastSeen for user ${userId}:`, err);
+        }
       });
     } catch (error) {
-      const userId = jwt.decode(token)?.id;
-      if (userId) {
-        const attempts = (connectionAttempts.get(userId) || 0) + 1;
-        connectionAttempts.set(userId, attempts);
-
-        if (attempts > 3) {
-          setTimeout(() => connectionAttempts.delete(userId), 60000); // Reset after 1 minute
-        }
-      }
+      console.error("Authentication error:", error);
       socket.disconnect(true);
     }
   });
