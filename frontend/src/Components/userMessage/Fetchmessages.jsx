@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useContext } from "react";
 import Message from "./Message";
 import { StateContext } from "../../main";
-import UserStatus from "./userStatus";
+import UserStatus from "./UserStatus";
 import MessageInput from "./MessageInput";
 import "../../Css/Fetchmessages.css";
 
@@ -21,7 +21,6 @@ const FetchMessages = () => {
     setShowAttachmentPopup,
     messages,
     socket,
-    onlineUsers,
   } = useContext(StateContext);
   const receiverId = selectedUser?._id || null;
 
