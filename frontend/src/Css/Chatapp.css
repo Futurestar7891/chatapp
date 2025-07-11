@@ -2,9 +2,14 @@
   /* border: 2px solid blue; */
   position: relative;
   width: 100vw;
-  max-height: 100vh;
+  height: 100vh;
   display: flex;
   justify-content: space-between;
   background-color: #ffffff;
   background-image: linear-gradient(135deg, rgba(74, 22, 171, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+@media screen and(max-width:768px) {
+  .Chatappmaindiv{
+    height: 90vh;
+  }
 }

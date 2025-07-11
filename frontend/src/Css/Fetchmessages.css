@@ -1,19 +1,13 @@
-/* Ensure box-sizing is applied globally to include padding and borders in dimensions */
-* {
-  box-sizing: border-box;
-}
-
 /* Main container for the right chat panel */
 .Chatapprightdiv {
   width: 73%;
-  height: 100vh; /* Full viewport height */
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
   background: rgba(255, 255, 255, 0.95);
   background-image: linear-gradient(135deg, rgba(74, 22, 171, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
-  overflow: hidden; /* Prevent scrolling of the entire container */
 }
 
 @media (max-width: 768px) {
@@ -25,16 +19,14 @@
 
 /* Top section with user status */
 .Chatapprightdivtopdiv {
-  height: 8vh; /* Fixed height */
+  height: 8%;
   width: 100%;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding-bottom: 10px;
   padding-left: 10px;
   background: transparent;
   border-bottom: 1px solid purple;
-  overflow: hidden; /* Prevent internal elements from overflowing */
 }
 
 @media (max-width: 768px) {
@@ -49,9 +41,8 @@
 /* User status container for avatar and online indicator */
 .user-status-container {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  max-height: 100%; /* Ensure it stays within parent height */
+  display: inline-block;
+  /* border: 2px solid red; */
 }
 
 .user-avatar {
@@ -60,13 +51,12 @@
   border-radius: 50%;
   cursor: pointer;
   margin-right: 10px;
-  object-fit: cover; /* Ensure image fits without distortion */
+  /* border: 2px solid red; */
 }
 
 @media (max-width: 768px) {
   .Chatapprightdivtopdiv > img {
-    width: 40px; /* Fixed size instead of percentage */
-    height: 40px;
+    width: 10%;
   }
 }
 
@@ -85,31 +75,29 @@
 .user-info {
   display: flex;
   flex-direction: column;
+  /* border: 2px solid red; */
   margin-left: 5px;
-  max-height: 100%; /* Prevent overflow */
 }
 
 .status-text {
   font-size: 0.9em;
   color: #666;
   margin: 0;
-  line-height: 1.2; /* Prevent text from pushing height */
 }
 
 /* Middle section for message display */
 .Chatapprightdivdowndiv {
   width: 100%;
-  height: 82vh; /* Fixed height */
+  height: 82%;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Prevent overflow */
 }
 
 .messages-container {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow-y: auto; /* Only this container scrolls */
+  overflow-y: auto;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
   padding: 1vh 1vw;
@@ -122,7 +110,7 @@
 /* Bottom section for message input */
 .Chatapprightdivmessagediv {
   width: 100%;
-  height: 10vh; /* Fixed height */
+  height: 10%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -132,7 +120,6 @@
   border-top: 1px solid rgba(74, 22, 171, 0.2);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   font-family: "Open Sans", sans-serif;
-  overflow: hidden; /* Prevent internal elements from overflowing */
 }
 
 .Attachfile {
@@ -153,8 +140,7 @@
 
 .Chatapprightdivmessagediv input {
   width: 70%;
-  height: 50%; /* Relative to parent */
-  max-height: 5vh; /* Cap height to stay within 10vh parent */
+  height: 50%;
   border-radius: 10px;
   border: 1px solid rgba(74, 22, 171, 0.2);
   padding: 0 10px;
@@ -237,7 +223,7 @@
 @media (max-width: 768px) {
   .Chatapprightdivmessagediv {
     width: 100%;
-    height: 10vh; /* Fixed height */
+    height: 10%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -247,12 +233,15 @@
     border-top: 1px solid rgba(74, 22, 171, 0.2);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     font-family: "Open Sans", sans-serif;
-    overflow: hidden; /* Prevent overflow */
   }
 
   .Attachfile {
     width: 5%;
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #4a16ab;
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -265,7 +254,6 @@
   .Chatapprightdivmessagediv input {
     width: 70%;
     height: 50%;
-    max-height: 5vh; /* Ensure it fits within 10vh */
     border-radius: 10px;
     border: 1px solid rgba(74, 22, 171, 0.2);
     padding: 0 10px;
@@ -279,24 +267,17 @@
   .sendmessage {
     width: 5%;
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: none;
+    border: none;
     font-size: 1rem;
+    color: #4a16ab;
+    transition: all 0.3s ease;
   }
 
   .sendmessage:hover {
     color: #5e29d1;
   }
-}
-
-/* Ensure popups don’t affect layout */
-.AttachmentPopup,
-.EmojisPicker,
-.PreviewPopup,
-.RecordeAudio {
-  position: absolute;
-  z-index: 1000; /* Ensure popups are above other content */
-  bottom: 12vh; /* Position above message input */
-  left: 10px;
-  background: white;
-  border: 1px solid #ccc;
-  /* Add specific dimensions as needed */
-}
+} 
