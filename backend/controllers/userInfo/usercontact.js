@@ -117,7 +117,7 @@ const fetchContacts = async (req, res) => {
       contacts: contactUsers,
     });
   } catch (error) {
-    console.error("Error in searchcontact:", error.message);
+    // console.error("Error in searchcontact:", error.message);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

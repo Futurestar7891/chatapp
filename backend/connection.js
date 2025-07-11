@@ -1,11 +1,9 @@
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
-const Message=require("./models/message");
-const UserSchema=require("./models/user");
-const {userRoomMap,userSocketMap}=require("./utils/socketMap");
-
- 
+const Message = require("./models/message");
+const UserSchema = require("./models/user");
+const { userRoomMap, userSocketMap } = require("./utils/socketMap");
 
 const connectDB = async () => {
   try {
@@ -24,12 +22,16 @@ const setupSocketIO = (server) => {
       methods: ["GET", "POST"],
       credentials: true,
     },
+    connectionStateRecovery: {
+      maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
+      skipMiddlewares: true,
+    },
   });
 
+  // Track connection attempts
+  const connectionAttempts = new Map();
 
   io.on("connection", (socket) => {
-    // console.log(`New client connected: ${socket.id}`);
-
     const token = socket.handshake.query.token;
     if (!token) {
       socket.disconnect(true);
@@ -39,117 +41,137 @@ const setupSocketIO = (server) => {
     try {
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
       const userId = decoded.id;
+
+      // Clear any previous connection attempts
+      connectionAttempts.delete(userId);
+
       socket.userId = userId;
       userSocketMap.set(userId, socket.id);
 
       const onlineUsers = Array.from(userSocketMap.keys());
-
       io.emit("onlineUsers", onlineUsers);
-      // console.log(`Emitted online users: ${onlineUsers.join(", ")}`);
-    } catch (error) {
-      socket.disconnect(true);
-      return;
-    }
-socket.on("joinRoom", async ({ roomId }) => {
-  socket.join(roomId);
-  userRoomMap.set(socket.userId, roomId);
-  // console.log(userRoomMap);
-  // console.log(`User ${socket.userId} joined room ${roomId}`);
 
-  // Split roomId to get both user IDs
-  const [user1, user2] = roomId.split("-");
-  const receiverId = socket.userId;
-  const senderId = user1 === receiverId ? user2 : user1;
+      // Heartbeat to check connection status
+      const heartbeatInterval = setInterval(() => {
+        if (!socket.connected) {
+          clearInterval(heartbeatInterval);
+          return;
+        }
+        socket.emit("ping");
+      }, 30000); // 30 seconds
 
-  try {
+      socket.on("pong", () => {
+        // Connection is healthy
+      });
 
-    let conversation = await Message.findOne({
-      participants: { $all: [senderId, receiverId] },
-    });
+      socket.on("joinRoom", async ({ roomId }) => {
+        socket.join(roomId);
+        userRoomMap.set(socket.userId, roomId);
 
- if (!conversation) return;
+        const [user1, user2] = roomId.split("-");
+        const receiverId = socket.userId;
+        const senderId = user1 === receiverId ? user2 : user1;
 
- const unseenMessages = conversation.messages.filter(
-   (msg) =>
-     String(msg.senderId) === String(senderId) &&
-     String(msg.receiverId) === String(receiverId) &&
-     msg.seenTime === null
- );
+        try {
+          let conversation = await Message.findOne({
+            participants: { $all: [senderId, receiverId] },
+          });
 
-    if (unseenMessages.length > 0) {
-      const seenTime = new Date();
+          if (!conversation) return;
 
-      // Update seenTime for all those messages
-      await Message.updateMany(
-        {
-          senderId: senderId,
-          receiverId: receiverId,
-          seenTime: null,
-        },
-        { $set: { seenTime } }
-      );
+          const unseenMessages = conversation.messages.filter(
+            (msg) =>
+              String(msg.senderId) === String(senderId) &&
+              String(msg.receiverId) === String(receiverId) &&
+              msg.seenTime === null
+          );
 
-      // 2. Notify the sender that their messages are seen
-      const senderSocketId = userSocketMap.get(senderId);
-      if (senderSocketId) {
-        io.to(senderSocketId).emit("messagesSeen", {
-          senderId: senderId,
-          receiverId: receiverId,
-          seenTime,
-        });
-      }
-    }
-  } catch (err) {
-    console.error("Error updating seenTime:", err);
-  }
-});
+          if (unseenMessages.length > 0) {
+            const seenTime = new Date();
 
+            await Message.updateMany(
+              {
+                senderId: senderId,
+                receiverId: receiverId,
+                seenTime: null,
+              },
+              { $set: { seenTime } }
+            );
 
-   
-    socket.on("leaveRoom", () => {
-      const roomId = userRoomMap.get(socket.userId);
-      socket.leave(roomId);
-      userRoomMap.delete(socket.userId);
-      // console.log(`User ${socket.userId} left room ${roomId}`);
+            const senderSocketId = userSocketMap.get(senderId);
+            if (senderSocketId) {
+              io.to(senderSocketId).emit("messagesSeen", {
+                senderId: senderId,
+                receiverId: receiverId,
+                seenTime,
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error updating seenTime:", err);
+        }
+      });
 
-    });
-
-    socket.on("disconnect", async () => {
-      // console.log(`Client disconnected: ${socket.id}`);
-      if (socket.userId) {
+      socket.on("leaveRoom", () => {
         const roomId = userRoomMap.get(socket.userId);
         if (roomId) {
           socket.leave(roomId);
           userRoomMap.delete(socket.userId);
-          // console.log(
-          //   `User ${socket.userId} left room ${roomId} on disconnect`
-          // );
         }
+      });
 
-        try {
-          await UserSchema.findByIdAndUpdate(socket.userId, {
-            lastSeen: new Date(),
-          });
-          // console.log(`Updated lastSeen for user ${socket.userId}`);
-        } catch (err) {
-          console.error(
-            `Error updating lastSeen for user ${socket.userId}:`,
-            err
-          );
+      socket.on("disconnect", async () => {
+        clearInterval(heartbeatInterval);
+
+        if (socket.userId) {
+          const roomId = userRoomMap.get(socket.userId);
+          if (roomId) {
+            socket.leave(roomId);
+            userRoomMap.delete(socket.userId);
+          }
+
+          try {
+            await UserSchema.findByIdAndUpdate(socket.userId, {
+              lastSeen: new Date(),
+            });
+          } catch (err) {
+            console.error(`Error updating lastSeen:`, err);
+          }
+
+          // Delay removal to allow for reconnection
+          setTimeout(() => {
+            if (!userSocketMap.get(socket.userId)) {
+              userSocketMap.delete(socket.userId);
+              const onlineUsers = Array.from(userSocketMap.keys());
+              io.emit("onlineUsers", onlineUsers);
+            }
+          }, 5000); // 5 second grace period
         }
+      });
 
-        userSocketMap.delete(socket.userId);
-        const onlineUsers = Array.from(userSocketMap.keys());
-        io.emit("onlineUsers", onlineUsers);
-        // console.log(`Emitted online users`);
+      socket.on("error", (err) => {
+        console.error("Socket error:", err);
+      });
+    } catch (error) {
+      const userId = jwt.decode(token)?.id;
+      if (userId) {
+        const attempts = (connectionAttempts.get(userId) || 0) + 1;
+        connectionAttempts.set(userId, attempts);
+
+        if (attempts > 3) {
+          setTimeout(() => connectionAttempts.delete(userId), 60000); // Reset after 1 minute
+        }
       }
-    });
+      socket.disconnect(true);
+    }
   });
 
   return io;
 };
 
-module.exports = { connectDB, setupSocketIO,
-    getSocketMap: () => userSocketMap, 
-  getRoomMap: () => userRoomMap       
-}
+module.exports = {
+  connectDB,
+  setupSocketIO,
+  getSocketMap: () => userSocketMap,
+  getRoomMap: () => userRoomMap,
+};

@@ -3,79 +3,15 @@ const UserSchema = require("../../models/user");
 const { hash, compare } = require("bcryptjs");
 const { sendEmail } = require("../../middleware");
 
-// Change Password Function
-const changePassword = async (req, res) => {
-  const errors = validationResult(req);
-  const { oldPassword, newPassword, confirmPassword } = req.body;
+const sendOtp = async (req, res) => {
+  const { emailOrMobile } = req.body;
   const errorobject = {};
 
-  // Validate inputs
-  if (!oldPassword) {
-    errorobject.oldPassword = "Old Password is required";
-  }
-  if (!newPassword) {
-    errorobject.newPassword = "New Password is required";
-  }
-  if (!confirmPassword) {
-    errorobject.confirmPassword = "Confirm Password is required";
-  }
-  if (newPassword !== confirmPassword) {
-    errorobject.confirmPassword = "Passwords do not match";
-  }
-
-  if (!errors.isEmpty()) {
-    errors.array().forEach((object) => {
-      errorobject[object.path] = object.msg;
-    });
+  if (!emailOrMobile) {
+    errorobject.emailOrMobile = "Email or mobile is required";
     return res.status(400).json({
       success: false,
       error: errorobject,
-    });
-  }
-
-  try {
-    const user = await UserSchema.findById(req.user.id);
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
-    }
-
-    const isPasswordValid = await compare(oldPassword, user.Password);
-    if (!isPasswordValid) {
-      errorobject.oldPassword = "Incorrect old password";
-      return res.status(400).json({ success: false, error: errorobject });
-    }
-
-    if (newPassword === oldPassword) {
-      errorobject.newPassword = "Password Cannot be Same as Old";
-      return res.status(400).json({ success: false, error: errorobject });
-    }
-
-    const hashedPassword = await hash(newPassword, 10);
-    user.Password = hashedPassword;
-    await user.save();
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Password changed successfully." });
-  } catch (error) {
-    console.error("Change Password Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred while changing the password.",
-    });
-  }
-};
-
-// Send OTP Route
-const sendOtp = async (req, res) => {
-  const { emailOrMobile } = req.body;
-
-  if (!emailOrMobile) {
-    return res.status(400).json({
-      success: false,
-      message: "Email or mobile number is required.",
     });
   }
 
@@ -85,9 +21,11 @@ const sendOtp = async (req, res) => {
     });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
+      errorobject.emailOrMobile = "User not found";
+      return res.status(404).json({
+        success: false,
+        error: errorobject,
+      });
     }
 
     const otp = Math.floor(1000 + Math.random() * 9000);
@@ -98,55 +36,74 @@ const sendOtp = async (req, res) => {
     if (emailOrMobile.includes("@")) {
       await sendEmail(emailOrMobile, otp);
     } else {
-      // await sendSms(emailOrMobile, otp);
-      return res.status(401).json({
+      return res.status(400).json({
         success: false,
-        message: "Only Email service is available for forgot",
+        error: { emailOrMobile: "Mobile OTP not supported" },
       });
     }
 
     return res.status(200).json({
       success: true,
-      Otp: otp, // Note: In production, avoid sending OTP in response for security
-      message: "OTP sent successfully.",
+      message: "OTP sent successfully",
     });
   } catch (error) {
     console.error("Error sending OTP:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to send OTP. Please try again.",
+      message: "Failed to send OTP",
+      error: { general: "Failed to send OTP. Please try again." },
     });
   }
 };
 
-// Validate OTP Route
 const validateOtp = async (req, res) => {
   const { emailOrMobile, otp } = req.body;
+  const errorobject = {};
 
-  if (!emailOrMobile || !otp) {
+  if (!emailOrMobile) {
+    errorobject.emailOrMobile = "Email or mobile is required";
+  }
+  if (!otp) {
+    errorobject.otp = "OTP is required";
+  }
+
+  if (Object.keys(errorobject).length > 0) {
     return res.status(400).json({
       success: false,
-      message: "Email/Mobile and OTP are required.",
+      error: errorobject,
     });
   }
 
   try {
     const user = await UserSchema.findOne({
       $or: [{ Email: emailOrMobile }, { Mobile: emailOrMobile }],
-      otp: otp,
     });
 
     if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid OTP." });
+      errorobject.emailOrMobile = "User not found";
+      return res.status(404).json({
+        success: false,
+        error: errorobject,
+      });
+    }
+
+    if (user.otp !== otp) {
+      errorobject.otp = "Invalid OTP";
+      return res.status(400).json({
+        success: false,
+        error: errorobject,
+      });
     }
 
     if (user.otpExpiry < Date.now()) {
       user.otp = null;
       user.otpExpiry = null;
       await user.save();
-      return res
-        .status(400)
-        .json({ success: false, message: "OTP has expired." });
+      errorobject.otp = "OTP has expired";
+      return res.status(400).json({
+        success: false,
+        error: errorobject,
+      });
     }
 
     // Clear OTP after successful validation
@@ -154,19 +111,20 @@ const validateOtp = async (req, res) => {
     user.otpExpiry = null;
     await user.save();
 
-    return res
-      .status(200)
-      .json({ success: true, message: "OTP validated successfully." });
+    return res.status(200).json({
+      success: true,
+      message: "OTP validated successfully",
+    });
   } catch (error) {
     console.error("Error validating OTP:", error);
     return res.status(500).json({
       success: false,
-      message: "An error occurred. Please try again.",
+      message: "An error occurred",
+      error: { general: "Failed to validate OTP. Please try again." },
     });
   }
 };
 
-// Reset Password Route
 const resetPassword = async (req, res) => {
   const { emailOrMobile, newPassword, confirmPassword } = req.body;
   const errors = validationResult(req);
@@ -185,32 +143,93 @@ const resetPassword = async (req, res) => {
     });
 
     if (!user) {
+      errorobject.emailOrMobile = "User not found";
       return res.status(404).json({
         success: false,
-        message: "User not found or OTP not validated.",
+        error: errorobject,
       });
     }
 
     if (newPassword !== confirmPassword) {
-      errorobject.confirmPassword =
-        "New password and confirm password do not match.";
-      return res.status(400).json({ success: false, error: errorobject });
+      errorobject.confirmPassword = "Passwords do not match";
+      return res.status(400).json({
+        success: false,
+        error: errorobject,
+      });
     }
 
     const hashedPassword = await hash(newPassword, 10);
     user.Password = hashedPassword;
     await user.save();
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Password reset successfully." });
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
   } catch (error) {
     console.error("Reset Password Error:", error);
     return res.status(500).json({
       success: false,
-      message: "An error occurred while resetting the password.",
+      message: "An error occurred",
+      error: { general: "Failed to reset password. Please try again." },
     });
   }
 };
 
+const changePassword = async (req, res) => {
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+  const errors = validationResult(req);
+  const errorobject = {};
+
+  if (!errors.isEmpty()) {
+    errors.array().forEach((object) => {
+      errorobject[object.path] = object.msg;
+    });
+    return res.status(400).json({ success: false, error: errorobject });
+  }
+
+  try {
+    const user = await UserSchema.findById(req.user.id);
+    if (!user) {
+      errorobject.general = "User not found";
+      return res.status(404).json({
+        success: false,
+        error: errorobject,
+      });
+    }
+
+    const isPasswordValid = await compare(oldPassword, user.Password);
+    if (!isPasswordValid) {
+      errorobject.oldPassword = "Incorrect old password";
+      return res.status(400).json({
+        success: false,
+        error: errorobject,
+      });
+    }
+
+    if (newPassword === oldPassword) {
+      errorobject.newPassword = "New password cannot be same as old password";
+      return res.status(400).json({
+        success: false,
+        error: errorobject,
+      });
+    }
+
+    const hashedPassword = await hash(newPassword, 10);
+    user.Password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error("Change Password Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred",
+      error: { general: "Failed to change password. Please try again." },
+    });
+  }
+};
 module.exports = { changePassword, sendOtp, validateOtp, resetPassword };

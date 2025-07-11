@@ -7,49 +7,76 @@ import "../../Css/ChangePassword.css";
 const ChangePassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const emailOrMobile = location.state?.emailOrMobile || ""; // Retrieve emailOrMobile
-  const token = localStorage.getItem("token"); // Check if token exists
+  const emailOrMobile = location.state?.emailOrMobile || "";
+  const token = localStorage.getItem("token");
+  const { setShowOtpPopup } = useContext(StateContext);
+
   const [formData, setFormData] = useState({
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
-  const { setShowOtpPopup } = useContext(StateContext);
-  const [errors, setErrors] = useState({}); // State to hold validation errors from backend
+
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+      general: "",
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setErrors({});
+
+    // Client-side validation
+    if (token && !formData.oldPassword) {
+      setErrors({ oldPassword: "Old password is required" });
+      setIsLoading(false);
+      return;
+    }
+    if (!formData.newPassword) {
+      setErrors({ newPassword: "New password is required" });
+      setIsLoading(false);
+      return;
+    }
+    if (!formData.confirmPassword) {
+      setErrors({ confirmPassword: "Please confirm your password" });
+      setIsLoading(false);
+      return;
+    }
+    if (formData.newPassword !== formData.confirmPassword) {
+      setErrors({ confirmPassword: "Passwords do not match" });
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const requestBody = {
         newPassword: formData.newPassword,
         confirmPassword: formData.confirmPassword,
+        ...(token ? { oldPassword: formData.oldPassword } : { emailOrMobile }),
       };
 
-      // Add oldPassword to the request body if token exists (change password flow)
-      if (token) {
-        requestBody.oldPassword = formData.oldPassword;
-      } else {
-        requestBody.emailOrMobile = emailOrMobile;
-      }
-
       const endpoint = token
-        ? `${import.meta.env.VITE_PUBLIC_API_URL}/api/change-password` // Change password endpoint
-        : `${import.meta.env.VITE_PUBLIC_API_URL}/api/reset-password`; // Forgot password endpoint
+        ? `${import.meta.env.VITE_PUBLIC_API_URL}/api/change-password`
+        : `${import.meta.env.VITE_PUBLIC_API_URL}/api/reset-password`;
 
       const response = await axios.post(endpoint, requestBody, {
         headers: {
           "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }), // Include token for change password
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
+        timeout: 10000,
       });
 
       const data = response.data;
@@ -57,26 +84,44 @@ const ChangePassword = () => {
       if (data.success) {
         alert(data.message || "Password updated successfully!");
         setShowOtpPopup(false);
-        navigate("/login"); // Redirect to login page
+        navigate("/login");
       } else {
-        // Set errors returned from the backend
         setErrors(data.error || {});
-        console.log(data.error);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred. Please try again.");
+      if (error.response?.data?.error) {
+        setErrors(error.response.data.error);
+      } else if (
+        error.code === "ECONNABORTED" ||
+        error.message.includes("timeout")
+      ) {
+        setErrors({
+          general: "Request timed out. Please check your connection.",
+        });
+      } else {
+        setErrors({ general: "An error occurred. Please try again." });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return (
-    <div
-      className="change-password-main-div"
-    >
-      <form onSubmit={handleSubmit}>
-        <h2>{token ? "Change Password" : "Forgot Password"}</h2>
+  const FullPageLoader = () => (
+    <div className="full-page-loader">
+      <div className="loader-content">
+        <div className="loader-spinner"></div>
+      </div>
+    </div>
+  );
 
-        {/* Show Old Password field only if token exists */}
+  return (
+    <div className="change-password-main-div">
+      {isLoading && <FullPageLoader />}
+
+      <form onSubmit={handleSubmit}>
+        <h2>{token ? "Change Password" : "Reset Password"}</h2>
+
         {token && (
           <div className="change-password-input">
             <input
@@ -85,12 +130,14 @@ const ChangePassword = () => {
               value={formData.oldPassword}
               onChange={handleChange}
               placeholder="Old Password"
+              className={errors.oldPassword ? "error" : ""}
             />
-            {errors.oldPassword && <label>{errors.oldPassword}</label>}
+            <label className={errors.oldPassword ? "error" : ""}>
+              {errors.oldPassword || ""}
+            </label>
           </div>
         )}
 
-        {/* New Password field */}
         <div className="change-password-input">
           <input
             type="password"
@@ -98,11 +145,13 @@ const ChangePassword = () => {
             value={formData.newPassword}
             onChange={handleChange}
             placeholder="New Password"
+            className={errors.newPassword ? "error" : ""}
           />
-          {errors.newPassword && <label>{errors.newPassword}</label>}
+          <label className={errors.newPassword ? "error" : ""}>
+            {errors.newPassword || ""}
+          </label>
         </div>
 
-        {/* Confirm Password field */}
         <div className="change-password-input">
           <input
             type="password"
@@ -110,12 +159,27 @@ const ChangePassword = () => {
             value={formData.confirmPassword}
             onChange={handleChange}
             placeholder="Confirm Password"
+            className={errors.confirmPassword ? "error" : ""}
           />
-          {errors.confirmPassword && <label>{errors.confirmPassword}</label>}
+          <label className={errors.confirmPassword ? "error" : ""}>
+            {errors.confirmPassword || ""}
+          </label>
         </div>
 
-        <button type="submit" className="change-password-button">
-          {token ? "Change Password" : "Save Changes"}
+        {errors.general && (
+          <div className="change-password-error">{errors.general}</div>
+        )}
+
+        <button
+          type="submit"
+          className="change-password-button"
+          disabled={isLoading}
+        >
+          {isLoading
+            ? "Processing..."
+            : token
+            ? "Change Password"
+            : "Save Changes"}
         </button>
       </form>
     </div>

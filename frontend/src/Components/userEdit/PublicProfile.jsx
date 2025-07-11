@@ -7,6 +7,7 @@ import {
   faPhone,
   faVideo,
   faFile,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import "../../Css/PublicProfile.css";
 
@@ -21,9 +22,8 @@ const PublicProfile = () => {
     setIsBlocked,
     isInContactList,
     setIsInContactList,
-    isMobile
+    isMobile,
   } = useContext(StateContext);
-  
 
   const [isEditing, setIsEditing] = useState(false);
   const [selectImage, setSelectImage] = useState(null);
@@ -36,9 +36,10 @@ const PublicProfile = () => {
   });
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(300);
+  const [isLoading, setIsLoading] = useState(false);
+  const [otpError, setOtpError] = useState("");
   const navigate = useNavigate();
 
-  // Fetch block status and contact list status when the component mounts or when the user data changes
   useEffect(() => {
     const fetchBlockAndContactStatus = async () => {
       if (!showuserpublicprofiledata?._id) return;
@@ -48,7 +49,6 @@ const PublicProfile = () => {
       const receiverId = showuserpublicprofiledata._id;
 
       try {
-        // Fetch isBlocked status
         const blockResponse = await fetch(
           `${import.meta.env.VITE_PUBLIC_API_URL}/api/fetch-messages`,
           {
@@ -68,7 +68,6 @@ const PublicProfile = () => {
           setIsBlocked(blockData.isBlocked);
         }
 
-        // Fetch isInContactList status
         const contactResponse = await fetch(
           `${import.meta.env.VITE_PUBLIC_API_URL}/api/search-contact`,
           {
@@ -92,13 +91,13 @@ const PublicProfile = () => {
     fetchBlockAndContactStatus();
   }, [showuserpublicprofiledata, setIsBlocked, setIsInContactList]);
 
-  // Timer for OTP popup
   useEffect(() => {
     let interval;
     if (showOtpPopup && timer > 0) {
       interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
     } else if (timer === 0) {
       setShowOtpPopup(false);
+      setOtpError("OTP expired. Please request a new update.");
     }
     return () => clearInterval(interval);
   }, [showOtpPopup, timer, setShowOtpPopup]);
@@ -108,6 +107,9 @@ const PublicProfile = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const changeProfile = () => {
@@ -117,6 +119,10 @@ const PublicProfile = () => {
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert("Image size should be less than 5MB");
+          return;
+        }
         const reader = new FileReader();
         reader.onload = () => setSelectImage(reader.result);
         reader.readAsDataURL(file);
@@ -126,6 +132,9 @@ const PublicProfile = () => {
   };
 
   const handleSaveClick = async () => {
+    setIsLoading(true);
+    setErrors({});
+
     const token = localStorage.getItem("token");
     const formDataToSend = {
       Name: formData.Name,
@@ -149,31 +158,60 @@ const PublicProfile = () => {
       );
 
       const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem("Mobile", data.updatedUser.Mobile);
-        localStorage.setItem("Photo", data.updatedUser.Photo);
-        localStorage.setItem("Name", data.updatedUser.Name);
-        localStorage.setItem("Bio", data.updatedUser.Bio);
 
-        if (data.Otpsent === false) {
-          setShowPublicProfile(!showpublicprofile);
-          alert("Profile updated successfully!");
+      if (!response.ok) {
+        if (data.error) {
+          setErrors(data.error);
+          if (data.message) {
+            alert(data.message);
+          }
         } else {
-          alert(data.message);
-          setShowOtpPopup(true);
-          setTimer(300);
+          throw new Error(data.message || "Failed to update profile");
         }
+        return;
+      }
+
+      if (data.requiresOtp) {
+        setShowOtpPopup(true);
+        setTimer(300);
+        setOtp("");
+        setOtpError("");
       } else {
-        setErrors(data.error || {});
+        updateLocalStorage(data.user);
+        setShowPublicProfile(false);
+        setIsEditing(false);
+        alert("Profile updated successfully!");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("An error occurred. Please try again.");
+      alert(error.message || "An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleOtpSubmit = async () => {
+    if (!otp || otp.trim() === "") {
+      setOtpError("Please enter the OTP");
+      return;
+    }
+    if (otp.length !== 4) {
+      setOtpError("Please enter a valid 4-digit OTP");
+      return;
+    }
+
+    setIsLoading(true);
+    setOtpError("");
+
     const token = localStorage.getItem("token");
+    const formDataToSend = {
+      Name: formData.Name,
+      Bio: formData.Bio,
+      Email: formData.Email,
+      Mobile: formData.Mobile,
+      Photo: selectImage || null,
+    };
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/validateprofileotp`,
@@ -183,23 +221,39 @@ const PublicProfile = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ otp }),
+          body: JSON.stringify({ ...formDataToSend, otp }),
         }
       );
 
       const data = await response.json();
-      if (response.ok) {
-        setShowOtpPopup(false);
-        setShowPublicProfile(!showpublicprofile);
-        localStorage.setItem("Email", data.Email);
-        alert(data.message);
-      } else {
-        alert(data.message || "Invalid OTP. Please try again.");
+
+      if (!response.ok) {
+        setOtpError(
+          data.message ||
+            "Failed to validate OTP. Please try again or request a new one."
+        );
+        return;
       }
+
+      updateLocalStorage(data.user);
+      setShowOtpPopup(false);
+      setShowPublicProfile(false);
+      setIsEditing(false);
+      alert(data.message || "Profile updated successfully");
     } catch (error) {
       console.error("Error validating OTP:", error);
-      alert("An error occurred. Please try again.");
+      setOtpError("A network error occurred. Please try again later.");
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const updateLocalStorage = (userData) => {
+    if (userData.Name) localStorage.setItem("Name", userData.Name);
+    if (userData.Email) localStorage.setItem("Email", userData.Email);
+    if (userData.Mobile) localStorage.setItem("Mobile", userData.Mobile);
+    if (userData.Bio) localStorage.setItem("Bio", userData.Bio);
+    if (userData.Photo) localStorage.setItem("Photo", userData.Photo);
   };
 
   const handleBlockClick = async () => {
@@ -239,6 +293,15 @@ const PublicProfile = () => {
 
   return (
     <div className="PublicProilemaindiv">
+      {isLoading && (
+        <div className="full-page-loader">
+          <div className="loader-content">
+            <FontAwesomeIcon icon={faSpinner} spin size="2x" />
+            <p>Processing...</p>
+          </div>
+        </div>
+      )}
+
       <div className="PublicProfiletopdiv">
         {(selectImage || showuserpublicprofiledata.Photo) && (
           <img
@@ -257,40 +320,42 @@ const PublicProfile = () => {
             onChange={handleInputChange}
             placeholder="Enter Your Name"
             required
+            disabled={isLoading}
           />
         ) : (
           <p>{showuserpublicprofiledata.Name || "No Name"}</p>
         )}
-        {/* Conditionally render Add Contact button */}
         {showuserpublicprofiledata._id !== localStorage.getItem("id") &&
           !isInContactList && (
             <button
               className="add-contact-button"
               onClick={() => navigate("/add-contact")}
+              disabled={isLoading}
             >
               Add Contact
             </button>
           )}
       </div>
       <div className="PublicProfilemiddiv">
-        <button onClick={() => {
-          if(isMobile){
-            navigate("/fetchmessage");
-          }
-          else{
-             setShowPublicProfile(!showpublicprofile);
-          }
-         
-          }}>
+        <button
+          onClick={() => {
+            if (isMobile) {
+              navigate("/fetchmessage");
+            } else {
+              setShowPublicProfile(!showpublicprofile);
+            }
+          }}
+          disabled={isLoading}
+        >
           <FontAwesomeIcon className="publicprofileicon" icon={faMessage} />
         </button>
-        <button>
+        <button disabled={isLoading}>
           <FontAwesomeIcon className="publicprofileicon" icon={faPhone} />
         </button>
-        <button>
+        <button disabled={isLoading}>
           <FontAwesomeIcon className="publicprofileicon" icon={faVideo} />
         </button>
-        <button>
+        <button disabled={isLoading}>
           <FontAwesomeIcon className="publicprofileicon" icon={faFile} />
         </button>
       </div>
@@ -302,6 +367,7 @@ const PublicProfile = () => {
             value={formData.Bio}
             onChange={handleInputChange}
             placeholder="Bio"
+            disabled={isLoading}
           />
         ) : showuserpublicprofiledata.Bio ? (
           <p>{showuserpublicprofiledata.Bio}</p>
@@ -317,6 +383,7 @@ const PublicProfile = () => {
             value={formData.Email}
             onChange={handleInputChange}
             placeholder="Email"
+            disabled={isLoading}
           />
         ) : (
           <p>{showuserpublicprofiledata.Email || "No Email"}</p>
@@ -328,22 +395,35 @@ const PublicProfile = () => {
             value={formData.Mobile}
             onChange={handleInputChange}
             placeholder="Mobile"
+            disabled={isLoading}
           />
         ) : (
           <p>{showuserpublicprofiledata.Mobile || "No Mobile"}</p>
         )}
         {showuserpublicprofiledata._id === localStorage.getItem("id") ? (
           isEditing ? (
-            <button className="editprofilesavebutton" onClick={handleSaveClick}>
-              Save
+            <button
+              className="editprofilesavebutton"
+              onClick={handleSaveClick}
+              disabled={isLoading}
+            >
+              {isLoading ? "Saving..." : "Save"}
             </button>
           ) : (
-            <button className="editprofileeditbutton" onClick={handleEditClick}>
+            <button
+              className="editprofileeditbutton"
+              onClick={handleEditClick}
+              disabled={isLoading}
+            >
               Edit Profile
             </button>
           )
         ) : (
-          <button className="blockuserbutton" onClick={handleBlockClick}>
+          <button
+            className="blockuserbutton"
+            onClick={handleBlockClick}
+            disabled={isLoading}
+          >
             {isBlocked ? "Unblock" : "Block"}
           </button>
         )}
@@ -356,20 +436,47 @@ const PublicProfile = () => {
       {showOtpPopup && (
         <div className="otp-popup">
           <div className="otp-popup-content">
-            <h3>Enter OTP</h3>
-            <p>A 4-digit OTP has been sent to your email.</p>
+            <h3>Verify Email Change</h3>
+            <p>A 4-digit OTP has been sent to your new email address.</p>
             <input
               type="text"
               value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              onChange={(e) => {
+                setOtp(e.target.value);
+                if (otpError) setOtpError("");
+              }}
               placeholder="Enter OTP"
+              disabled={isLoading}
+              maxLength={4}
             />
+            {otpError && <div className="otp-error">{otpError}</div>}
             <p>
               Time remaining: {Math.floor(timer / 60)}:
               {timer % 60 < 10 ? `0${timer % 60}` : timer % 60}
             </p>
-            <button onClick={handleOtpSubmit}>Submit</button>
-            <button onClick={() => setShowOtpPopup(false)}>Close</button>
+            <div className="otp-buttons">
+              <button
+                onClick={handleOtpSubmit}
+                disabled={isLoading || otp.length !== 4}
+              >
+                {isLoading ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} spin /> Verifying...
+                  </>
+                ) : (
+                  "Submit"
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setShowOtpPopup(false);
+                  setOtpError("");
+                }}
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

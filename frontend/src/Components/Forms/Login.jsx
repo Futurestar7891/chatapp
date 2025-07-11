@@ -3,8 +3,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { StateContext } from "../../main";
 import axios from "axios";
 import "../../Css/Login.css";
-import { io } from "socket.io-client";
-
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,10 +12,12 @@ const Login = () => {
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
-  const { showOtpPopup, setShowOtpPopup,setSocket } = useContext(StateContext);
+  const { showOtpPopup, setShowOtpPopup } = useContext(StateContext);
   const [otp, setOtp] = useState("");
   const [forgotEmailOrMobile, setForgotEmailOrMobile] = useState("");
   const [timer, setTimer] = useState(0);
+  const [showFullPageLoader, setShowFullPageLoader] = useState(false);
+  const [otpError, setOtpError] = useState("");
 
   useEffect(() => {
     const storedShowOtpPopup = localStorage.getItem("showOtpPopup");
@@ -53,14 +53,26 @@ const Login = () => {
       [name]: type === "checkbox" ? checked : value,
     };
     setFormData(updatedFormData);
-
-    if (name === "email") {
-      localStorage.setItem("emailOrMobile", updatedFormData.email.trim());
-    }
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setShowFullPageLoader(true);
+    setErrors({});
+
+    // Basic client-side validation
+    if (!formData.email) {
+      setErrors({ email: "Email or mobile is required" });
+      setShowFullPageLoader(false);
+      return;
+    }
+    if (!formData.password) {
+      setErrors({ password: "Password is required" });
+      setShowFullPageLoader(false);
+      return;
+    }
+
     try {
       const requestBody = {
         Password: formData.password,
@@ -79,6 +91,7 @@ const Login = () => {
           headers: {
             "Content-Type": "application/json",
           },
+          timeout: 10000,
         }
       );
 
@@ -96,59 +109,61 @@ const Login = () => {
         localStorage.setItem("Name", data.Name);
         localStorage.setItem("Bio", data.Bio);
         localStorage.setItem("Email", data.Email);
-        console.log("Login successful");
-         
-      const newSocket = io(`${import.meta.env.VITE_PUBLIC_API_URL}`, {
-              withCredentials: true,
-              transports: ["websocket", "polling"],
-              autoConnect: true,
-              query: { },
-            });
 
-       setSocket(newSocket);
-
-        setTimeout(() => {
-          navigate("/", { replace: true });
-        }, 100); // Small delay to allow socket event to be sent
+        navigate("/", { replace: true });
       } else {
         if (data.error) {
           setErrors(data.error);
-          setFormData((prev) => ({
-            ...prev,
-            email: data.error.Email || data.error.Mobile ? "" : prev.email,
-            password: data.error.Password ? "" : prev.password,
-          }));
         } else {
-          alert(data.message || "Login failed. Please try again.");
+          setErrors({
+            general: data.message || "Login failed. Please try again.",
+          });
         }
       }
     } catch (error) {
-      console.error("Login failed:", error.message);
-      alert("Login failed. Please check your credentials.");
+      console.error("Login failed:", error);
+      if (error.response?.data?.error) {
+        setErrors(error.response.data.error);
+      } else if (
+        error.code === "ECONNABORTED" ||
+        error.message.includes("timeout")
+      ) {
+        setErrors({
+          general: "Request timed out. Please check your connection.",
+        });
+      } else {
+        setErrors({ general: "Login failed. Please check your credentials." });
+      }
+    } finally {
+      setShowFullPageLoader(false);
     }
   };
 
-  const handleForgotPassword = async () => {
-    const emailOrMobile = localStorage.getItem("emailOrMobile");
-    if (!emailOrMobile) {
-      alert("Please enter your email or mobile number.");
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!formData.email) {
+      setErrors({ email: "Please enter your email or mobile number" });
       return;
     }
+
+    setShowFullPageLoader(true);
+    setErrors({});
 
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/send-otp`,
-        { emailOrMobile },
+        { emailOrMobile: formData.email },
         {
           headers: {
             "Content-Type": "application/json",
           },
+          timeout: 10000,
         }
       );
 
       const data = response.data;
       if (data.success) {
-        setForgotEmailOrMobile(emailOrMobile);
+        setForgotEmailOrMobile(formData.email);
         localStorage.setItem("showOtpPopup", "true");
         localStorage.setItem("starttime", Math.floor(Date.now() / 1000));
         localStorage.setItem("timer", "300");
@@ -156,11 +171,19 @@ const Login = () => {
         setTimer(300);
         startTimer();
       } else {
-        alert(data.message || "Failed to send OTP. Please try again.");
+        setErrors({
+          general: data.message || "Failed to send OTP. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
-      alert("An error occurred. Please try again.");
+      if (error.response?.data?.error) {
+        setErrors(error.response.data.error);
+      } else {
+        setErrors({ general: "Failed to send OTP. Please try again." });
+      }
+    } finally {
+      setShowFullPageLoader(false);
     }
   };
 
@@ -181,6 +204,14 @@ const Login = () => {
   };
 
   const handleOtpSubmit = async () => {
+    if (!otp) {
+      setOtpError("Please enter the OTP");
+      return;
+    }
+
+    setShowFullPageLoader(true);
+    setOtpError("");
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_PUBLIC_API_URL}/api/validate-otp`,
@@ -189,12 +220,12 @@ const Login = () => {
           headers: {
             "Content-Type": "application/json",
           },
+          timeout: 10000,
         }
       );
 
       const data = response.data;
       if (data.success) {
-        localStorage.removeItem("emailOrMobile");
         localStorage.removeItem("showOtpPopup");
         localStorage.removeItem("timer");
         localStorage.removeItem("starttime");
@@ -203,11 +234,19 @@ const Login = () => {
           state: { emailOrMobile: forgotEmailOrMobile },
         });
       } else {
-        alert(data.message || "Invalid OTP. Please try again.");
+        setOtpError(data.message || "Invalid OTP. Please try again.");
       }
     } catch (error) {
       console.error("Error validating OTP:", error);
-      alert("An error occurred. Please try again.");
+      if (error.response?.data?.error?.otp) {
+        setOtpError(error.response.data.error.otp);
+      } else if (error.response?.data?.message) {
+        setOtpError(error.response.data.message);
+      } else {
+        setOtpError("Failed to validate OTP. Please try again.");
+      }
+    } finally {
+      setShowFullPageLoader(false);
     }
   };
 
@@ -218,12 +257,24 @@ const Login = () => {
     localStorage.removeItem("starttime");
   };
 
+  const FullPageLoader = () => (
+    <div className="full-page-loader">
+      <div className="loader-content">
+        <div className="loader-spinner"></div>
+      </div>
+    </div>
+  );
+
   return (
-    <div
-      className="login-main-div"
-    >
+    <div className="login-main-div">
+      {showFullPageLoader && <FullPageLoader />}
+
       <form onSubmit={handleSubmit}>
         <h2>Login</h2>
+        {errors.general && (
+          <div className="error-message">{errors.general}</div>
+        )}
+
         <div className="login-input">
           <input
             type="text"
@@ -231,15 +282,22 @@ const Login = () => {
             value={formData.email}
             onChange={handleChange}
             required
+            className={
+              errors.email || errors.Email || errors.Mobile ? "error" : ""
+            }
           />
-          <label>
-            {errors.Email
-              ? errors.Email
-              : errors.Mobile
-              ? errors.Mobile
-              : "Enter your Email or Mobile No."}
+          <label
+            className={
+              errors.email || errors.Email || errors.Mobile ? "error" : ""
+            }
+          >
+            {errors.email ||
+              errors.Email ||
+              errors.Mobile ||
+              "Enter your Email or Mobile No."}
           </label>
         </div>
+
         <div className="login-input">
           <input
             type="password"
@@ -247,11 +305,13 @@ const Login = () => {
             value={formData.password}
             onChange={handleChange}
             required
+            className={errors.password ? "error" : ""}
           />
-          <label>
-            {errors.Password ? errors.Password : "Enter your Password"}
+          <label className={errors.password ? "error" : ""}>
+            {errors.Password || "Enter your Password"}
           </label>
         </div>
+
         <div className="login-forget-password">
           <label htmlFor="rememberpassword">
             <input
@@ -263,12 +323,22 @@ const Login = () => {
             />
             <p>Remember me</p>
           </label>
-          <a onClick={handleForgotPassword}>Forgot password?</a>
+          <a
+            href="#"
+            onClick={handleForgotPassword}
+            className="forgot-password-link"
+          >
+            Forgot password?
+          </a>
         </div>
-        <button type="submit">Log In</button>
+
+        <button type="submit" className="login-button">
+          Log In
+        </button>
+
         <div className="login-register">
           <p>
-            Don’t have an account? <NavLink to="/signup">Register</NavLink>
+            Don't have an account? <NavLink to="/signup">Register</NavLink>
           </p>
         </div>
       </form>
@@ -282,23 +352,38 @@ const Login = () => {
               <>
                 <input
                   type="text"
+                  name="otp"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   placeholder="Enter OTP"
+                  className={`otp-input ${otpError ? "error" : ""}`}
                 />
+                {otpError && <div className="error-message">{otpError}</div>}
                 <p>
                   Time remaining: {Math.floor(timer / 60)}:
                   {timer % 60 < 10 ? `0${timer % 60}` : timer % 60}
                 </p>
-                <button onClick={handleOtpSubmit}>Submit</button>
+                <button onClick={handleOtpSubmit} className="otp-submit-btn">
+                  Submit
+                </button>
               </>
             ) : (
               <>
                 <p>OTP expired. Click resend to get a new OTP.</p>
-                <button onClick={handleForgotPassword}>Resend OTP</button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleForgotPassword(e);
+                  }}
+                  className="otp-resend-btn"
+                >
+                  Resend OTP
+                </button>
               </>
             )}
-            <button onClick={handleClosePopup}>Close</button>
+            <button onClick={handleClosePopup} className="otp-close-btn">
+              Close
+            </button>
           </div>
         </div>
       )}

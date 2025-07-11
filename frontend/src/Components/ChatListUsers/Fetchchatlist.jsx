@@ -25,7 +25,7 @@ const Fetchchatlist = () => {
   }, [senderId]);
 
   const fetchChatListFromApi = useCallback(async () => {
-    if (!senderId || !socket) return null;
+    if (!senderId) return null;
 
     try {
       const token = localStorage.getItem("token");
@@ -52,7 +52,7 @@ const Fetchchatlist = () => {
   }, [senderId, socket]);
 
   const loadChatList = useCallback(async () => {
-    if (!senderId || !socket) return;
+    if (!senderId) return;
 
     const cacheKey = getCacheKey();
     const cachedChatList = sessionStorage.getItem(cacheKey);
