@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useContext } from "react";
 import Message from "./Message";
 import { StateContext } from "../../main";
-import UserStatus from "../../../src/Components/userMessage/UserStatus"
 import MessageInput from "./MessageInput";
 import "../../Css/Fetchmessages.css";
+import UserStatus from "./UserStatus";
 
 const FetchMessages = () => {
   const senderId = localStorage.getItem("id");
