@@ -3,6 +3,7 @@ import Message from "./Message";
 import { StateContext } from "../../main";
 import MessageInput from "./MessageInput";
 import "../../Css/Fetchmessages.css";
+import Userstatus from "./userStatus";
 
 
 const FetchMessages = () => {
@@ -324,7 +325,7 @@ const FetchMessages = () => {
     <>
       {receiverId ? (
         <div className="Chatapprightdiv">
-          {/* <UserStatus /> */}
+          <Userstatus />
           <div className="Chatapprightdivdowndiv">
             {loading && !messages.length ? (
               <div className="loader-container">
