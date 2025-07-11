@@ -352,7 +352,7 @@ const FetchMessages = () => {
           }}
           className="Chatapprightdiv"
         >
-          Please choose user from chatlist to start conversation
+          Please choose user from chatlist or add contact
         </div>
       )}
     </>
