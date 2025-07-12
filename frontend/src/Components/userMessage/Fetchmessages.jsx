@@ -3,7 +3,7 @@ import Message from "./Message";
 import { StateContext } from "../../main";
 import MessageInput from "./MessageInput";
 import "../../Css/Fetchmessages.css";
-import Userstatus from "./userStatus";
+import Userstatus from "./Userstatus";
 
 
 const FetchMessages = () => {
