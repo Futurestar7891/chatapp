@@ -27,6 +27,23 @@ const io = setupSocketIO(server);
 const userRoutes = require("./routes/user");
 const messageRoutes = require("./routes/message")(io);
 
+//awaking servier 
+
+setInterval(()=>{
+    fetch("https://chatapp-tolv.onrender.com").then(()=>{
+      console.log("ping the server");
+    }).catch((error)=>{
+       console.log(error);
+    });
+},10*60*1000)
+
+app.get("/",(req,res)=>{
+   res.status(200).json({
+    success:true,
+    message:"server awaked"
+   })
+})
+
 // Use Routes
 app.use("/api", userRoutes);
 app.use("/api", messageRoutes);
