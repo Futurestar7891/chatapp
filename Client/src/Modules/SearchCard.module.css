@@ -1,0 +1,115 @@
+.header {
+  padding: 16px;
+  background: linear-gradient(to right, #2563eb, #1e40af);
+  color: white;
+  position: relative;
+}
+
+/* Top: Messages + Menu */
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.menuWrapper {
+  position: relative;
+}
+
+.menuButton {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.menuButton:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 5px;
+  width: 180px;
+  background: white;
+  border-radius: 8px;
+  padding: 6px 0;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  z-index: 20;
+}
+
+.dropdownItem {
+  width: 100%;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background: #f3f4f6;
+}
+
+.logout {
+  color: #dc2626;
+}
+
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 6px 0;
+}
+
+/* Search Bar */
+.searchBox {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.7);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border-radius: 30px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+.searchInput:focus {
+  background: rgba(255,255,255,0.3);
+}

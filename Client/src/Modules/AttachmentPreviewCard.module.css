@@ -1,0 +1,90 @@
+/* WHATSAPP PREVIEW PANEL */
+.PreviewPanel {
+  width: 60%;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .PreviewPanel {
+    width: 100%;
+  }
+}
+/* Main large preview */
+.MainPreviewWrapper {
+  width: 100%;
+  height: 250px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.MainPreviewImage,
+.MainPreviewVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.MainDocumentBox {
+  width: 100%;
+  height: 100%;
+  background: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Thumbnail strip */
+.ThumbnailStrip {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px;
+}
+
+.ThumbnailItem {
+  position: relative;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.ActiveThumb {
+  outline: 3px solid #2563eb;
+}
+
+.ThumbnailImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.ThumbDoc {
+  width: 60px;
+  height: 60px;
+  background: #e5e7eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+}
+
+/* Remove thumbnail button */
+.ThumbRemove {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}

@@ -1,0 +1,194 @@
+/* -----------------------------------------------------------
+   MESSAGE ROW POSITIONING
+----------------------------------------------------------- */
+.MessageRow {
+  display: flex;
+  width: 100%;
+  margin: 30px 0px;
+
+
+}
+
+.Left {
+  justify-content: flex-start;
+}
+
+.Right {
+  justify-content: flex-end;
+}
+
+/* -----------------------------------------------------------
+   TEXT BUBBLES
+----------------------------------------------------------- */
+.TextBubble {
+  max-width: 60%;
+  min-width: 250px;
+  padding: 10px 16px;
+  padding-bottom: 22px; /* space for ticks */
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  position: relative;
+  /* border: 2px solid red; */
+  word-break: break-word;      /* ← IMPORTANT */
+  overflow-wrap: break-word;   /* ← IMPORTANT */
+  white-space: pre-wrap;       
+}
+
+.Sent {
+  background: rgb(7, 126, 7);
+  color: white;
+  border-bottom-right-radius: 0;
+}
+
+.Received {
+  background: #e5e7eb;
+  color: black;
+  border-bottom-left-radius: 0;
+}
+
+/* -----------------------------------------------------------
+   SHARED WRAPPER FOR ALL MEDIA TYPES
+----------------------------------------------------------- */
+.BubbleWrapper {
+  position: relative;
+  max-width: 260px;
+  margin-bottom: 8px;
+    background: #eef2f6;
+    padding: 10px;
+}
+
+/* -----------------------------------------------------------
+   UNIVERSAL TICK (bottom-right for all)
+----------------------------------------------------------- */
+.TickPosition {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-size: 12px;
+  z-index: 10;
+}
+
+.TickGray {
+  color: #ccc;
+}
+
+.TickBlue {
+  color: #1da1f2;
+}
+
+/* -----------------------------------------------------------
+   IMAGE
+----------------------------------------------------------- */
+.ImageBubble {
+  width: 240px;
+  max-height: 320px;
+  border-radius: 12px;
+  object-fit: cover;
+    background: #eef2f6;
+}
+
+/* -----------------------------------------------------------
+   VIDEO
+----------------------------------------------------------- */
+.VideoBubble {
+  width: 250px;
+  max-height: 320px;
+  border-radius: 12px;
+    background: #eef2f6;
+      position: relative;
+}
+
+/* -----------------------------------------------------------
+   AUDIO
+----------------------------------------------------------- */
+.AudioBubble {
+  width: 240px;
+  height: 42px;
+  border-radius: 8px;
+    background: #eef2f6;
+      position: relative;
+}
+
+/* -----------------------------------------------------------
+   DOCUMENT FILE BUBBLE
+----------------------------------------------------------- */
+.DocumentBubble {
+  position: relative;
+  width: 260px;
+  background: #eef2f6;
+  padding: 14px;
+  border-radius: 12px;
+  display: flex;
+  gap: 12px;
+}
+
+.DocIcon {
+  color: #2563eb;
+}
+
+.DocumentInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.DocName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+.DownloadBtn {
+  margin-top: 6px;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+/* -----------------------------------------------------------
+   FILENAME UNDER MEDIA
+----------------------------------------------------------- */
+.FileName {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555;
+  word-break: break-word;
+}
+
+
+.MoreBtn {
+  position: absolute;
+  top: 4px; /* Add this */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 4px;
+  color: black;
+}
+
+.rightarrow {
+left: -25px; /* Fixed value */
+}
+
+.leftarrow {
+  right: -25px; /* Add this class */
+}
+
+.MoreBtn:hover {
+  opacity: 1;
+}
+
+.BubbleWrapper {
+  position: relative;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .TextBubble {
+    max-width: 70vw;     /* allow bubble to grow */
+    min-width: 150px;    /* safe minimum on small screens */
+  }
+}

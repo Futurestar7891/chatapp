@@ -1,0 +1,154 @@
+
+
+
+.InputContainer {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  position: relative;
+}
+/* ---- ICON BUTTON ---- */
+.IconBtn {
+  padding: 10px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.IconBtn:hover {
+  background: #e5e7eb;
+}
+
+/* Icon Colors */
+.IconGray { color: #4b5563; }   /* gray-600 */
+.CameraIcon { color: #1d4ed8; } /* blue-700 */
+.DocIcon { color: #2563eb; }    /* blue-600 */
+.VideoIcon { color: #9333ea; }  /* purple-600 */
+.ImageIcon { color: #16a34a; }  /* green-600 */
+
+/* ---- INPUT BOX ---- */
+.InputBox {
+  flex: 1;
+  padding: 12px 16px;
+  background: #f3f4f6;
+  border-radius: 25px;
+  border: 1px solid #d1d5db;
+  outline: none;
+  font-size: 14px;
+  color:black
+}
+
+/* ---- SEND BUTTON ---- */
+.SendBtn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.SendBtn:disabled {
+  background: #9bb9ff;
+  cursor: not-allowed;
+}
+
+/* ---- ATTACH MENU ---- */
+.RelativeWrapper {
+  position: relative;
+}
+
+.AttachMenu {
+  position: absolute;
+  bottom: 45px;
+  left: 0;
+  width: 170px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  z-index: 50;
+  padding: 6px 0;
+}
+
+.MenuItem {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 10px 12px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  color:black
+}
+
+.MenuItem:hover {
+  background: #f3f4f6;
+}
+
+
+/* Small phones (iPhone SE, older Android) */
+@media (max-width: 400px) {
+    .IconBtn {
+  padding: 8px;
+}
+.SendBtn {
+
+  padding: 10px;
+
+}
+.InputBox {
+
+max-width: 215px;
+padding: 10px 10px;
+
+}
+}
+
+@media (max-width: 360px) {
+    .IconBtn {
+  padding: 6px;
+}
+.SendBtn {
+
+  padding: 8px;
+
+}
+.InputBox {
+
+max-width: 200px;
+padding: 8px 10px;
+
+}
+}
+
+@media (max-width: 345px) {
+    .IconBtn {
+  padding: 4px;
+}
+.SendBtn {
+
+  padding: 8px;
+
+}
+.InputBox {
+
+max-width: 180px;
+padding: 8px 10px;
+
+}
+}
+

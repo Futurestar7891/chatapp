@@ -1,0 +1,20 @@
+.ChatListContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-right: .5px solid #ddd;
+  background: #fff;
+}
+
+/* Chat list scroll section */
+.ChatCardContainer {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+
+

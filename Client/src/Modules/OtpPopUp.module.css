@@ -1,0 +1,98 @@
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.popup {
+  width: 100%;
+  max-width: 380px;
+  background: white;
+  padding: 25px;
+  border-radius: 14px;
+  text-align: center;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.error {
+  color: red;
+  margin-bottom: 10px;
+}
+
+.otpContainer {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.otpBox {
+  width: 45px;
+  height: 55px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background-color: white;
+  color:black
+}
+
+.timer {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.resend {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  background: #aaa;
+  color: white;
+  border: none;
+  margin-bottom: 10px;
+}
+
+.resend.active {
+  background: black;
+  cursor: pointer;
+}
+
+.verify {
+  width: 100%;
+  padding: 12px;
+  background: black;
+  color: white;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.cancel {
+  width: 100%;
+  padding: 10px;
+  background: #e5e5e5;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background-color: lightcoral;
+}

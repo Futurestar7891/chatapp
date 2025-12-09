@@ -1,0 +1,28 @@
+
+.ChatWindowContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+    background: #ffffff;
+}
+
+.EmptyChatWindowContainer{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ChatWindowMessageCardContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.EmptyText {
+  text-align: center;
+  color: gray;
+  margin-top: 20px;
+}

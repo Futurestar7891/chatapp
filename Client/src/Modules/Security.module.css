@@ -1,0 +1,114 @@
+.Container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* HEADER */
+.Header { margin-bottom: 10px; }
+
+.Title {
+  font-size: 26px;
+  background: linear-gradient(to right, #4f46e5, #9333ea);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+.Subtitle {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* MAIN CARD */
+.Card {
+  padding: 28px 10px;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+}
+
+.CardHeader {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.IconBox {
+  padding: 12px;
+  background: linear-gradient(to right, #4f46e5, #9333ea);
+  border-radius: 12px;
+}
+
+.Icon {
+  color: white;
+}
+
+.CardTitle {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.CardDesc {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* FIELD GROUP */
+.FieldGroup {
+  margin-bottom: 16px;
+}
+
+.Label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+/* INPUTS */
+.InputWrapper {
+  position: relative;
+}
+
+.Input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  font-size: 15px;
+  color: black;
+}
+
+.ShowBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.UpdateBtn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background: linear-gradient(to right, #4f46e5, #9333ea);
+  color: white;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.UpdateBtn:hover {
+  transform: scale(1.02);
+}
+.ErrorText {
+  color: #e11d48;
+  font-size: 13px;
+  margin-top: 4px;
+}

@@ -1,0 +1,453 @@
+/* ============================
+   CONTAINER - FULL PAGE
+============================ */
+.Container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(to bottom right, #eef2ff, #f5f3ff, #fce7f3);
+ 
+}
+.Page {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  height:100%;
+  /* padding-right: 10px; */
+
+ 
+}
+
+
+
+/* ============================
+   FIXED HEADER
+============================ */
+.Header {
+  position: sticky;
+  width: 100%;
+  top: 0;
+  z-index: 20;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(180, 180, 180, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px;
+}
+
+.BackBtn {
+  padding: 8px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.BackBtn:hover {
+  background: #f3f4f6;
+}
+
+.Title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.AddContactBtn {
+  padding: 8px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.AddContactBtn:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.ContactBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+
+
+
+/* ============================
+   PROFILE CARD
+============================ */
+.Card {
+  background: white;
+  overflow-y: scroll;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding-bottom: 20px;
+  flex: 1;
+  /* background-color: red; */
+
+
+}
+
+.PhotoWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  position: relative;
+}
+
+.ProfilePhoto {
+  width: 144px;
+  height: 144px;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+.initialsCircle {
+  width: 144px;
+  height: 144px;
+  border-radius: 50%;
+  background: #888;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 42px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 4px solid white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.StatusIndicator {
+  position: absolute;
+  bottom: 8px;
+  right: calc(50% - 72px + 8px);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 4px solid white;
+}
+
+.StatusOnline {
+  background: #10b981;
+}
+
+.StatusBlocked {
+  background: #ef4444;
+}
+
+.ContentPadding {
+  padding: 20px;
+}
+
+/* ============================
+   NAME SECTION
+============================ */
+.NameSection {
+  text-align: center;
+  /* margin-top: 16px; */
+  margin-bottom: 12px;
+}
+
+.UserName {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.UserHandle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+
+
+
+/* ============================
+   BLOCK/UNBLOCK BUTTON
+============================ */
+.BtnCenter {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.BlockBtn,
+.UnblockBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-weight: 600;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.BlockBtn {
+  background: linear-gradient(to right, #ef4444, #dc2626);
+}
+
+.UnblockBtn {
+  background: linear-gradient(to right, #10b981, #059669);
+}
+
+.BlockBtn:active,
+.UnblockBtn:active {
+  transform: scale(0.96);
+}
+
+/* ============================
+   QUICK ACTIONS - WhatsApp Style
+============================ */
+.ActionsWrapper {
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.ActionsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.ActionChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.ActionChip:active {
+  transform: scale(0.95);
+}
+
+.ChipMessage {
+  background: linear-gradient(to bottom right, #3b82f6, #2563eb);
+}
+
+.ChipCall {
+  background: linear-gradient(to bottom right, #10b981, #059669);
+}
+
+.ChipVideo {
+  background: linear-gradient(to bottom right, #a855f7, #7e22ce);
+}
+
+.ChipMedia {
+  background: linear-gradient(to bottom right, #ec4899, #db2777);
+}
+
+.ActionChip:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ChipDisabled {
+  background: #d1d5db !important;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ChipIcon {
+  color: white;
+}
+
+.ChipLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.BlockedMessage {
+  margin-top: 12px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+}
+
+.BlockedText {
+  font-size: 12px;
+  font-weight: 600;
+  color: #991b1b;
+  margin: 0;
+}
+
+/* ============================
+   BIO SECTION
+============================ */
+.BioCard {
+  background: linear-gradient(to bottom right, #eef2ff, #f3e8ff);
+  border: 1px solid #e0e7ff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.BioTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4338ca;
+  margin: 0 0 8px 0;
+}
+
+.BioText {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+  margin: 0;
+}
+
+/* ============================
+   CONTACT DETAILS
+============================ */
+.DetailsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.DetailCard {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.DetailLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+  margin: 0 0 4px 0;
+}
+
+.DetailValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* ============================
+   SUCCESS MESSAGE
+============================ */
+.SuccessCard {
+  background: linear-gradient(to right, #10b981, #059669);
+  border-radius: 16px;
+  padding: 12px;
+  margin-top: 16px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.SuccessMessage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+}
+
+.CheckIcon {
+  color: white;
+}
+.EditContactBtn {
+  padding: 8px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+.SaveBtnSmall {
+  padding: 6px 12px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.EditNameBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.EditInput {
+  width: 70%;
+  padding: 10px 14px;
+  background: white;
+  color: black;
+  font-size: 18px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+}
+
+.EditBtnsRow {
+  display: flex;
+  gap: 12px;
+}
+
+.SaveBtn {
+  padding: 10px 20px;
+  background: #4f46e5;
+  color: white;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.CancelBtn {
+  padding: 10px 20px;
+  background: #e5e7eb;
+  color: #333;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
+@media screen and (max-width: 1024px) {
+  .Page {
+    width: 100%;
+  }
+}

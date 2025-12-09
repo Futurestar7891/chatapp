@@ -1,0 +1,118 @@
+.Container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  position: relative;
+  
+}
+
+/* HEADER */
+.Header { margin-bottom: 10px; }
+
+.Title {
+  font-size: 26px;
+  background: linear-gradient(to right, #4f46e5, #9333ea);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+
+.Subtitle {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* CARD */
+.Card {
+  padding: 28px 10px;
+  border: 2px solid #e2e8f0;
+  /* border-radius: 16px; */
+  background: #fff;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+  
+}
+
+/* FIELDS */
+.FieldGroup {
+  margin-bottom: 16px;
+}
+
+.Label {
+  font-weight: bold;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #374151;
+}
+
+.ValueBox {
+  padding: 14px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  font-size: 15px;
+}
+
+.Input,
+.TextArea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  background: white;
+  font-size: 15px;
+  color: black;
+}
+
+.TextArea {
+  resize: none;
+  min-height: 100px;
+}
+
+/* BUTTONS */
+.EditBtn,
+.SaveBtn,
+.CancelBtn {
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  font-size: 16px;
+}
+
+/* Main Edit button */
+.EditBtn {
+  width: 100%;
+  background: linear-gradient(to right, #4f46e5, #9333ea);
+  color: white;
+}
+
+/* Save */
+.SaveBtn {
+  background: linear-gradient(to right, #059669, #10b981);
+  color: white;
+  display: flex;
+ gap: 4px;
+  align-items: center;
+}
+
+/* Cancel */
+.CancelBtn {
+  background: #6b7280;
+  color: white;
+    display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.ActionRow {
+  display: flex;
+  gap: 10px;
+}
+.ErrorText {
+  color: #e11d48;
+  font-size: 13px;
+  margin-top: 4px;
+}

@@ -1,0 +1,148 @@
+/* MAIN HEADER CONTAINER */
+.HeaderContainer {
+  width: 100%;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  position: relative; /* For absolute back button on mobile */
+  gap: 14px;
+}
+
+/* BACK BUTTON (ONLY MOBILE) */
+.BackBtn {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+/* Show BackBtn on mobile */
+@media (max-width: 768px) {
+  .BackBtn {
+    display: block;
+    position: absolute;
+    left: 0px;
+    z-index: 20;
+    color: black;
+  }
+
+  /* Add space for back button */
+  .HeaderContainer {
+    padding-left: 35px;
+    /* border: 2px solid red; */
+  }
+}
+
+/* AVATAR */
+.AvatarWrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.AvatarImage,
+.AvatarInitials {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;;
+}
+
+.AvatarInitials {
+  background: #888;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.OnlineDot {
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border-radius: 50%;
+  border: 2px solid white;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+/* USER INFO */
+.UserInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.Name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.Status {
+  margin: 0;
+  color: gray;
+  font-size: 12px;
+}
+
+/* ACTION ICONS */
+.Actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ICON BUTTON STYLE */
+.IconBtn {
+  background: #f4f4f5;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: 0.2s ease-in-out;
+}
+
+.IconBtn:hover {
+  background: #e5e7eb;
+}
+
+.IconBtn:active {
+  background: #d1d5db;
+}
+
+/* ICON COLORS */
+.PhoneIcon {
+  color: #22c55e;
+}
+
+.VideoIcon {
+  color: #2563eb;
+}
+
+.MenuIcon {
+  color: #374151;
+}
+
+/* MOBILE RESPONSIVE TWEAKS */
+@media (max-width: 768px) {
+  .AvatarImage,
+  .AvatarInitials {
+    width: 40px;
+    height: 40px;
+  }
+
+  .Actions {
+    gap: 8px;
+  }
+
+  .IconBtn {
+    padding: 6px;
+  }
+}

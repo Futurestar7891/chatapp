@@ -1,0 +1,47 @@
+.HomeContainer {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+/* Default: desktop */
+.ChatListWrapper {
+  width: 30%;
+}
+
+.ChatWindowWrapper {
+  width: 70%;
+}
+
+/* Tablet: 40/60 */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .ChatListWrapper {
+    width: 40%;
+  }
+
+  .ChatWindowWrapper {
+    width: 60%;
+  }
+}
+
+/* Mobile: show/hide using state + 100% width */
+@media (max-width: 768px) {
+  .ChatListWrapper {
+    width: 100%;
+  }
+
+  .ChatWindowWrapper {
+    width: 100%;
+    display: none;
+  }
+
+  .showMobile {
+    display: block;
+  }
+
+  .hideMobile {
+    display: none;
+  }
+}
