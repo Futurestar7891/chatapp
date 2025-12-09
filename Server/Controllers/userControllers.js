@@ -151,8 +151,8 @@ export const verifySignUpOtp = async (req, res) => {
     // ---------- SEND COOKIE ----------
   res.cookie("token", token, {
     httpOnly: true,
-    secure: isProd, // true only in production (HTTPS required)
-    sameSite: isProd ? "none" : "lax",
+    secure: true, // true only in production (HTTPS required)
+    sameSite: "none",
     maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
     path: "/",
   });
@@ -232,8 +232,8 @@ export const signIn = async (req, res) => {
     // ---------- SEND COOKIE ----------
 res.cookie("token", token, {
   httpOnly: true,
-  secure: isProd, // true only in production (HTTPS required)
-  sameSite: isProd ? "none" : "lax",
+  secure: true, // true only in production (HTTPS required)
+  sameSite:  "none",
   maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
   path: "/",
 });
@@ -367,8 +367,8 @@ export const verifyForgotOtp = async (req, res) => {
     // ---------- SET COOKIE ----------
  res.cookie("resetToken", resetToken, {
    httpOnly: true,
-   secure: isProd, // true only in production (HTTPS required)
-   sameSite: isProd ? "none" : "lax",
+   secure: true, // true only in production (HTTPS required)
+   sameSite: "none",
    maxAge: 10 * 60 * 1000,
    path: "/",
  });
@@ -743,8 +743,8 @@ export const logout = async (req, res) => {
     // Clear authentication cookie
     res.clearCookie("token", {
       httpOnly: true,
-      secure: isProd, // true only in production (HTTPS required)
-      sameSite: isProd ? "none" : "lax",
+      secure: true, // true only in production (HTTPS required)
+      sameSite:"none" ,
       path: "/",
     });
 
