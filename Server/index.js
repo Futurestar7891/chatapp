@@ -16,21 +16,43 @@ import compression from "compression";
 
 dotenv.config({});
 const app = express();
-app.set("trust proxy", 1);
 
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: "https://chatapp-latest.vercel.app",
+    // origin: "http://localhost:5173",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+/* ------------------------ PARSERS ------------------------ */
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ limit: "20mb", extended: true }));
+app.use(cookieParser());
+app.use(compression());
+
+setInterval(() => {
+  fetch("https://chatapp-ccey.onrender.com")
+    .then(() => {
+      console.log("ping the server");
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}, 5 * 60 * 1000);
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "server awaked",
+  });
+});
+
+
 
 // 🚀 OPTIMIZATION 2: Enable compression for all routes
-app.use(compression());
+
 
 app.use(express.json());
 app.use(cookieParser());

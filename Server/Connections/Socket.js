@@ -9,11 +9,8 @@ dotenv.config({});
 export const connectSocket = (server, app) => {
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: "http://chatapp-latest.vercel.app",
       credentials: true,
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization"],
     },
     perMessageDeflate: true, // Compress WebSocket messages
     transports: ["websocket"], // Faster than polling
