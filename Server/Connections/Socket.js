@@ -2,6 +2,9 @@ import { Server } from "socket.io";
 import Message from "../Models/Message.js";
 import Chat from "../Models/Chat.js";
 import User from "../Models/User.js";
+import dotenv from "dotenv"
+
+dotenv.config({});
 
 export const connectSocket = (server, app) => {
   const io = new Server(server, {

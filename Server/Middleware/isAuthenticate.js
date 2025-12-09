@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
+dotenv.config({});
 // 🚀 OPTIMIZATION 1: Cache the JWT_SECRET (minor but helpful)
 const JWT_SECRET = process.env.JWT_SECRET;
 

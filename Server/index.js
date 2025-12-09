@@ -14,7 +14,7 @@ import cookieParser from "cookie-parser";
 // 🚀 OPTIMIZATION 1: Add compression (reduces response size by 70%)
 import compression from "compression";
 
-dotenv.config();
+dotenv.config({});
 const app = express();
 app.set("trust proxy", 1);
 

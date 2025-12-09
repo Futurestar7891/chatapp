@@ -3,6 +3,7 @@ import User from "../Models/User.js";
 import Contact from "../Models/Contact.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+
 import { generateOTP, sendOTP } from "../nodeMailer.js";
 
 const isProd = process.env.NODE_ENV === "production";
