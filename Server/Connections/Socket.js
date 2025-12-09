@@ -8,6 +8,9 @@ export const connectSocket = (server, app) => {
     cors: {
       origin: process.env.CLIENT_URL,
       credentials: true,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      allowedHeaders: ["Content-Type", "Authorization"],
     },
     perMessageDeflate: true, // Compress WebSocket messages
     transports: ["websocket"], // Faster than polling
