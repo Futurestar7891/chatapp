@@ -15,8 +15,9 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 
 dotenv.config();
-app.set("trust proxy", 1);
 const app = express();
+app.set("trust proxy", 1);
+
 
 app.use(
   cors({
