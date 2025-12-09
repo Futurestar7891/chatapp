@@ -149,13 +149,13 @@ export const verifySignUpOtp = async (req, res) => {
     });
 
     // ---------- SEND COOKIE ----------
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // keep true only in production with https
-      sameSite: "lax",
-      maxAge: 5 * 24 * 60 * 60 * 1000,
-      path: "/",
-    });
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: isProd, // true only in production (HTTPS required)
+    sameSite: isProd ? "none" : "lax",
+    maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
+    path: "/",
+  });
 
     return res.status(200).json({
       success: true,
@@ -230,13 +230,13 @@ export const signIn = async (req, res) => {
     });
 
     // ---------- SEND COOKIE ----------
- res.cookie("token", token, {
-   httpOnly: true,
-   secure: false, // LOCALHOST MUST BE FALSE
-   sameSite: "lax", // "none" only works with https
-   maxAge: 5 * 24 * 60 * 60 * 1000,
-   path: "/",
- });
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: isProd, // true only in production (HTTPS required)
+  sameSite: isProd ? "none" : "lax",
+  maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
+  path: "/",
+});
 
 user = await User.findById(user._id).select("-password");
 
@@ -367,8 +367,8 @@ export const verifyForgotOtp = async (req, res) => {
     // ---------- SET COOKIE ----------
  res.cookie("resetToken", resetToken, {
    httpOnly: true,
-   secure: false, // LOCALHOST MUST BE FALSE
-   sameSite: "lax", // "none" only works with https
+   secure: isProd, // true only in production (HTTPS required)
+   sameSite: isProd ? "none" : "lax",
    maxAge: 10 * 60 * 1000,
    path: "/",
  });
@@ -743,8 +743,8 @@ export const logout = async (req, res) => {
     // Clear authentication cookie
     res.clearCookie("token", {
       httpOnly: true,
-      secure: false, // true only on production HTTPS
-      sameSite: "lax",
+      secure: isProd, // true only in production (HTTPS required)
+      sameSite: isProd ? "none" : "lax",
       path: "/",
     });
 
