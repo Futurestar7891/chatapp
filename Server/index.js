@@ -15,15 +15,18 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 
 dotenv.config();
-
+app.set("trust proxy", 1);
 const app = express();
 
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 
 // 🚀 OPTIMIZATION 2: Enable compression for all routes
 app.use(compression());
