@@ -1,5 +1,5 @@
 import React from "react";
-import Styles from "../Modules/MessageActionsPopup.module.css";
+import Styles from "../Modules/MessageActionsPopUp.module.css";
 
 export default function MessageActionsPopup({ isSender,actions, onSelect, onClose }) {
   return (
