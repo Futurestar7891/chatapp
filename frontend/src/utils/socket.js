@@ -6,7 +6,7 @@ export const connectSocket = () => {
   if (!socket) {
   socket = io("https://chatapp-latest.vercel.app", {
     withCredentials: true,
-    transports: ["websocket"],
+    transports: ["polling", "websocket"],
   });
 
     

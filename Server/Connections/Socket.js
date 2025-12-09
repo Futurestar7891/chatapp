@@ -4,7 +4,7 @@ import Chat from "../Models/Chat.js";
 import User from "../Models/User.js";
 import dotenv from "dotenv"
 
-dotenv.config({});
+dotenv.config();
 
 export const connectSocket = (server, app) => {
   const io = new Server(server, {
@@ -13,7 +13,7 @@ export const connectSocket = (server, app) => {
       credentials: true,
     },
     perMessageDeflate: true, // Compress WebSocket messages
-    transports: ["websocket"], // Faster than polling
+    transports: ["polling", "websocket"], // Faster than polling
     pingTimeout: 30000, // Keep connections alive
   });
 
