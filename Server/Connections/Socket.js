@@ -9,7 +9,7 @@ dotenv.config({});
 export const connectSocket = (server, app) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://chatapp-latest.vercel.app",
+      origin: "https://chatapp-latest.vercel.app",
       credentials: true,
     },
     perMessageDeflate: true, // Compress WebSocket messages

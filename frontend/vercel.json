@@ -5,6 +5,10 @@
       "destination": "https://chatapp-ccey.onrender.com/api/$1"
     },
     {
+      "source": "/socket.io/(.*)",
+      "destination": "https://chatapp-ccey.onrender.com/socket.io/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }
