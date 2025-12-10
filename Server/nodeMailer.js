@@ -1,24 +1,21 @@
-import nodemailer from "nodemailer";
+
 import dotenv from "dotenv";
+
 dotenv.config();
 
 export const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); 
 };
 
+import sgMail from "@sendgrid/mail";
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 export const sendOTP = async (email, otp) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail", 
-      auth: {
-        user: process.env.GMAIL,
-        pass: process.env.PASSWORD,
-      },
-    });
-
-    const mailOptions = {
-      from: `"Chat With Me" <${process.env.GMAIL}>`,
+    const msg = {
       to: email,
+      from: process.env.SENDGRID_EMAIL, // must be your verified Gmail
       subject: "Your OTP Verification Code",
       html: `
         <div style="font-family:Arial;padding:20px;">
@@ -30,14 +27,16 @@ export const sendOTP = async (email, otp) => {
           <p>This OTP will expire in <b>10 minutes</b>.</p>
         </div>
       `,
+      text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
     };
 
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     console.log("OTP sent to email:", email);
 
     return true;
   } catch (error) {
-    console.error("Error sending OTP:", error.message);
+    console.error("Error sending OTP:", error.response?.body || error.message);
     return false;
   }
 };
+
