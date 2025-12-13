@@ -1,0 +1,157 @@
+/* Full page background */
+.page {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #eff6ff, #eef2ff, #f5f3ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Container */
+.container {
+  max-width: 28rem;
+  width: 100%;
+  text-align: center;
+}
+
+/* Spacing utilities */
+.spaceY8 > * + * {
+  margin-top: 2rem;
+}
+
+.spaceY6 > * + * {
+  margin-top: 1.5rem;
+}
+
+.spaceY3 > * + * {
+  margin-top: 0.75rem;
+}
+
+/* Logo section */
+.logoWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.logoRelative {
+  position: relative;
+}
+
+.logoGlow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, #60a5fa, #a855f7);
+  border-radius: 9999px;
+  filter: blur(32px);
+  opacity: 0.5;
+  animation: pulse 2s infinite;
+}
+
+.logoBox {
+  position: relative;
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Text */
+.heading {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  letter-spacing: -0.025em;
+}
+
+.subText {
+  font-size: 1.125rem;
+  color: #4b5563;
+}
+
+/* Loader row */
+.loaderRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loaderText {
+  color: #374151;
+  font-weight: 500;
+  min-width: 200px;
+  text-align: left;
+}
+
+/* Progress bar */
+.progressBar {
+  width: 100%;
+  height: 0.5rem;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(to right, #3b82f6, #6366f1, #a855f7);
+  border-radius: 9999px;
+  animation: pulse 2s infinite;
+}
+
+/* Decorative dots */
+.dotRow {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 1rem;
+}
+
+.dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  background: #818cf8;
+  border-radius: 9999px;
+  animation: bounce 1s infinite;
+}
+
+/* Footer text */
+.footerText {
+  font-size: 0.875rem;
+  color: #6b7280;
+  padding-top: 2rem;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25%);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .heading {
+    font-size: 1.875rem;
+  }
+
+  .subText {
+    font-size: 1rem;
+  }
+}

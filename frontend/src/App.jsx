@@ -4,31 +4,13 @@ import { Toaster } from "react-hot-toast";
 import { AuthContext } from "./Context/AuthContext";
 import Protected from "./Routes/Protected";
 import Public from "./Routes/Public";
+import LoadingPage from "./LoadingPage";
 
 function App() {
   const { isLoggedIn, loading } = useContext(AuthContext);
 
   // Show loading while checking auth
-  if (loading) {
-    return (
-      <>
-        <Toaster position="bottom-center" />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-            fontSize: "18px",
-            color: "#666",
-          }}
-        >
-          Loading...
-        </div>
-      </>
-    );
-  }
+  if (loading) return <LoadingPage/>
 
   return (
     <>
