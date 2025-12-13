@@ -1,16 +1,13 @@
+
 {
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://chatapp-ccey.onrender.com/api/$1"
+      "destination": "http://localhost:3000/api/$1"
     },
     {
       "source": "/socket.io/(.*)",
-      "destination": "https://chatapp-ccey.onrender.com/socket.io/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/"
+      "destination": "http://localhost:3000/socket.io/$1"
     }
   ]
 }

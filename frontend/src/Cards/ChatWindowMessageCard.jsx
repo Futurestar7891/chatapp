@@ -73,7 +73,7 @@ export default function ChatWindowMessageCard({ data }) {
         break;
 
       case "reply":
-        setReplyToMessage(message);
+        setReplyToMessage(data);
         break;
 
       default:
@@ -90,7 +90,7 @@ export default function ChatWindowMessageCard({ data }) {
     return (
       <div className={Styles.BubbleWrapper}>
         {/* Reply Preview */}
-        {data.replyTo && <ReplyPreviewBox replyToMessage={data.replyTo} />}
+        {data.replyTo && <ReplyPreviewBox replyMessage={data.replyTo} />}
 
         {/* Options Button */}
         <button

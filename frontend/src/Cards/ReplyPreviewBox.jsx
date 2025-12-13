@@ -4,17 +4,23 @@ import Styles from "../Modules/ReplyPreviewBox.module.css";
 import { ChatContext } from "../Context/ChatContext";
 import { AuthContext } from "../Context/AuthContext";
 
-export default function ReplyPreviewBox({ replyMessage}) {
-  const {user}=useContext(AuthContext)
-  const{setReplyToMessage,replyToMessage,receiverData}=useContext(ChatContext);
- let finalname;
-  if(replyMessage.sender.name===user.name){
-        finalname="you"
-  }
+export default function ReplyPreviewBox({ replyMessage }) {
+  const { user } = useContext(AuthContext);
+  const { setReplyToMessage, replyToMessage, receiverData } =
+    useContext(ChatContext);
+console.log(replyMessage);
+  if (!replyMessage) return null;
 
-  else{
-    finalname=receiverData?.name;
-  }
+  // 🔥 NORMALIZATION (THIS IS THE KEY)
+  const sender = replyMessage.sender;
+  if (!sender) return null;
+
+  const senderName =
+    sender._id === user?._id
+      ? "You"
+      : receiverData?.name || sender.name || "User";
+
+  const { text, mediaType, mediaUrl, filename } = replyMessage;
   
 
   return (
@@ -22,42 +28,40 @@ export default function ReplyPreviewBox({ replyMessage}) {
       <div className={Styles.LeftBar} />
 
       <div className={Styles.Content}>
-        {/* Sender Name */}
-        <div className={Styles.Sender}>{finalname}</div>
+        <div className={Styles.Sender}>{senderName}</div>
 
-        {/* If replying to text */}
-        {replyMessage.text && (
-          <div className={Styles.Text}>{replyMessage.text}</div>
+        {/* Text */}
+        {text && <div className={Styles.Text}>{text}</div>}
+
+        {/* Image */}
+        {mediaType === "image" && mediaUrl && (
+          <img src={mediaUrl} className={Styles.ImageThumb} alt="reply" />
         )}
 
-        {/* If replying to an image */}
-        {replyMessage.mediaType === "image" && (
-          <img src={replyMessage.mediaUrl} className={Styles.ImageThumb} />
-        )}
-
-        {/* If replying to a video */}
-        {replyMessage.mediaType === "video" && (
-          <video src={replyMessage.mediaUrl} className={Styles.VideoThumb} />
+        {/* Video */}
+        {mediaType === "video" && mediaUrl && (
+          <video src={mediaUrl} className={Styles.VideoThumb} />
         )}
 
         {/* Audio */}
-        {replyMessage.mediaType === "audio" && (
+        {mediaType === "audio" && (
           <div className={Styles.MediaLabel}>🎵 Audio</div>
         )}
 
         {/* File */}
-        {replyMessage.mediaType === "file" && (
+        {mediaType === "file" && (
           <div className={Styles.MediaLabel}>
-            <FileText size={16} /> {replyMessage.filename || "File"}
+            <FileText size={16} />
+            {filename || "File"}
           </div>
         )}
       </div>
 
-      {/* Close Button */}
+      {/* Close ONLY in input preview */}
       {replyToMessage && (
         <button
           className={Styles.CloseBtn}
-          onClick={() => setReplyToMessage(false)}
+          onClick={() => setReplyToMessage(null)}
         >
           ✖
         </button>
