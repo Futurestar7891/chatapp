@@ -27,6 +27,17 @@ const [receiverData, setReceiverData] = useState(() => {
   return saved ? JSON.parse(saved) : null;
 });
 
+const normalizeMessage = (m) => {
+  if (!m) return null;
+
+  return {
+    ...m,
+    sender:
+      m.sender && typeof m.sender === "object" ? m.sender : { _id: m.sender }, // fallback
+  };
+};
+
+
   // ⚡ Connect socket
   useEffect(() => {
     if (isLoggedIn && user) {
@@ -124,9 +135,11 @@ useEffect(() => {
   if (!socket) return;
 
   const handleReceiverMessage = (message) => {
-    // add to open chat only
-    if (receiverId === message.sender._id) {
-      setMessages((prev) => [...prev, message]);
+    const normalized = normalizeMessage(message);
+
+    if (!normalized?.sender?._id) return;
+    if (receiverId === normalized.sender._id) {
+      setMessages((prev) => [...prev, normalized]);
     }
 
     // ACK delivered (extra safety)
@@ -232,7 +245,8 @@ useEffect(() => {
         messages,
         setMessages,
         replyToMessage,
-        setReplyToMessage
+        setReplyToMessage,
+        normalizeMessage
       }}
     >
       {children}
