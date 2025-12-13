@@ -1,11 +1,35 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Styles from "../Modules/MessageActionsPopUp.module.css";
 
-export default function MessageActionsPopup({ isSender,actions, onSelect, onClose }) {
+export default function MessageActionsPopup({
+  isSender,
+  actions,
+  onSelect,
+  onClose,
+  ignoreRef
+}) {
+ const popupRef = useRef();
+
+ useEffect(() => {
+   const handler = (e) => {
+     if (
+       popupRef.current &&
+       !popupRef.current.contains(e.target) &&
+       !ignoreRef?.current?.contains(e.target)
+     ) {
+       onClose();
+     }
+   };
+
+   document.addEventListener("mousedown", handler);
+   return () => document.removeEventListener("mousedown", handler);
+ }, [onClose, ignoreRef]);
+
   return (
-    <div className={`${Styles.Popup} ${
-            isSender ? Styles.Right : Styles.Left
-          }`}>
+    <div
+      ref={popupRef}
+      className={`${Styles.Popup} ${isSender ? Styles.Right : Styles.Left}`}
+    >
       {actions.map((a) => (
         <div
           key={a.key}

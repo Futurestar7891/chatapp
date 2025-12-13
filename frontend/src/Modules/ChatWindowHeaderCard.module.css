@@ -50,6 +50,8 @@
   border-radius: 50%;
   object-fit: cover;
   cursor: pointer;;
+  border: 1px solid black;
+  box-shadow: inset;
 }
 
 .AvatarInitials {

@@ -3,6 +3,8 @@ import Message from "../Models/Message.js";
 import Chat from "../Models/Chat.js";
 import User from "../Models/User.js";
 import dotenv from "dotenv"
+import mongoose from "mongoose";
+import { buildChatList } from "../utils/chatListBuilder.js";
 
 dotenv.config();
 
@@ -10,6 +12,7 @@ export const connectSocket = (server, app) => {
   const io = new Server(server, {
     cors: {
       origin: "https://chatapp-latest.vercel.app",
+      // origin: "http://localhost:5173",
       credentials: true,
     },
     perMessageDeflate: true, // Compress WebSocket messages
@@ -36,70 +39,113 @@ export const connectSocket = (server, app) => {
         deliveredAt: null,
       });
 
-      if (undelivered.length > 0) {
-        for (const msg of undelivered) {
-          const receiverBlockedSender = await User.exists({
-            _id: userId,
-            blockedUsers: msg.sender,
-          });
+    if (undelivered.length > 0) {
+      for (const msg of undelivered) {
+        const receiverBlockedSender = await User.exists({
+          _id: userId,
+          blockedUsers: msg.sender._id.toString(),
+        });
 
-          if (receiverBlockedSender) {
-            // receiver blocked sender AFTER message sent → do NOT deliver
-            continue;
-          }
+        if (receiverBlockedSender) continue;
 
-          // send to receiver
-          io.to(socket.id).emit("new-message", {
-            chatId: msg.chatId,
-            message: msg,
-          });
+        // 1️⃣ Mark delivered FIRST
+        msg.deliveredAt = new Date();
+        await msg.save({ validateBeforeSave: false });
 
-          // mark delivered
-          msg.deliveredAt = new Date();
-          await msg.save({ validateBeforeSave: false });
+        // 2️⃣ Populate AFTER save
+        const populatedMessage = await Message.findById(msg._id)
+          .populate("sender", "_id name avatar")
+          .lean();
 
-          // notify sender
-          const senderSocket = onlineUsers.get(msg.sender.toString());
+        // 3️⃣ Send to receiver
+        io.to(socket.id).emit("receiver-new-message", populatedMessage);
+        const senderSocket = onlineUsers.get(msg.sender._id.toString());
           if (senderSocket) {
-            io.to(senderSocket).emit("message-delivered-update", msg);
+            io.to(senderSocket).emit("message-delivered-update", populatedMessage);
           }
-        }
       }
-    });
+    }
 
-    // MESSAGE DELIVERED
+    });
     // MESSAGE DELIVERED
     socket.on("message-delivered", async (messageId) => {
-      const msg = await Message.findById(messageId);
-      if (!msg || msg.deliveredAt) return;
+      try {
+        if (!mongoose.Types.ObjectId.isValid(messageId)) return;
 
-      msg.deliveredAt = new Date();
-      await msg.save({ validateBeforeSave: false });
+        // 1️⃣ Fetch raw message
+        const msg = await Message.findById(messageId);
+        if (!msg || msg.deliveredAt) return;
 
-      const senderSocket = onlineUsers.get(msg.sender.toString());
-      if (senderSocket)
-        io.to(senderSocket).emit("message-delivered-update", msg);
-    });
+        // 2️⃣ Save first
+        msg.deliveredAt = new Date();
+        await msg.save({ validateBeforeSave: false });
 
-    // MESSAGE SEEN
-    socket.on("message-seen", async (messageId) => {
-      const msg = await Message.findById(messageId);
-      if (!msg || msg.seenAt) return;
+        // 3️⃣ Populate AFTER save
+        const populatedMessage = await Message.findById(msg._id)
+          .populate("sender", "_id name avatar")
+          .lean();
 
-      msg.seenAt = new Date();
-      await msg.save();
-
-      // RESET unreadCount for receiver
-      const chat = await Chat.findById(msg.chatId);
-      if (chat) {
-        chat.unreadCount.set(msg.receiver.toString(), 0);
-        await chat.save();
+        // 4️⃣ Notify sender
+        const senderSocket = onlineUsers.get(msg.sender.toString());
+        if (senderSocket) {
+          io.to(senderSocket).emit("message-delivered-update", populatedMessage);
+        }
+      } catch (err) {
+        console.log("message-delivered error:", err);
       }
-
-      // send seen event to sender
-      const senderSocket = onlineUsers.get(msg.sender.toString());
-      if (senderSocket) io.to(senderSocket).emit("message-seen-update", msg);
     });
+
+
+socket.on("message-seen", async (messageId) => {
+  try {
+    console.log(messageId);
+    if (!mongoose.Types.ObjectId.isValid(messageId)) return;
+
+    
+    // 1️⃣ Fetch raw message
+    const msg = await Message.findById(messageId);
+    if (!msg || msg.seenAt) return;
+
+    // 2️⃣ Save FIRST
+    msg.seenAt = new Date();
+    await msg.save({ validateBeforeSave: false });
+
+    // 3️⃣ Populate AFTER save
+    const populatedMessage = await Message.findById(msg._id)
+      .populate("sender", "_id name avatar")
+      .lean();
+
+    const senderId = populatedMessage.sender._id.toString();
+    const receiverId = populatedMessage.receiver.toString();
+
+    // 4️⃣ Notify sender
+    const senderSocket = onlineUsers.get(senderId);
+    if (senderSocket) {
+      io.to(senderSocket).emit("message-seen-update", populatedMessage);
+    }
+
+    // 5️⃣ Reset unread count in DB
+    const chat = await Chat.findOne({
+      participants: { $all: [senderId, receiverId] },
+    });
+
+    if (chat) {
+      chat.unreadCount.set(receiverId, 0);
+      await chat.save();
+    }
+
+    // 6️⃣ Update receiver chatlist
+    const receiverSocket = onlineUsers.get(receiverId);
+    if (receiverSocket) {
+      const receiverChatList = await buildChatList(receiverId);
+      io.to(receiverSocket).emit("chatlist-updated", receiverChatList);
+    }
+  } catch (error) {
+    console.log("message-seen error:", error);
+  }
+});
+
+
 
     socket.on("disconnect", () => {
       for (const [uid, sid] of onlineUsers) {

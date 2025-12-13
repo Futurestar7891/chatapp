@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import React, { useContext, useState } from "react";
 import styles from "../../Modules/Profile.module.css";
 
@@ -11,7 +12,7 @@ import { AuthContext } from "../../Context/AuthContext";
 import {  updateAvatar } from "../../utils/user";
 import { uploadFile } from "../../utils/message";
 
-export default function Profile() {
+ function Profile() {
   const { user, setUser } = useContext(AuthContext);
 
   /* Extract initials */
@@ -31,6 +32,7 @@ export default function Profile() {
       Change Avatar → Cloudinary → Backend
   ------------------------------------------------------- */
   const handleAvatarChange = async (e) => {
+    const toastId = toast.loading("please wait image updating ......");
     const file = e.target.files[0];
     if (!file) return;
 
@@ -50,9 +52,9 @@ export default function Profile() {
 
     if (response.success) {
       setUser(response.user);
-      alert(response.message);
+      toast.success(response.message,{id:toastId});
     } else {
-      alert(response.message);
+      toast.error(response.message,{id:toastId});
     }
     // Clean up the object URL when component unmounts or new file selected
     return () => URL.revokeObjectURL(previewUrl);
@@ -139,3 +141,4 @@ export default function Profile() {
     </div>
   );
 }
+export default React.memo(Profile);

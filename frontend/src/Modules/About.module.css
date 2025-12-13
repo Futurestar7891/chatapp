@@ -1,0 +1,213 @@
+/* MAIN SECTION WITH FIXED HEIGHT */
+.aboutSection {
+  height: calc(100vh);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: #f3f4f6; /* gray-100 */
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* WRAPPER */
+.wrapper {
+  width: 100%;
+  max-width: 1280px; /* same as max-w-7xl */
+  height: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  gap: 1.5rem;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* Desktop: 2 columns */
+@media (min-width: 768px) {
+  .wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    overflow: hidden;
+  }
+}
+
+/* LEFT & RIGHT COLUMN */
+.leftColumn,
+.rightColumn {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  overflow: visible;
+}
+
+@media (min-width: 768px) {
+  .leftColumn,
+  .rightColumn {
+    overflow-y: auto;
+    padding-bottom: 1.5rem;
+  }
+}
+
+/* CARD */
+.card {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+}
+
+/* TITLES */
+.cardTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #111827;
+  margin-bottom: 0.75rem;
+}
+
+/* TEXT */
+.cardText {
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.highlight {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* EXPERIENCE */
+.expItem {
+  margin-bottom: 0.75rem;
+}
+
+.expRole {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.expCompany {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.expDesc {
+  color: #374151;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* CODING PROFILES */
+.linkList {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.5rem;
+  color: #374151;
+}
+
+.linkList li {
+  margin-bottom: 0.25rem;
+}
+
+.link {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* SKILLS */
+.chipContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chip {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* PROJECTS */
+.projectBox {
+  margin-bottom: 1rem;
+}
+
+.projectTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.projectDesc {
+  color: #374151;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.projectLink {
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.projectLink:hover {
+  text-decoration: underline;
+}
+
+/* BUTTONS */
+.linksRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+/* Primary Button */
+.primaryBtn {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.primaryBtn:hover {
+  background-color: #1e40af;
+}
+
+/* Secondary Button */
+.secondaryBtn {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #1f2937;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background-color: #f3f4f6;
+}

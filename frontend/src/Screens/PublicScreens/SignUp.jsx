@@ -1,4 +1,5 @@
-import { useState, useContext } from "react";
+import toast from "react-hot-toast";
+import React, { useState, useContext } from "react";
 import { NavLink } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
 import Loginsignup from "../../assets/Loginsignup.webp";
@@ -6,6 +7,7 @@ import Loginsignup from "../../assets/Loginsignup.webp";
 import Styles from "../../Modules/SignUp.module.css";
 import { signUp, verifySignUpOtp } from "../../utils/user";
 import OtpPopUp from "./OtpPopUp";
+
 
 const SignUp = () => {
   const { setIsLoggedIn, setUser } = useContext(AuthContext);
@@ -58,9 +60,10 @@ const SignUp = () => {
 
     if (!response.success) {
       setErrors({ general: response.message });
+       toast.error(response.message);
       return;
     }
-
+    toast.success(response.message);
     setShowOtpPopup(true);
   };
 
@@ -74,9 +77,10 @@ const SignUp = () => {
 
     if (!response.success) {
       setOtpError(response.message);
+      toast.error(response.message);
       return;
     }
-
+   toast.success(response.message);
     setUser(response.user);
     setIsLoggedIn(true);
     setShowOtpPopup(false);
@@ -94,6 +98,7 @@ const SignUp = () => {
 
     if (!response.success) {
       setOtpError(response.message);
+       toast.error(response.message);
       return;
     }
   };
@@ -231,6 +236,6 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default React.memo(SignUp);
 
 

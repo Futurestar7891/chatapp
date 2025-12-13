@@ -1,3 +1,4 @@
+import toast from "react-hot-toast"
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import ChatCard from "../Cards/ChatCard";
 import SearchCard from "../Cards/SearchCard";
@@ -31,7 +32,7 @@ function ChatList() {
           const contacts = await getContactList(searchText);
           setContactList(contacts);
         } catch (err) {
-          console.error("Failed to fetch contacts:", err);
+          toast.error(err);
         }
       } else {
         setContactList([]); 
@@ -72,4 +73,4 @@ function ChatList() {
   );
 }
 
-export default ChatList;
+export default React.memo(ChatList);

@@ -1,9 +1,10 @@
+import toast from "react-hot-toast"
 import React, { useState } from "react";
 import styles from "../Modules/Security.module.css";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { changePassword } from "../utils/user";
 
-export default function Security() {
+function Security() {
   const [show, setShow] = useState({
     current: false,
     new: false,
@@ -27,7 +28,7 @@ export default function Security() {
     setLoading(false);
 
     if (res.success) {
-      alert(res.message);
+      toast.success(res.message);
       setForm({
         currentpassword: "",
         newpassword: "",
@@ -36,7 +37,7 @@ export default function Security() {
     } else if (res.errors) {
       setErrors(res.errors);
     } else {
-      alert(res.message);
+      toast.error(res.message);
     }
   };
 
@@ -160,3 +161,4 @@ export default function Security() {
     </div>
   );
 }
+export default React.memo(Security);

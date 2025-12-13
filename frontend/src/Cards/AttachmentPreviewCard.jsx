@@ -1,4 +1,4 @@
-import React from "react";
+
 import { FileText } from "lucide-react";
 import Styles from "../Modules/AttachmentPreviewCard.module.css";
 

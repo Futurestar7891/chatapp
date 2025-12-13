@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import React, { useContext, useState } from "react";
 import Styles from "../../Modules/ReceiverProfile.module.css";
 import {
@@ -11,15 +12,23 @@ import {
   ArrowLeft,
   Pencil,
 } from "lucide-react";
+import { AuthContext } from "../../Context/AuthContext";
 import { ChatContext } from "../../Context/ChatContext";
-import { blockAction, addContact } from "../../utils/user";
-import {  useNavigate } from "react-router-dom";
+import { updateUserSettings } from "../../utils/user";
+import { useNavigate } from "react-router-dom";
 
- function ReceiverProfile() {
-    const navigate=useNavigate();
-  const { receiverData, receiverId, setReceiverData } = useContext(ChatContext);
+function ReceiverProfile() {
+  const navigate = useNavigate();
+
+  const { setSettings, computeRelationship } = useContext(AuthContext);
+  const { receiverData, receiverId, setReceiverData, setChatList } =
+    useContext(ChatContext);
+
+  const rel = computeRelationship(receiverId);
+
   const [isEditingName, setIsEditingName] = useState(false);
-  const [contactName, setContactName] = useState(receiverData?.name || "");
+  const [contactName, setContactName] = useState(receiverData?.name);
+
   const [loading, setLoading] = useState(false);
 
   const getInitials = React.useCallback((name) => {
@@ -30,35 +39,53 @@ import {  useNavigate } from "react-router-dom";
       : (parts[0][0] + parts[1][0]).toUpperCase();
   }, []);
 
-  const handleBack = () => {
-     navigate("/",{replace:true});
-  };
+  const handleBack = () => navigate("/", { replace: true });
 
-  // ⭐ BLOCK / UNBLOCK
+  // ⭐ BLOCK / UNBLOCK TOGGLE
   const handleBlockToggle = async () => {
     setLoading(true);
-    await blockAction(receiverId, setReceiverData);
+
+    const res = await updateUserSettings({ receiverId });
+
     setLoading(false);
+
+    if (res.success) {
+      setSettings(res.settings); // update global settings
+      if (res.action === "blocked") toast.success("user is blocked");
+      if (res.action === "unblocked") toast.success("user is unblocked");
+    }
   };
 
-  // ⭐ ADD OR UPDATE CONTACT
+  // ⭐ SAVE CONTACT
   const handleSaveContact = async () => {
     if (!contactName.trim()) return;
 
     setLoading(true);
-    const res = await addContact(receiverId, contactName.trim());
+
+    const res = await updateUserSettings({
+      receiverId,
+      savedName: contactName.trim(),
+    });
+
     setLoading(false);
 
     if (res.success) {
       setReceiverData((prev) => ({
         ...prev,
         name: contactName,
-        isContact: true,
       }));
 
+      setSettings(res.settings);
+      if (res.chatlist) {
+        
+        setChatList(res.chatlist);
+      }
       setIsEditingName(false);
+
+      if (res.action === "contact_added") toast.success("Contact is Saved");
+      if (res.action === "contact_updated") toast.success("Contact is Updated");
     } else {
-      alert(res.message);
+      toast.error(res.message);
     }
   };
 
@@ -73,9 +100,7 @@ import {  useNavigate } from "react-router-dom";
 
           <h2 className={Styles.Title}>Profile</h2>
 
-          {/* ADD OR EDIT ICON */}
-
-          {!isEditingName && receiverData?.isContact ? (
+          {!isEditingName && receiverData.isContact ? (
             <button
               className={Styles.EditContactBtn}
               onClick={() => setIsEditingName(true)}
@@ -94,12 +119,14 @@ import {  useNavigate } from "react-router-dom";
 
         {/* CARD */}
         <div className={Styles.Card}>
+          {/* PHOTO */}
           <div className={Styles.PhotoWrapper}>
-            {receiverData?.avatar && !receiverData?.blockedMe ? (
+            {receiverData?.avatar && !rel.blockedMe ? (
               <img
                 src={receiverData.avatar}
                 loading="lazy"
                 className={Styles.ProfilePhoto}
+                alt="user"
               />
             ) : (
               <div className={Styles.initialsCircle}>
@@ -109,15 +136,13 @@ import {  useNavigate } from "react-router-dom";
 
             <div
               className={`${Styles.StatusIndicator} ${
-                receiverData?.blockedByMe
-                  ? Styles.StatusBlocked
-                  : Styles.StatusOnline
+                rel.blockedByMe ? Styles.StatusBlocked : Styles.StatusOnline
               }`}
-            ></div>
+            />
           </div>
 
           <div className={Styles.ContentPadding}>
-            {/* NAME SECTION */}
+            {/* NAME SECTION / EDIT */}
             {!isEditingName ? (
               <div className={Styles.NameSection}>
                 <h1 className={Styles.UserName}>{receiverData?.name}</h1>
@@ -137,7 +162,7 @@ import {  useNavigate } from "react-router-dom";
                     className={Styles.SaveBtn}
                     onClick={handleSaveContact}
                   >
-                    {receiverData?.isContact ? "Update" : "Save"}
+                    {receiverData.isContact ? "Update" : "Save"}
                   </button>
 
                   <button
@@ -158,12 +183,10 @@ import {  useNavigate } from "react-router-dom";
               <button
                 onClick={handleBlockToggle}
                 className={
-                  receiverData?.blockedByMe
-                    ? Styles.UnblockBtn
-                    : Styles.BlockBtn
+                  rel.blockedByMe ? Styles.UnblockBtn : Styles.BlockBtn
                 }
               >
-                {receiverData?.blockedByMe ? (
+                {rel.blockedByMe ? (
                   <>
                     <Unlock size={20} />
                     <span>{loading ? "Please Wait..." : "Unblock User"}</span>
@@ -177,7 +200,7 @@ import {  useNavigate } from "react-router-dom";
               </button>
             </div>
 
-            {/* ACTION CHIPS (Original Design) */}
+            {/* ACTION BUTTONS */}
             <div className={Styles.ActionsWrapper}>
               <div className={Styles.ActionsGrid}>
                 {[
@@ -189,13 +212,16 @@ import {  useNavigate } from "react-router-dom";
                   { icon: Phone, label: "Call", style: Styles.ChipCall },
                   { icon: Video, label: "Video", style: Styles.ChipVideo },
                   { icon: ImageIcon, label: "Media", style: Styles.ChipMedia },
-                  // eslint-disable-next-line no-unused-vars
                 ].map(({ icon: Icon, label, style }, i) => (
                   <button
                     key={i}
-                    disabled={receiverData?.blockedByMe || loading}
+                    disabled={rel.blockedByMe || rel.blockedMe || loading}
+                    onClick={() =>
+                      label !== "Message"?
+                      toast.error("This functionality is not open"):navigate("/")
+                    }
                     className={`${Styles.ActionChip} ${
-                      receiverData?.blockedByMe ? Styles.ChipDisabled : style
+                      rel.blockedByMe ? Styles.ChipDisabled : style
                     }`}
                   >
                     <Icon size={24} className={Styles.ChipIcon} />
@@ -204,10 +230,10 @@ import {  useNavigate } from "react-router-dom";
                 ))}
               </div>
 
-              {receiverData.blockedByMe && (
+              {rel.blockedByMe && (
                 <div className={Styles.BlockedMessage}>
                   <p className={Styles.BlockedText}>
-                    🚫 Actions disabled while blocked
+                    🚫 You have blocked this user
                   </p>
                 </div>
               )}

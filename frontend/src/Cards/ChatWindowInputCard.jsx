@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Send,
   Camera,
@@ -13,6 +13,9 @@ import {
 import AttachmentPreviewCard from "./AttachmentPreviewCard";
 import Styles from "../Modules/ChatWindowInputCard.module.css";
 import openCamera from "../utils/openCamera"
+import { AuthContext } from "../Context/AuthContext";
+import { ChatContext } from "../Context/ChatContext";
+import ReplyPreviewBox from "./ReplyPreviewBox";
 
 function ChatWindowInputCard({
   value,
@@ -23,6 +26,9 @@ function ChatWindowInputCard({
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const {userStatus}=useContext(AuthContext);
+  const { replyToMessage } = useContext(ChatContext);
+
 
   const addFiles = (files) => {
     const arr = Array.from(files);
@@ -56,6 +62,9 @@ function ChatWindowInputCard({
   return (
     <>
       {/* ⭐ Attachment Preview */}
+{
+  replyToMessage && <ReplyPreviewBox replyMessage={replyToMessage}/>
+}
       {selectedFiles.length > 0 && (
         <AttachmentPreviewCard
           selectedFiles={selectedFiles}
@@ -70,8 +79,10 @@ function ChatWindowInputCard({
         {/* ATTACH MENU */}
         <div className={Styles.RelativeWrapper}>
           <button
+            disabled={userStatus.blockedByMe}
             onClick={() => setShowMenu(!showMenu)}
             className={Styles.IconBtn}
+            style={{ cursor: userStatus.blockedByMe ? "not-allowed" : "pointer" }}
           >
             <Paperclip size={22} className={Styles.IconGray} />
           </button>
@@ -134,15 +145,26 @@ function ChatWindowInputCard({
         </div>
 
         {/* CAMERA BUTTON */}
-        <button className={Styles.IconBtn} onClick={handleOpenCamera}>
+        <button
+          className={Styles.IconBtn}
+          onClick={handleOpenCamera}
+          disabled={userStatus.blockedByMe}
+          style={{ cursor: userStatus.blockedByMe ? "not-allowed" : "pointer" }}
+        >
           <Camera size={22} className={Styles.CameraIcon} />
         </button>
 
         {/* INPUT FIELD */}
         <input
           className={Styles.InputBox}
-          placeholder="Type a message..."
+          placeholder={
+            userStatus.blockedByMe
+              ? "You have Blocked this Contact unblock First"
+              : "Type a message..."
+          }
           value={value}
+          style={{ cursor: userStatus.blockedByMe && "not-allowed" }}
+          disabled={userStatus.blockedByMe}
           onChange={(e) => onChange(e.target.value)}
         />
 

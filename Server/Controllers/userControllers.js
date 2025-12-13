@@ -3,8 +3,8 @@ import User from "../Models/User.js";
 import Contact from "../Models/Contact.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
 import { generateOTP, sendOTP } from "../nodeMailer.js";
+import { buildChatList } from "../utils/chatListBuilder.js";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -152,8 +152,8 @@ export const verifySignUpOtp = async (req, res) => {
     // ---------- SEND COOKIE ----------
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true, // true only in production (HTTPS required)
-    sameSite: "none",
+    secure: isProd?true:false, // true only in production (HTTPS required)
+    sameSite: isProd?"none":"lax",
     maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
     path: "/",
   });
@@ -233,8 +233,8 @@ export const signIn = async (req, res) => {
     // ---------- SEND COOKIE ----------
 res.cookie("token", token, {
   httpOnly: true,
-  secure: true, // true only in production (HTTPS required)
-  sameSite:  "none",
+  secure: isProd ? true : false, // true only in production (HTTPS required)
+  sameSite: isProd ? "none" : "lax",
   maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
   path: "/",
 });
@@ -368,8 +368,8 @@ export const verifyForgotOtp = async (req, res) => {
     // ---------- SET COOKIE ----------
  res.cookie("resetToken", resetToken, {
    httpOnly: true,
-   secure: true, // true only in production (HTTPS required)
-   sameSite: "none",
+   secure: isProd ? true : false, // true only in production (HTTPS required)
+   sameSite: isProd ? "none" : "lax",
    maxAge: 10 * 60 * 1000,
    path: "/",
  });
@@ -744,8 +744,8 @@ export const logout = async (req, res) => {
     // Clear authentication cookie
     res.clearCookie("token", {
       httpOnly: true,
-      secure: true, // true only in production (HTTPS required)
-      sameSite:"none" ,
+      secure: isProd ? true : false, // true only in production (HTTPS required)
+      sameSite: isProd ? "none" : "lax",
       path: "/",
     });
 
@@ -762,127 +762,133 @@ export const logout = async (req, res) => {
   }
 };
 
-export const blockAction = async (req, res) => {
+export const getUserSettings = async (req, res) => {
   try {
-    const userId = req.user.id; // logged-in user
-    const receiverId = req.body.receiverId; // user to block/unblock
+    const userId = req.user.id;
 
-    if (!receiverId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User ID required" });
-    }
+    // Fetch user + blocked data
+    const user = await User.findById(userId)
+      .select("statusVisibility blockedUsers blockedBy")
+      .populate("blockedUsers", "name email avatar")
+      .populate("blockedBy", "name email avatar");
 
-    if (userId === receiverId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Cannot block yourself" });
-    }
 
-    // Fetch both users
-    const userExist = await User.findById(userId);
-    const receiverExist = await User.findById(receiverId);
+    res.json({
+      success: true,
+      settings: {
+        statusVisibility: user.statusVisibility,
+        blockedUsers: user.blockedUsers,
+        blockedBy: user.blockedBy,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
-    if (!receiverExist) {
+
+
+
+export const updateUserSettings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { receiverId, savedName, statusVisibility } = req.body;
+
+    let actionType = null;
+    let shouldSendChatList = false; // ⭐ KEY FIX
+
+    const user = await User.findById(userId).select(
+      "statusVisibility blockedUsers blockedBy"
+    );
+
+    if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
 
-    const alreadyBlocked = userExist.blockedUsers.some(
-      (id) => id.toString() === receiverId
-    );
+    // ⭐ 1. Privacy update (NO chatlist)
+    if (statusVisibility) {
+      user.statusVisibility = statusVisibility;
+      actionType = "privacy_updated";
+    }
 
-    // 1️⃣ UNBLOCK IF ALREADY BLOCKED
-    if (alreadyBlocked) {
-      userExist.blockedUsers = userExist.blockedUsers.filter(
-        (id) => id.toString() !== receiverId
+    // ⭐ 2. Contact save/update (YES chatlist)
+    if (receiverId && savedName) {
+      const existing = await Contact.findOne({ userId, contactId: receiverId });
+
+      if (existing) {
+        existing.savedName = savedName;
+        await existing.save();
+        actionType = "contact_updated";
+      } else {
+        await Contact.create({
+          userId,
+          contactId: receiverId,
+          savedName,
+        });
+        actionType = "contact_added";
+      }
+
+      shouldSendChatList = true; // ✅ ONLY HERE
+    }
+
+    // ⭐ 3. Block / Unblock (NO chatlist)
+    else if (receiverId && !savedName) {
+      const alreadyBlocked = user.blockedUsers.some(
+        (id) => id.toString() === receiverId
       );
 
-      receiverExist.blockedBy = receiverExist.blockedBy.filter(
-        (id) => id.toString() !== userId
-      );
+      if (alreadyBlocked) {
+        user.blockedUsers = user.blockedUsers.filter(
+          (id) => id.toString() !== receiverId
+        );
 
-      await userExist.save();
-      await receiverExist.save();
+        await User.findByIdAndUpdate(receiverId, {
+          $pull: { blockedBy: userId },
+        });
 
-      return res.status(200).json({
-        success: true,
-        action: "unblocked",
-        message: "User unblocked successfully",
-      });
+        actionType = "unblocked";
+      } else {
+        user.blockedUsers.push(receiverId);
+
+        await User.findByIdAndUpdate(receiverId, {
+          $addToSet: { blockedBy: userId },
+        });
+
+        actionType = "blocked";
+      }
     }
 
-    // 2️⃣ BLOCK IF NOT BLOCKED
-    userExist.blockedUsers.push(receiverId);
-    receiverExist.blockedBy.push(userId);
+    await user.save();
 
-    await userExist.save();
-    await receiverExist.save();
+    // ⭐ Repopulate settings
+    const populatedUser = await User.findById(userId)
+      .select("statusVisibility blockedUsers blockedBy")
+      .populate("blockedUsers", "name email avatar")
+      .populate("blockedBy", "name email avatar");
 
-    return res.status(200).json({
+    // ⭐ Only build chatlist when required
+    let chatlist = null;
+    if (shouldSendChatList) {
+      chatlist = await buildChatList(userId);
+    }
+
+    return res.json({
       success: true,
-      action: "blocked",
-      message: "User blocked successfully",
+      action: actionType,
+      chatlist, // null unless name changed
+      settings: {
+        statusVisibility: populatedUser.statusVisibility,
+        blockedUsers: populatedUser.blockedUsers,
+        blockedBy: populatedUser.blockedBy,
+      },
     });
   } catch (error) {
-    console.error("Block/Unblock Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    console.log(error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-export const addContact = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { receiverId, name } = req.body;
 
-    if (!receiverId || !name) {
-      return res.status(400).json({
-        success: false,
-        message: "Receiver ID and name are required",
-      });
-    }
 
-    // Check if user exists
-    const receiver = await User.findById(receiverId);
-    if (!receiver) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Check if already saved
-    const existing = await Contact.findOne({ userId, contactId: receiverId });
-
-    if (existing) {
-      existing.savedName = name;
-      await existing.save();
-
-      return res.status(200).json({
-        success: true,
-        message: "Contact name updated",
-      });
-    }
-
-    // Create new contact entry
-    await Contact.create({
-      userId,
-      contactId: receiverId,
-      savedName: name,
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Contact saved successfully",
-    });
-  } catch (error) {
-    console.error("Add Contact Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
-  }
-};

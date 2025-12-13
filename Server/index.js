@@ -14,9 +14,8 @@ import cookieParser from "cookie-parser";
 // 🚀 OPTIMIZATION 1: Add compression (reduces response size by 70%)
 import compression from "compression";
 
-dotenv.config({});
+dotenv.config();
 const app = express();
-
 
 app.use(
   cors({
@@ -49,10 +48,7 @@ app.get("/", (req, res) => {
   });
 });
 
-
-
 // 🚀 OPTIMIZATION 2: Enable compression for all routes
-
 
 app.use(express.json());
 app.use(cookieParser());

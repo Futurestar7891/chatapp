@@ -54,48 +54,63 @@ export const sendMessage = async ({
   text,
   mediaUrl,
   mediaType,
-  userId,
+  user,
   setMessages,
+  setChatList,
   filename,
+  replyToMessage
 }) => {
   const tempId = "temp-" + Date.now();
 
+  // 1️⃣ TEMP MESSAGE (Optimistic UI)
   const tempMessage = {
     _id: tempId,
     chatId: null,
-    sender: userId,
+    sender: {
+      _id:user._id,
+      name:user.name,
+      avatar:user.avatar
+    },
     receiver: receiverId,
     text,
-    filename: filename,
-    mediaUrl: mediaUrl || null,
+    filename: filename || "",
+    mediaUrl: mediaUrl || "",
     mediaType: mediaType || null,
     status: "sending",
     createdAt: new Date(),
+    replyTo:replyToMessage
   };
-
+console.log(tempMessage);
+  // Add temp message to UI immediately
   setMessages((prev) => [...prev, tempMessage]);
 
   try {
+    // 2️⃣ SEND TO SERVER
     const res = await fetch(`${import.meta.env.VITE_API_URL}/message/send`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receiverId, text, mediaUrl, mediaType ,filename}),
+      body: JSON.stringify({ receiverId, text, mediaUrl, mediaType, filename,replyTo:replyToMessage }),
     });
 
     const data = await res.json();
     if (!data.success) throw new Error();
 
     const realMessage = data.message;
+    
+    setChatList(data.chatlist);
 
+    // 3️⃣ REPLACE TEMP MESSAGE WITH REAL ONE
     setMessages((prev) =>
       prev.map((msg) =>
         msg._id === tempId ? { ...realMessage, status: "sent" } : msg
       )
     );
+    
   } catch (err) {
     console.error("Send failed:", err);
 
+    // 5️⃣ SHOW FAILED STATUS
     setMessages((prev) =>
       prev.map((msg) =>
         msg._id === tempId ? { ...msg, status: "failed" } : msg
@@ -120,14 +135,16 @@ const detectMediaType = (file) => {
 // --------------------------------------------------
 export const composeMessage = async ({
   receiverId,
-  userId,
+  user,
   text,
   attachments,
   setMessages,
+  setChatList,
+  replyToMessage,
 }) => {
   // Send text
   if (text?.trim()) {
-    await sendMessage({ receiverId, text, userId, setMessages });
+    await sendMessage({ receiverId, text, user, setMessages,setChatList,replyToMessage });
   }
 
   console.log(attachments);
@@ -144,9 +161,11 @@ export const composeMessage = async ({
       text: "",
       mediaUrl,
       mediaType,
-      userId,
+      user,
       setMessages,
-      filename:file.name
+      filename:file.name,
+      setChatList,
+      replyToMessage
     });
   }
 };

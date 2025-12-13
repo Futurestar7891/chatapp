@@ -1,3 +1,4 @@
+import toast from "react-hot-toast"
 import React, { useState, useRef, useContext,useCallback,useEffect } from "react";
 import { Search, Menu, User, Shield, Lock, Info, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -59,6 +60,7 @@ function SearchCard({ setSearchText }) {
    const response = await logout();
 
    if (response.success) {
+     toast.success(response.message);
      setUser(null);
      setIsLoggedIn(false);
      sessionStorage.removeItem("receiverData");
@@ -66,7 +68,7 @@ function SearchCard({ setSearchText }) {
      setReceiverId(null);
      setReceiverData(null);
    } else {
-     alert(response.message);
+     toast.error(response.message);
    }
 
    setShowMenu(false);
@@ -142,7 +144,7 @@ function SearchCard({ setSearchText }) {
                 {/* ABOUT */}
                 <button
                   className={Styles.dropdownItem}
-                  onClick={() => goToProfile("about")}
+                  onClick={() => navigate("about")}
                 >
                   <Info size={18} /> About
                 </button>

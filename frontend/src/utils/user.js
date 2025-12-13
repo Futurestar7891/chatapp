@@ -31,7 +31,6 @@ export const verifySignUpOtp = async (email, otp) => {
   }
 };
 
-
 export const signIn = async (emailOrMobile, password) => {
   try {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/user/signin`, {
@@ -47,22 +46,23 @@ export const signIn = async (emailOrMobile, password) => {
   }
 };
 
-
 export const forgotPasswordOtp = async (emailOrMobile) => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/user/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ emailOrMobile }),
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/user/forgot-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ emailOrMobile }),
+      }
+    );
 
     return await res.json();
   } catch (error) {
     return { success: false, message: "Network error", error };
   }
 };
-
 
 export const verifyForgotPasswordOtp = async (emailOrMobile, otp) => {
   try {
@@ -82,15 +82,17 @@ export const verifyForgotPasswordOtp = async (emailOrMobile, otp) => {
   }
 };
 
-
 export const resetPassword = async (password, confirmpassword) => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/user/reset-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ password, confirmpassword }),
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/user/reset-password`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ password, confirmpassword }),
+      }
+    );
 
     return await res.json();
   } catch (error) {
@@ -101,36 +103,45 @@ export const resetPassword = async (password, confirmpassword) => {
 // ⬅ Send Email OTP
 // SEND OTP
 export const sendEmailUpdateOtp = async (email) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/user/send-email-update-otp`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ newEmail: email }),
-  });
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/user/send-email-update-otp`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ newEmail: email }),
+    }
+  );
 
   return res.json();
 };
 
 // VERIFY OTP
 export const verifyEmailUpdateOtp = async (email, otp) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/user/verify-email-update-otp`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ email, otp }),
-  });
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/user/verify-email-update-otp`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, otp }),
+    }
+  );
 
   return res.json();
 };
 
 // UPDATE PROFILE INFO
 export const updateProfileInfo = async (formData) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/user/update-profile-info`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(formData),
-  });
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/user/update-profile-info`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(formData),
+    }
+  );
 
   return res.json();
 };
@@ -141,7 +152,7 @@ export const updateAvatar = async (avatarUrl) => {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials:"include",
+      credentials: "include",
       body: JSON.stringify({ avatar: avatarUrl }),
     }
   );
@@ -150,12 +161,15 @@ export const updateAvatar = async (avatarUrl) => {
 };
 
 export const changePassword = async (formData) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/user/change-password`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials:"include",
-    body: JSON.stringify(formData),
-  });
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/user/change-password`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(formData),
+    }
+  );
 
   return res.json();
 };
@@ -168,55 +182,38 @@ export const logout = async () => {
   return res.json();
 };
 
-export const blockAction = async (
-  receiverId,
-  setReceiverData,
-) => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/user/block-action`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ receiverId }),
-      }
-    );
-
-    const data = await response.json();
-    console.log(data);
-    if (!data.success) {
-      alert(data.message);
-      return;
-    }
- console.log("hello");
- setReceiverData((prev) => ({
-   ...prev,
-   blockedByMe: data.action === "blocked",
- }));
-
-    return data.action; 
-  } catch (error) {
-    console.log("Block action error:", error);
-  }
-};
-export const addContact = async (receiverId, savedName) => {
+export const updateUserSettings = async (payload) => {
   try {
     const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/user/add-contact`,
+      `${import.meta.env.VITE_API_URL}/user/update-setting`,
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "PUT",
         credentials: "include",
-        body: JSON.stringify({ receiverId, name: savedName }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       }
     );
 
-    return await res.json();
+    return await res.json(); // returns {success, action, settings}
   } catch (err) {
-    console.error("Add contact error:", err);
-    return { success: false };
+    console.log("Update Settings Error:", err);
+    return { success: false, message: "Network error" };
+  }
+};
+
+export const fetchUserSettings = async () => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/user/get-setting`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
+
+    return await res.json(); // returns {success, settings}
+  } catch (err) {
+    console.log("Fetch Settings Error:", err);
+    return { success: false, message: "Network error" };
   }
 };

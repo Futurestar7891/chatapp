@@ -1,3 +1,4 @@
+import toast from "react-hot-toast"
 import React, { useContext, useState } from "react";
 import styles from "../Modules/PersonalInfo.module.css";
 import { User, Mail, Phone, FileText, Edit2, Save, X } from "lucide-react";
@@ -11,7 +12,7 @@ import {
 
 import OtpPopUp from "../Screens/PublicScreens/OtpPopUp";
 
-export default function PersonalInfo() {
+function PersonalInfo() {
   const { user, setUser } = useContext(AuthContext);
   const [isEditing, setIsEditing] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
@@ -76,11 +77,11 @@ export default function PersonalInfo() {
       });
       setEdit({...edit,currentPassword:""})
       setIsEditing(false);
-      alert(response.message);
+      toast.success(response.message);
     } else if (response.errors) {
       setErrors(response.errors);
     } else {
-      alert(response.message);
+      toast.error(response.message);
     }
   };
 
@@ -98,7 +99,7 @@ export default function PersonalInfo() {
     if (response.success) {
       setEmailVerified(true);
       setShowOtp(false);
-      alert(response.message);
+      toast.success(response.message);
       await finalizeUpdate();
     } else {
       setOtpError(response.message);
@@ -249,3 +250,5 @@ export default function PersonalInfo() {
     </div>
   );
 }
+
+export default React.memo(PersonalInfo);

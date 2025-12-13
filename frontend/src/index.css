@@ -19,9 +19,13 @@
   padding:0px;
 }
 
+/* -----------------------------
+   DESKTOP SCROLLBAR (DEFAULT)
+------------------------------ */
+
 /* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
-  width: 4px;        /* thin scrollbar */
+  width: 8px;
   height: 4px;
 }
 
@@ -36,6 +40,36 @@
 
 /* Firefox */
 * {
-  scrollbar-width: thin;        /* makes scrollbar very small */
+  scrollbar-width: thin;
   scrollbar-color: #c5c5c5 transparent;
+}
+
+
+/* -----------------------------
+   MOBILE: HIDE SCROLLBAR COMPLETELY
+------------------------------ */
+@media (max-width: 768px) {
+  
+  /* Chrome, Safari, Edge */
+  ::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: transparent !important;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: none !important; /* removes scrollbar */
+    scrollbar-color: transparent transparent !important;
+  }
+
+  /* Hides scrollbar area completely */
+  body, div {
+    -ms-overflow-style: none !important; /* old IE/Edge */
+    scrollbar-width: none !important;    /* Firefox */
+  }
 }

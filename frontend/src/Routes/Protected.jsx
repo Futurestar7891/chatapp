@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useContext, memo } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthContext } from "../Context/AuthContext";
+import About from "../Screens/ProtectedScreens/About";
 
 // 🚀 Lazy load screens for faster initial load
 const Home = lazy(() => import("../Screens/ProtectedScreens/Home"));
@@ -19,11 +20,7 @@ function ProtectedRoute({ children }) {
 
 function Protected() {
   return (
-    <Suspense
-      fallback={
-   null
-      }
-    >
+    <Suspense fallback={null}>
       <Routes>
         <Route
           path="/"
@@ -47,6 +44,14 @@ function Protected() {
           element={
             <ProtectedRoute>
               <ReceiverProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <ProtectedRoute>
+              <About/>
             </ProtectedRoute>
           }
         />

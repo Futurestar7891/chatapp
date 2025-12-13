@@ -73,7 +73,4 @@ chatSchema.index({ archivedBy: 1 });
 // 🚀 OPTIMIZATION 4: Compound index for sorting chats by activity
 chatSchema.index({ updatedAt: -1 });
 
-// 🚀 OPTIMIZATION 5: For finding chats between two specific users
-chatSchema.index({ participants: 1, deletedFor: 1 });
-
 export default mongoose.model("Chat", chatSchema);

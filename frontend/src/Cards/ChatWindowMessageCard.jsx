@@ -1,14 +1,34 @@
-import React, { useContext, useState } from "react";
+import toast from "react-hot-toast"
+import React, { useContext, useState ,useRef} from "react";
 import Styles from "../Modules/ChatWindowMessageCard.module.css";
 import { AuthContext } from "../Context/AuthContext";
 import { FileText, Download, ChevronDown } from "lucide-react";
+
 import MessageActionsPopup from "./MessageActionsPopUp";
+import MessageInfo from "../Components/MessageInfo";
+import ReplyPreviewBox from "./ReplyPreviewBox";
+
 import { getMessageActions } from "../utils/messageActions";
+import {
+  copyText,
+  saveMedia,
+  deleteForEveryone,
+  deleteForMe,
+  
+} from "../utils/messageActions";
+
+import { ChatContext } from "../Context/ChatContext";
 
 export default function ChatWindowMessageCard({ data }) {
-  const { user } = useContext(AuthContext);
-  const isSender = data.sender === user._id;
 
+  const arrowRef = useRef(null);
+
+  const { user } = useContext(AuthContext);
+  const { setReplyToMessage } = useContext(ChatContext);
+
+  const isSender = data.sender._id === user._id;
+
+  const [showMessageInfo, setShowMessageInfo] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
 
   const fileName =
@@ -19,20 +39,62 @@ export default function ChatWindowMessageCard({ data }) {
 
   const renderTicks = () => {
     if (!isSender) return null;
+
     if (data.seenAt) return <span className={Styles.TickBlue}>✔✔</span>;
     if (data.deliveredAt) return <span className={Styles.TickGray}>✔✔</span>;
+
     return <span className={Styles.TickGray}>✔</span>;
+  };
+
+  const handleAction = async (key, message) => {
+    switch (key) {
+      case "copy":
+        await copyText(message);
+        break;
+
+      case "save":
+        saveMedia(message.mediaUrl);
+        break;
+
+      case "deleteForMe":
+        deleteForMe(message._id);
+        break;
+
+      case "deleteForEveryone":
+        deleteForEveryone(message._id);
+        break;
+
+      case "info":
+        setShowMessageInfo(true);
+        break;
+
+      case "forward":
+        toast.error("This Fucntionality not Open")
+        break;
+
+      case "reply":
+        setReplyToMessage(message);
+        break;
+
+      default:
+        console.log("Unknown action:", key);
+    }
   };
 
   const actions = getMessageActions({ message: data, isSender });
 
+  // ⭐ MEDIA MESSAGE BUBBLE
   const renderMedia = () => {
     if (!data.mediaType) return null;
 
     return (
       <div className={Styles.BubbleWrapper}>
-        {/* ↓ More Options Button */}
+        {/* Reply Preview */}
+        {data.replyTo && <ReplyPreviewBox replyToMessage={data.replyTo} />}
+
+        {/* Options Button */}
         <button
+        ref={arrowRef}
           className={`${Styles.MoreBtn} ${
             isSender ? Styles.rightarrow : Styles.leftarrow
           }`}
@@ -59,6 +121,7 @@ export default function ChatWindowMessageCard({ data }) {
         {data.mediaType === "file" && (
           <div className={Styles.DocumentBubble}>
             <FileText size={32} className={Styles.DocIcon} />
+
             <div className={Styles.DocumentInfo}>
               <span className={Styles.DocName}>{fileName}</span>
               <a
@@ -79,30 +142,42 @@ export default function ChatWindowMessageCard({ data }) {
           <div className={Styles.FileName}>{fileName}</div>
         )}
 
+        {/* TICKS */}
         {isSender && <div className={Styles.TickPosition}>{renderTicks()}</div>}
 
-        {/* POPUP */}
+        {/* Popup */}
         {showOptions && (
           <MessageActionsPopup
+            message={data}
+            isSender={isSender}
             actions={actions}
-            onSelect={(action) => {
+            onSelect={(key) => {
               setShowOptions(false);
-              console.log("Selected:", action);
+              handleAction(key, data);
             }}
             onClose={() => setShowOptions(false)}
+          />
+        )}
+
+        {/* Message Info */}
+        {showMessageInfo && (
+          <MessageInfo
+            message={data}
+            onClose={() => setShowMessageInfo(false)}
           />
         )}
       </div>
     );
   };
 
+  // ⭐ MAIN RETURN
   return (
     <div
       className={`${Styles.MessageRow} ${
         isSender ? Styles.Right : Styles.Left
       }`}
     >
-      {/* MEDIA */}
+      {/* MEDIA MESSAGE */}
       {renderMedia()}
 
       {/* TEXT MESSAGE */}
@@ -112,10 +187,13 @@ export default function ChatWindowMessageCard({ data }) {
             isSender ? Styles.Sent : Styles.Received
           }`}
         >
-          {/* Text */}
+          {/* Reply Preview */}
+          {data.replyTo && <ReplyPreviewBox replyMessage={data.replyTo} />}
+
+          {/* Actual Text */}
           {data.text}
 
-          {/* More button */}
+          {/* Options Button */}
           <button
             className={`${Styles.MoreBtn} ${
               isSender ? Styles.rightarrow : Styles.leftarrow
@@ -124,6 +202,7 @@ export default function ChatWindowMessageCard({ data }) {
           >
             <ChevronDown size={16} />
           </button>
+
           {/* Ticks */}
           {isSender && (
             <div className={Styles.TickPosition}>{renderTicks()}</div>
@@ -133,12 +212,22 @@ export default function ChatWindowMessageCard({ data }) {
           {showOptions && (
             <MessageActionsPopup
               isSender={isSender}
+              message={data}
               actions={actions}
-              onSelect={(action) => {
+              onSelect={(key) => {
                 setShowOptions(false);
-                console.log("Selected:", action);
+                handleAction(key, data);
               }}
               onClose={() => setShowOptions(false)}
+              ignoreRef={arrowRef}
+            />
+          )}
+
+          {/* Message Info */}
+          {showMessageInfo && (
+            <MessageInfo
+              message={data}
+              onClose={() => setShowMessageInfo(false)}
             />
           )}
         </div>

@@ -1,47 +1,55 @@
 import React, { useContext } from "react";
 import { ChatContext } from "../Context/ChatContext";
+import { AuthContext } from "../Context/AuthContext";
 
 function ChatCard({ data }) {
-  const { setReceiverId, setReceiverData } = useContext(ChatContext);
+  const { setReceiverId, setReceiverData} = useContext(ChatContext);
+
   const { user, lastMessage, updatedAt, unreadCount } = data;
 
+
+ const finalName = user.name;
+ const avatarToShow = user.avatar || null;
 
   const time = updatedAt
     ? new Date(updatedAt).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       })
-    : ""; 
+    : "";
 
   const getInitials = (name) => {
     if (!name) return "";
-    const words = name.trim().split(" ");
-    if (words.length === 1) return words[0][0].toUpperCase();
-    return (words[0][0] + words[1][0]).toUpperCase();
+    const w = name.trim().split(" ");
+    return w.length === 1
+      ? w[0][0].toUpperCase()
+      : (w[0][0] + w[1][0]).toUpperCase();
   };
 
   return (
     <div
       style={styles.card}
-     
       onClick={() => {
         const safe = JSON.parse(JSON.stringify(user)); // CLEAN!
         sessionStorage.setItem("receiverId", safe._id);
         sessionStorage.setItem("receiverData", JSON.stringify(safe));
-
         setReceiverId(safe._id);
         setReceiverData(safe);
       }}
     >
-      {user.avatar && !user.blockedMe  ? (
-        <img src={user.avatar} alt="avatar" style={styles.avatar} />
+      {/* Avatar or initials */}
+      {avatarToShow ? (
+        <img src={avatarToShow} alt="" style={styles.avatar} />
       ) : (
-        <div style={styles.initialsCircle}>{getInitials(user.name)}</div>
+        <div style={styles.initialsCircle}>{getInitials(finalName)}</div>
       )}
 
       <div style={styles.info}>
         <div style={styles.topRow}>
-          <span style={styles.name}>{user.name}</span>
+          <span style={styles.name}>
+            {finalName}
+          </span>
+
           <span style={styles.time}>{time}</span>
         </div>
 
@@ -54,7 +62,7 @@ function ChatCard({ data }) {
             ? `${lastMessage.filename.slice(0, 20)}${
                 lastMessage.filename.length > 20 ? "..." : ""
               }`
-            : "No  message yet"}
+            : "No message yet"}
         </span>
       </div>
 
@@ -75,14 +83,12 @@ const styles = {
     borderBottom: "1px solid #eee",
     background: "#fff",
   },
-
   avatar: {
     width: "50px",
     height: "50px",
     borderRadius: "50%",
     objectFit: "cover",
   },
-
   initialsCircle: {
     width: "50px",
     height: "50px",
@@ -94,41 +100,23 @@ const styles = {
     alignItems: "center",
     fontSize: "18px",
     fontWeight: "bold",
-    textTransform: "uppercase",
   },
-
-  info: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-  },
-
+  info: { flex: 1, display: "flex", flexDirection: "column" },
   topRow: {
     display: "flex",
     justifyContent: "space-between",
     marginBottom: "5px",
-   alignItems:"flex-end",
-    
+    alignItems: "flex-end",
   },
-
-  name: {
-    fontSize: "16px",
-    fontWeight: "bold",
-  },
-
-  time: {
-    fontSize: "12px",
-    color: "#888",
-  },
-
+  name: { fontSize: "16px", fontWeight: "bold" },
+  time: { fontSize: "12px", color: "#888" },
   lastMessage: {
     fontSize: "14px",
-    color: "#000000",
+    color: "#000",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
-
   unreadBadge: {
     minWidth: "22px",
     height: "22px",

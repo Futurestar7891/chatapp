@@ -58,6 +58,13 @@ const userSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+
+    statusVisibility: {
+      type: String,
+      enum: ["onlyme", "contacts", "anyone"],
+      default: "contacts",
+      index: true, // for fast privacy lookup
+    },
   },
   { timestamps: true }
 );

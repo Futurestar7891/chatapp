@@ -1,21 +1,22 @@
 // /* eslint-disable react-hooks/set-state-in-effect */
 // /* eslint-disable react-refresh/only-export-components */
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext,startTransition } from "react";
 import { connectSocket, disconnectSocket } from "../utils/socket";
 import { AuthContext } from "./AuthContext";
-import { getChatList, markChatSeen } from "../utils/chat";
+import { getChatList, } from "../utils/chat";
 import { getMessages } from "../utils/message";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
-  const { isLoggedIn, user } = useContext(AuthContext);
+  const { isLoggedIn, user,computeRelationship,setUserStatus} = useContext(AuthContext);
 
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [chatList, setChatList] = useState([]);
    const [messages, setMessages] = useState([]);
+const [replyToMessage, setReplyToMessage] = useState(null);
 
 const [receiverId, setReceiverId] = useState(
   sessionStorage.getItem("receiverId") || null
@@ -52,95 +53,94 @@ const [receiverData, setReceiverData] = useState(() => {
     }
   }, [isLoggedIn, user]);
 
-  //for sent and delivered status
-  useEffect(() => {
-    if (!socket || !user) return;
-
-    // 🔥 new message
-socket.on("new-message", async ({ message }) => {
-  // Mark delivered if receiver
-  if (message.sender !== user._id) {
-    socket.emit("message-delivered", message._id);
-  }
-
-  // Add the message to global messages
-  setMessages((prev) => [...prev, message]);
-
-  // ⭐ INSTANT chatList update (receiver side)
-  setChatList((prev) =>
-    prev.map((chat) =>
-      chat.user._id === message.sender
-        ? {
-            ...chat,
-            lastMessage: message,
-            unreadCount: chat.unreadCount + 1,
-            updatedAt: message.createdAt,
-          }
-        : chat
-    )
-  );
-
-  // ⭐ Background refresh (slow but accurate)
-  const updated = await getChatList();
-  setChatList(updated);
-});
 
 
 
-    // delivered update for sender
-    socket.on("message-delivered-update", (msg) => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m._id === msg._id ? { ...m, deliveredAt: msg.deliveredAt } : m
-        )
-      );
-    });
+useEffect(() => {
+  if (!socket) return;
 
-    // seen update for sender
-    socket.on("message-seen-update", (msg) => {
-      setMessages((prev) =>
-        prev.map((m) => (m._id === msg._id ? { ...m, seenAt: msg.seenAt } : m))
-      );
-    });
+  const handleDeletedMessage = (messageId) => {
+    setMessages((prev) => prev.filter((m) => m._id !== messageId));
+  };
 
-    return () => {
-      socket.off("new-message");
-      socket.off("message-delivered-update");
-      socket.off("message-seen-update");
-    };
-  }, [socket, user]);
-//end
+  socket.on("deleted-message", handleDeletedMessage);
+
+  return () => {
+    socket.off("deleted-message", handleDeletedMessage);
+  };
+}, [socket]);
+
+useEffect(() => {
+  if (!socket) return;
+
+  const handleReplyReferencesCleared = (repliedMessageIds ) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        repliedMessageIds.includes(msg._id) ? { ...msg, replyTo: null } : msg
+      )
+    );
+  };
+
+  socket.on("reply-references-cleared", handleReplyReferencesCleared);
+
+  return () => {
+    socket.off("reply-references-cleared", handleReplyReferencesCleared);
+  };
+}, [socket]);
+
+
+
+
   
   useEffect(() => {
     const fetchChats = async () => {
       try {
         const response = await getChatList();
         setChatList(response);
+        console.log(response);
       } catch (err) {
         console.error("Chat list fetch failed:", err);
       }
     };
     fetchChats();
-  }, []);
+  }, [isLoggedIn]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleChatListUpdated = (receiverChatList) => {
+      setChatList(receiverChatList);
+    };
+
+    socket.on("chatlist-updated", handleChatListUpdated);
+
+    return () => {
+      socket.off("chatlist-updated", handleChatListUpdated);
+    };
+  }, [socket]);
+
+//listen message event 
 useEffect(() => {
-  if (!receiverId) return;
+  if (!socket) return;
 
-  const markSeen = async () => {
-           const response=await markChatSeen(receiverId);
-        
-           if(response.success){
-             try {
-               const updatedList = await getChatList();
-               setChatList(updatedList);
-             } catch (err) {
-               console.error("Error refreshing chat list:", err);
-             }
-           }
+  const handleReceiverMessage = (message) => {
+    // add to open chat only
+    if (receiverId === message.sender._id) {
+      setMessages((prev) => [...prev, message]);
+    }
+
+    // ACK delivered (extra safety)
+    socket.emit("message-delivered", message._id);
   };
 
-  markSeen();
-}, [receiverId]);
+  socket.on("receiver-new-message", handleReceiverMessage);
+
+  return () => {
+    socket.off("receiver-new-message", handleReceiverMessage);
+  };
+}, [socket, receiverId]);
+
+
 
  
   useEffect(() => {
@@ -168,6 +168,56 @@ useEffect(() => {
   }, [receiverId]);
 
 
+  useEffect(() => {
+    if (!receiverId || !receiverData) return;
+
+    const relation = computeRelationship(receiverId);
+
+    let isOnline = onlineUsers.includes(receiverId);
+    let show = true;
+    let showAvatar = true;
+
+    // 🔥 BLOCK LOGIC → If they blocked me, hide avatar + status
+    if (relation.blockedMe) {
+      show = false;
+      isOnline = false;
+      showAvatar = false;
+    }
+
+    // 🔥 PRIVACY RULES (THEIR visibility preference)
+    if (receiverData.statusVisibility === "contacts") {
+      if (!receiverData.hasSavedMe) {
+        show = false;
+        isOnline = false;
+      }
+    }
+
+    if (receiverData.statusVisibility === "onlyme") {
+      show = false;
+      isOnline = false;
+    }
+
+    // 🔥 Include isContact & savedName for global use
+    const finalStatus = {
+      show,
+      isOnline,
+      showAvatar,
+      blockedMe: relation.blockedMe,
+      blockedByMe: relation.blockedByMe,
+    };
+
+    startTransition(() => {
+      setUserStatus(finalStatus);
+    });
+  }, [
+    receiverId,
+    receiverData,
+    onlineUsers,
+    computeRelationship,
+    setUserStatus,
+  ]);
+
+
   return (
     <ChatContext.Provider
       value={{
@@ -180,7 +230,9 @@ useEffect(() => {
         setReceiverData,
         setChatList,
         messages,
-        setMessages
+        setMessages,
+        replyToMessage,
+        setReplyToMessage
       }}
     >
       {children}

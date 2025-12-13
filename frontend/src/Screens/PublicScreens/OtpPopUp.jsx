@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import Styles from "../../Modules/OtpPopUp.module.css";
 
+
 const OtpPopUp = ({ onClose, onVerify, onResend, error,loading }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(600);

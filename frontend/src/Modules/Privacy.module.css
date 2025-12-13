@@ -115,40 +115,102 @@
 }
 
 /* BLOCKED USERS */
+/* ---- BLOCKED USERS RESPONSIVE FIX ---- */
+
 .BlockItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px;
+  padding: 14px 10px;
   border-radius: 12px;
   background: #f3f4f6;
   margin-bottom: 10px;
-}
-
-.BlockUser {
-  display: flex;
-  align-items: center;
   gap: 10px;
 }
 
-.BlockAvatar {
-  width: 36px;
-  height: 36px;
+.BlockUser {
+  display: flex;        /* FIX */
+  align-items: center;
+  gap: 12px;
+  flex: 1;              /* middle section grows */
+  min-width: 0;
+}
+
+.BlockAvatarImage {
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: linear-gradient(to right, #dc2626, #f97316);
+  object-fit: cover;
+}
+
+.initialsCircle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #888;
+  color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: white;
+  font-size: 18px;
   font-weight: bold;
+  text-transform: uppercase;
+}
+
+.BlockUserText {
+  display: flex;        /* FIX */
+  flex-direction: column;
+  flex: 1;              /* expands */
+  min-width: 0;
+}
+
+.BlockUserName {
+  font-weight: 600;
+  color: #111;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.BlockUserEmail {
+  font-size: 13px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .UnblockBtn {
-  padding: 8px 12px;
+  padding: 8px 14px;
   background: linear-gradient(to right, #dc2626, #f97316);
   color: white;
   border-radius: 8px;
   font-weight: bold;
   border: none;
   cursor: pointer;
+  flex-shrink: 0;        /* FIXED BUTTON */
+}
+
+/* Tablets / Small screens */
+@media (max-width: 768px) {
+  .BlockItem {
+    flex-wrap: wrap;
+  }
+
+  .UnblockBtn {
+    margin-left: auto;
+    margin-top: 8px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+  .BlockItem {
+    padding: 12px 4px;
+  }
+
+  .UnblockBtn {
+    padding: 8px 6px;
+  }
 }

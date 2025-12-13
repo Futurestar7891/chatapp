@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Styles from "../../Modules/ResetPassword.module.css";
@@ -14,7 +15,7 @@ function ResetPassword() {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
+
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -30,7 +31,6 @@ function ResetPassword() {
     e.preventDefault();
 
     setErrors({});
-    setSuccessMsg("");
     setLoading(true);
 
     const response = await resetPassword(
@@ -48,14 +48,15 @@ function ResetPassword() {
 
     if (!response.success) {
       setErrors({ general: response.message || "Reset failed" });
+      toast.error(response.message);
       return;
     }
 
-    // SUCCESS
-    setSuccessMsg(response.message);
+
+    toast.success(response.message);
 
     setTimeout(() => {
-      navigate("/signin",{replace:true});
+      navigate("/signin", { replace: true });
     }, 1500);
   };
 
@@ -81,9 +82,6 @@ function ResetPassword() {
           {errors.general && (
             <p className={Styles.errorGeneral}>{errors.general}</p>
           )}
-
-          {/* Success */}
-          {successMsg && <p className={Styles.successMsg}>{successMsg}</p>}
 
           <form className={Styles.form} onSubmit={handleSubmit}>
             {/* PASSWORD */}
@@ -143,4 +141,4 @@ function ResetPassword() {
   );
 }
 
-export default ResetPassword;
+export default React.memo(ResetPassword);

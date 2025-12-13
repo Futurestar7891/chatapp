@@ -1,4 +1,4 @@
-import React, { useContext,memo, useEffect } from "react";
+import React, { useContext,memo } from "react";
 import ChatList from "../../Components/ChatList";
 import ChatWindow from "../../Components/ChatWindow";
 import { ChatContext } from "../../Context/ChatContext";

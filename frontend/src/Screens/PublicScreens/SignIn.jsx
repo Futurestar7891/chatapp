@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import React, { useState, useContext } from "react";
 import Loginsignup from "../../assets/Loginsignup.webp";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -26,7 +27,7 @@ function SignIn() {
   const [otpError, setOtpError] = useState("");
 
   const handleChange = (e) => {
-  setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
     setErrors((prev) => ({
       ...prev,
@@ -51,6 +52,7 @@ function SignIn() {
 
     setUser(response.user);
     setIsLoggedIn(true);
+    toast.success(response.message);
   };
 
   const handleForgot = async () => {
@@ -62,10 +64,12 @@ function SignIn() {
     if (!response.success) {
       if (response.errors) setErrors(response.errors);
       else setErrors({ general: response.message });
+      toast.error(response.message);
       return;
     }
 
     setShowOtpPopup(true);
+    toast.success(response.message);
   };
 
   const verifyForgotOtp = async (otp) => {
@@ -78,9 +82,10 @@ function SignIn() {
 
     if (!response.success) {
       setOtpError(response.message);
+      toast.error(response.message);
       return;
     }
-
+    toast.success(response.message);
     navigate("/reset-password");
   };
 
@@ -162,4 +167,4 @@ function SignIn() {
   );
 }
 
-export default SignIn;
+export default React.memo(SignIn);

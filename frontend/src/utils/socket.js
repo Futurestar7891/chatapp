@@ -4,7 +4,7 @@ let socket = null;
 
 export const connectSocket = () => {
   if (!socket) {
-  socket = io("https://chatapp-latest.vercel.app", {
+  socket = io(import.meta.env.VITE_SERVER_URL, {
     withCredentials: true,
     transports: ["polling", "websocket"],
   });
