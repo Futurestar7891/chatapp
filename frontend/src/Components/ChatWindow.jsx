@@ -72,17 +72,22 @@ function ChatWindow() {
   // -----------------------------
   // ⭐ FILTER MESSAGES FOR THIS CHAT
   // -----------------------------
- const chatMessages = useMemo(() => {
-   if (!receiverId || !user?._id) return [];
-   return messages.filter(
-     (m) =>
-       (m.sender._id === receiverId && m.receiver === user._id) ||
-       (m.sender._id === user._id && m.receiver === receiverId)
-   );
- }, [messages, receiverId, user]);
+const chatMessages = useMemo(() => {
+  if (!receiverId || !user?._id) return [];
+
+  return messages.filter((m) => {
+    if (!m || !m.sender) return false;
+
+    const senderId = typeof m.sender === "object" ? m.sender._id : m.sender;
+
+    return (
+      (senderId === receiverId && m.receiver === user._id) ||
+      (senderId === user._id && m.receiver === receiverId)
+    );
+  });
+}, [messages, receiverId, user]);
 
 
-  console.log(chatMessages);
   // -----------------------------
   // ⭐ SCROLL HELPERS
   // -----------------------------
@@ -163,16 +168,21 @@ function ChatWindow() {
   // ⭐ AUTO SEEN MESSAGES
   // -----------------------------
 
-  useEffect(() => {
-    if (!socket || !receiverId || !user?._id) return;
+ useEffect(() => {
+   if (!socket || !receiverId || !user?._id) return;
 
-    chatMessages.forEach((msg) => {
-      // receiver is current user
-      if (msg.sender._id !== user._id && !msg.seenAt) {
-        socket.emit("message-seen", msg._id);
-      }
-    });
-  }, [chatMessages, receiverId, socket, user?._id]);
+   chatMessages.forEach((msg) => {
+     if (!msg.sender) return;
+
+     const senderId =
+       typeof msg.sender === "object" ? msg.sender._id : msg.sender;
+
+     if (senderId !== user._id && !msg.seenAt) {
+       socket.emit("message-seen", msg._id);
+     }
+   });
+ }, [chatMessages, receiverId, socket, user]);
+
 
   // -----------------------------
   // ⭐ NO CHAT SELECTED
