@@ -34,10 +34,14 @@ export const getMessages = async (req, res) => {
       return res.json({ success: true, messages: [] });
     }
 
-    const messages = await Message.find({
-      chatId: chat._id,
-      deletedFor: { $ne: userId }, 
-    }).populate("sender","_id name avatar").sort({ createdAt: 1 });
+ const messages = await Message.find({
+   chatId: chat._id,
+   deletedFor: { $ne: userId },
+ })
+   .populate("sender", "_id name avatar")
+   .populate("replyTo.sender", "_id name avatar") // ⭐ REQUIRED
+   .sort({ createdAt: 1 });
+
 
     return res.json({ success: true, messages });
   } catch (err) {
@@ -86,9 +90,11 @@ export const sendMessage = async (req, res) => {
     });
 
     // 4️⃣ Populate sender before sending to frontend
-    const populatedMessage = await Message.findById(message._id)
-      .populate("sender", "_id name avatar")
-      .lean();
+ const populatedMessage = await Message.findById(message._id)
+   .populate("sender", "_id name avatar")
+   .populate("replyTo.sender", "_id name avatar") 
+   .lean();
+
 
     // 5️⃣ Update chat.lastMessage
     chat.lastMessage = chat.lastMessage.map((lm) =>
