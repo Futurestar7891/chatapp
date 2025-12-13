@@ -178,7 +178,7 @@ useEffect(() => {
     };
 
     load();
-  }, [receiverId]);
+  }, [receiverId,isLoggedIn]);
 
 
   useEffect(() => {

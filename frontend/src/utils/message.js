@@ -44,6 +44,29 @@ export const uploadFile = async (file) => {
   return data.secure_url;
 };
 
+const buildReplyPayload = (msg) => {
+  if (!msg) return null;
+
+  const sender =
+    typeof msg.sender === "object"
+      ? msg.sender
+      : msg.sender
+      ? { _id: msg.sender }
+      : null;
+
+  return {
+    _id: msg._id,
+    text: msg.text || "",
+    mediaType: msg.mediaType || null,
+    mediaUrl: msg.mediaUrl || null,
+    sender: sender
+      ? {
+          _id: sender._id,
+          name: sender.name || "User",
+        }
+      : null,
+  };
+};
 
 
 // --------------------------------------------------
@@ -67,9 +90,9 @@ export const sendMessage = async ({
     _id: tempId,
     chatId: null,
     sender: {
-      _id:user._id,
-      name:user.name,
-      avatar:user.avatar
+      _id: user._id,
+      name: user.name,
+      avatar: user.avatar,
     },
     receiver: receiverId,
     text,
@@ -78,7 +101,7 @@ export const sendMessage = async ({
     mediaType: mediaType || null,
     status: "sending",
     createdAt: new Date(),
-    replyTo:replyToMessage
+    replyTo: buildReplyPayload(replyToMessage),
   };
 console.log(tempMessage);
   // Add temp message to UI immediately
@@ -90,7 +113,14 @@ console.log(tempMessage);
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receiverId, text, mediaUrl, mediaType, filename,replyTo:replyToMessage }),
+      body: JSON.stringify({
+        receiverId,
+        text,
+        mediaUrl,
+        mediaType,
+        filename,
+        replyTo: buildReplyPayload(replyToMessage),
+      }),
     });
 
     const data = await res.json();
@@ -129,6 +159,7 @@ const detectMediaType = (file) => {
 
   return "file"; // pdf, zip, doc, txt etc.
 };
+
 
 // --------------------------------------------------
 // 4) Compose & send text + attachments
