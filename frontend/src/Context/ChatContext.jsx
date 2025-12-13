@@ -33,9 +33,20 @@ const normalizeMessage = (m) => {
   return {
     ...m,
     sender:
-      m.sender && typeof m.sender === "object" ? m.sender : { _id: m.sender }, // fallback
+      m.sender && typeof m.sender === "object" ? m.sender : { _id: m.sender },
+
+    replyTo: m.replyTo
+      ? {
+          ...m.replyTo,
+          sender:
+            m.replyTo.sender && typeof m.replyTo.sender === "object"
+              ? m.replyTo.sender
+              : { _id: m.replyTo.sender },
+        }
+      : null,
   };
 };
+
 
 
   // ⚡ Connect socket
